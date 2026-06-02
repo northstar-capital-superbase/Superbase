@@ -1,25 +1,34 @@
 import { NextResponse } from "next/server";
 import { getProvider } from "@/lib/llm";
-import { memoryBackend } from "@/lib/memory";
+import { getMemory, memoryBackend } from "@/lib/memory";
 
 export const runtime = "nodejs";
 
-// GET /api/health        → static readiness (provider/model/memory, no API call)
-// GET /api/health?ping=1 → also fires one minimal live completion to confirm the
-//                          configured provider actually reaches the model. This
-//                          is the integration self-test: on failure it returns
-//                          the exact typed error (bad key, wrong model, etc.).
+// GET /api/health         → static readiness (provider/model/memory, no I/O)
+// GET /api/health?ping=1   → also fires one minimal live completion to confirm
+//                            the configured provider reaches the model.
+// GET /api/health?memory=1 → also runs a write→read→clear roundtrip against the
+//                            memory store. For Supabase this confirms the URL,
+//                            key, AND that the `lab_memory` table exists — any
+//                            failure returns the exact error (bad key, missing
+//                            table, unreachable host).
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const ping = searchParams.get("ping") === "1";
+  const memoryCheck = searchParams.get("memory") === "1";
 
   const provider = getProvider();
+  const backend = memoryBackend();
   const base = {
     provider: provider.name,
     model: provider.model,
-    memory: memoryBackend(),
+    memory: backend,
     mock: provider.name === "mock",
   };
+
+  if (memoryCheck) {
+    return NextResponse.json(...(await probeMemory(base)));
+  }
 
   if (!ping) {
     return NextResponse.json({ ok: true, ...base });
@@ -49,5 +58,48 @@ export async function GET(req: Request) {
       },
       { status: 502 },
     );
+  }
+}
+
+// Write→read→clear roundtrip against the active memory store.
+async function probeMemory(
+  base: Record<string, unknown>,
+): Promise<[Record<string, unknown>, { status: number }?]> {
+  const started = Date.now();
+  const sessionId = `__healthcheck_${Date.now()}`;
+  try {
+    const memory = getMemory();
+    const written = await memory.append({
+      sessionId,
+      kind: "fact",
+      author: "healthcheck",
+      content: "supabase connectivity probe",
+    });
+    const back = await memory.recent({ sessionId, limit: 1 });
+    await memory.clear(sessionId);
+
+    const roundTripped = back.some((e) => e.id === written.id);
+    return [
+      {
+        ok: roundTripped,
+        backend: base.memory,
+        persisted: base.memory === "supabase",
+        ms: Date.now() - started,
+        ...base,
+        ...(roundTripped ? {} : { error: "write succeeded but read-back missed" }),
+      },
+      roundTripped ? undefined : { status: 502 },
+    ];
+  } catch (err) {
+    return [
+      {
+        ok: false,
+        backend: base.memory,
+        error: err instanceof Error ? err.message : String(err),
+        ms: Date.now() - started,
+        ...base,
+      },
+      { status: 502 },
+    ];
   }
 }
