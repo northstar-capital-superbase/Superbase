@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-base-900 text-slate-200 antialiased;
+  background-image:
+    radial-gradient(1200px 600px at 80% -10%, rgba(81, 104, 255, 0.12), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(192, 132, 252, 0.08), transparent 55%);
+  background-attachment: fixed;
+}
+
+/* Thin custom scrollbars to fit the dark lab aesthetic. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #272c42 transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: #272c42;
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #323855;
+}
+
+@layer components {
+  .panel {
+    @apply rounded-2xl border border-white/5 bg-base-800/70 backdrop-blur-sm;
+  }
+  .panel-tight {
+    @apply rounded-xl border border-white/5 bg-base-750/60;
+  }
+}

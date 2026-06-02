@@ -1,0 +1,212 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { AGENT_META, type CrewRun } from "./shared";
+
+export interface ChatTurn {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  run?: CrewRun; // present on assistant turns
+}
+
+export function Chat({
+  turns,
+  busy,
+  onSend,
+}: {
+  turns: ChatTurn[];
+  busy: boolean;
+  onSend: (text: string) => void;
+}) {
+  const [input, setInput] = useState("");
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({
+      top: scrollRef.current.scrollHeight,
+      behavior: "smooth",
+    });
+  }, [turns, busy]);
+
+  const submit = () => {
+    const text = input.trim();
+    if (!text || busy) return;
+    onSend(text);
+    setInput("");
+  };
+
+  return (
+    <div className="panel flex h-full flex-col">
+      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
+        <span className="h-2 w-2 rounded-full bg-signal-research" />
+        <span className="text-sm font-semibold text-white">Lab Console</span>
+        <span className="ml-auto text-[11px] text-slate-500">
+          orchestrated multi-agent chat
+        </span>
+      </div>
+
+      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
+        {turns.length === 0 && <EmptyState onPick={onSend} />}
+        {turns.map((t) =>
+          t.role === "user" ? (
+            <UserBubble key={t.id} text={t.content} />
+          ) : (
+            <AssistantBubble key={t.id} text={t.content} run={t.run} />
+          ),
+        )}
+        {busy && <Thinking />}
+      </div>
+
+      <div className="border-t border-white/5 p-3">
+        <div className="flex items-end gap-2 rounded-xl border border-white/5 bg-base-750/60 p-2 focus-within:border-accent/40">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                submit();
+              }
+            }}
+            rows={1}
+            placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+            className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
+          />
+          <button
+            onClick={submit}
+            disabled={busy || !input.trim()}
+            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-base-900 transition enabled:hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Run
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserBubble({ text }: { text: string }) {
+  return (
+    <div className="flex justify-end">
+      <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-accent/15 px-3.5 py-2 text-sm text-slate-100">
+        {text}
+      </div>
+    </div>
+  );
+}
+
+function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="animate-fadeUp space-y-2">
+      <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-white/5 bg-base-750/70 px-3.5 py-2.5">
+        <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-accent">
+          <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Orchestrator
+        </div>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">
+          {text}
+        </p>
+        {run && (
+          <button
+            onClick={() => setOpen((o) => !o)}
+            className="mt-2 text-[11px] text-slate-500 transition hover:text-slate-300"
+          >
+            {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
+            specialists)
+          </button>
+        )}
+      </div>
+      {run && open && <AgentTrace run={run} />}
+    </div>
+  );
+}
+
+function AgentTrace({ run }: { run: CrewRun }) {
+  return (
+    <div className="ml-2 max-w-[85%] space-y-2 border-l border-white/5 pl-3">
+      <TraceStep author="orchestrator" label="Plan" content={run.plan} />
+      {run.specialistResults.map((r) => (
+        <TraceStep
+          key={r.agent}
+          author={r.agent}
+          label={`${AGENT_META[r.agent].label} · ${r.ms}ms`}
+          content={r.output}
+        />
+      ))}
+    </div>
+  );
+}
+
+function TraceStep({
+  author,
+  label,
+  content,
+}: {
+  author: keyof typeof AGENT_META;
+  label: string;
+  content: string;
+}) {
+  const color = AGENT_META[author].color;
+  return (
+    <div className="panel-tight p-2.5">
+      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium" style={{ color }}>
+        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+        {label}
+      </div>
+      <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-400">
+        {content}
+      </p>
+    </div>
+  );
+}
+
+function Thinking() {
+  return (
+    <div className="flex items-center gap-2 text-[12px] text-slate-500">
+      <span className="h-1.5 w-1.5 animate-pulseSoft rounded-full bg-accent" />
+      crew is collaborating…
+    </div>
+  );
+}
+
+const SAMPLES = [
+  "Design a go-to-market plan for a local-first AI note app",
+  "Should we migrate our monolith to microservices?",
+  "Plan a 3-month roadmap for an open-source dev tool",
+];
+
+function EmptyState({ onPick }: { onPick: (t: string) => void }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
+      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path
+            d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"
+            fill="currentColor"
+          />
+        </svg>
+      </div>
+      <div>
+        <div className="text-sm font-semibold text-white">
+          Northstar Labs is ready
+        </div>
+        <p className="mt-1 max-w-sm text-[12px] text-slate-500">
+          Hand the orchestrator a task. It plans, delegates to the research,
+          strategist, and behavioral agents, then synthesizes their work.
+        </p>
+      </div>
+      <div className="flex max-w-md flex-wrap justify-center gap-2">
+        {SAMPLES.map((s) => (
+          <button
+            key={s}
+            onClick={() => onPick(s)}
+            className="rounded-full border border-white/5 px-3 py-1.5 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
+          >
+            {s}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
