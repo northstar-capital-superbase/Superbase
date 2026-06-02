@@ -6,9 +6,11 @@ import { AGENT_META, type MemoryEntry } from "./shared";
 export function MemoryPanel({
   entries,
   onClear,
+  onExplore,
 }: {
   entries: MemoryEntry[];
   onClear: () => void;
+  onExplore: () => void;
 }) {
   return (
     <div className="panel flex h-full flex-col">
@@ -19,12 +21,20 @@ export function MemoryPanel({
             {entries.length} {entries.length === 1 ? "entry" : "entries"}
           </div>
         </div>
-        <button
-          onClick={onClear}
-          className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/10 hover:text-slate-200"
-        >
-          Clear
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={onExplore}
+            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
+          >
+            Explore
+          </button>
+          <button
+            onClick={onClear}
+            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/10 hover:text-slate-200"
+          >
+            Clear
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 space-y-2 overflow-y-auto p-3">

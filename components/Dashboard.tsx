@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { MemoryPanel } from "./MemoryPanel";
+import { MemoryExplorer } from "./MemoryExplorer";
 import { Chat, type ChatTurn } from "./Chat";
 import { Integrations } from "./Integrations";
 import {
@@ -31,6 +32,7 @@ export function Dashboard() {
   const [memory, setMemory] = useState<MemoryEntry[]>([]);
   const [statuses, setStatuses] = useState<Record<string, AgentStatus>>({});
   const [busy, setBusy] = useState(false);
+  const [explorerOpen, setExplorerOpen] = useState(false);
 
   const refreshMemory = useCallback(async () => {
     const res = await fetch(`/api/memory?sessionId=${SESSION_ID}`);
@@ -183,10 +185,20 @@ export function Dashboard() {
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
           <Chat turns={turns} busy={busy} onSend={send} />
           <div className="hidden min-h-0 lg:block">
-            <MemoryPanel entries={memory} onClear={clearMemory} />
+            <MemoryPanel
+              entries={memory}
+              onClear={clearMemory}
+              onExplore={() => setExplorerOpen(true)}
+            />
           </div>
         </div>
       </main>
+
+      <MemoryExplorer
+        sessionId={SESSION_ID}
+        open={explorerOpen}
+        onClose={() => setExplorerOpen(false)}
+      />
     </div>
   );
 }
