@@ -24,6 +24,22 @@ const SPECIALIST_FLOW: AgentProfile["id"][] = [
   "behavioral",
 ];
 
+// Rebuild a chat transcript from persisted memory: user messages become user
+// turns, the orchestrator's synthesis (its agent_output) becomes the assistant
+// turn. The structured run/trace isn't persisted, so reconstructed assistant
+// turns show text only.
+function reconstructTurns(entries: MemoryEntry[]): ChatTurn[] {
+  const turns: ChatTurn[] = [];
+  for (const e of entries) {
+    if (e.author === "user" && e.kind === "message") {
+      turns.push({ id: e.id, role: "user", content: e.content });
+    } else if (e.author === "orchestrator" && e.kind === "agent_output") {
+      turns.push({ id: e.id, role: "assistant", content: e.content });
+    }
+  }
+  return turns;
+}
+
 // Top-level client orchestration: loads the roster, drives a chat turn through
 // /api/chat, animates agent statuses, and tails shared memory.
 export function Dashboard() {
@@ -52,14 +68,24 @@ export function Dashboard() {
       .catch(() => {});
   }, []);
 
-  // On lab switch (and first load), reset the transcript and reload that lab's
-  // shared memory. Turns are an ephemeral UI view; the memory tail/Explorer is
-  // the persisted history per session.
+  // On lab switch (and first load), reload that lab's shared memory and rebuild
+  // its transcript so switching back to a lab re-shows its conversation.
   useEffect(() => {
-    setTurns([]);
     setStatuses({});
-    refreshMemory();
-  }, [activeId, refreshMemory]);
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/memory?sessionId=${activeId}&limit=300`);
+      const entries: MemoryEntry[] = res.ok
+        ? ((await res.json()).entries ?? [])
+        : [];
+      if (cancelled) return;
+      setMemory(entries.slice(-50));
+      setTurns(reconstructTurns(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId]);
 
   const pushAssistant = useCallback(
     (content: string, run?: CrewRun) =>
