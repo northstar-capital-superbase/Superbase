@@ -18,16 +18,19 @@ export function getProvider(): LLMProvider {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const openaiKey = process.env.OPENAI_API_KEY;
 
+  const anthropicModel = process.env.ANTHROPIC_MODEL || undefined;
+  const openaiModel = process.env.OPENAI_MODEL || undefined;
+
   if (forced === "anthropic" && anthropicKey) {
-    cached = new AnthropicProvider(anthropicKey, process.env.ANTHROPIC_MODEL);
+    cached = new AnthropicProvider(anthropicKey, anthropicModel);
   } else if (forced === "openai" && openaiKey) {
-    cached = new OpenAIProvider(openaiKey, process.env.OPENAI_MODEL);
+    cached = new OpenAIProvider(openaiKey, openaiModel);
   } else if (forced === "mock") {
     cached = new MockProvider();
   } else if (anthropicKey) {
-    cached = new AnthropicProvider(anthropicKey, process.env.ANTHROPIC_MODEL);
+    cached = new AnthropicProvider(anthropicKey, anthropicModel);
   } else if (openaiKey) {
-    cached = new OpenAIProvider(openaiKey, process.env.OPENAI_MODEL);
+    cached = new OpenAIProvider(openaiKey, openaiModel);
   } else {
     cached = new MockProvider();
   }
