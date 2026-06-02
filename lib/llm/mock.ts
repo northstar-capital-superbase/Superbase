@@ -18,7 +18,19 @@ export class MockProvider implements LLMProvider {
     const text = render(role, task);
     // Small delay to mimic network latency and exercise loading states.
     await new Promise((r) => setTimeout(r, 180));
-    return { text, provider: this.name, model: this.model };
+    // Rough token estimate (~4 chars/token) so metrics render in mock mode.
+    const inputChars =
+      (req.system?.length ?? 0) +
+      req.messages.reduce((a, m) => a + m.content.length, 0);
+    return {
+      text,
+      provider: this.name,
+      model: this.model,
+      usage: {
+        inputTokens: Math.ceil(inputChars / 4),
+        outputTokens: Math.ceil(text.length / 4),
+      },
+    };
   }
 }
 

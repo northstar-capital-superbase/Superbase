@@ -20,6 +20,7 @@ export interface AgentResult {
   provider: string;
   model: string;
   ms: number;
+  tokens?: { input: number; output: number };
 }
 
 export interface CrewRun {

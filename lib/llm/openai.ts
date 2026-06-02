@@ -29,6 +29,16 @@ export class OpenAIProvider implements LLMProvider {
     });
 
     const text = res.choices[0]?.message?.content?.trim() ?? "";
-    return { text, provider: this.name, model: this.model };
+    return {
+      text,
+      provider: this.name,
+      model: this.model,
+      usage: res.usage
+        ? {
+            inputTokens: res.usage.prompt_tokens,
+            outputTokens: res.usage.completion_tokens,
+          }
+        : undefined,
+    };
   }
 }

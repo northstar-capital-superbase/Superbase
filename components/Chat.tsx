@@ -123,14 +123,37 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
 }
 
 function AgentTrace({ run }: { run: CrewRun }) {
+  const steps = [...run.specialistResults, run.synthesis];
+  const totalMs = steps.reduce((a, r) => a + r.ms, 0);
+  const inTok = steps.reduce((a, r) => a + (r.tokens?.input ?? 0), 0);
+  const outTok = steps.reduce((a, r) => a + (r.tokens?.output ?? 0), 0);
+  const hasTokens = inTok + outTok > 0;
+
   return (
     <div className="ml-2 max-w-[85%] space-y-2 border-l border-white/5 pl-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-0.5 text-[10px] text-slate-500">
+        <span>
+          <span className="text-slate-400">{run.synthesis.model}</span>
+        </span>
+        <span>· {totalMs}ms total</span>
+        {hasTokens && (
+          <span>
+            · {inTok + outTok} tok{" "}
+            <span className="text-slate-600">
+              ({inTok} in / {outTok} out)
+            </span>
+          </span>
+        )}
+        <span>· {run.specialistResults.length + 1} agent calls</span>
+      </div>
       <TraceStep author="orchestrator" label="Plan" content={run.plan} />
       {run.specialistResults.map((r) => (
         <TraceStep
           key={r.agent}
           author={r.agent}
-          label={`${AGENT_META[r.agent].label} · ${r.ms}ms`}
+          label={`${AGENT_META[r.agent].label} · ${r.ms}ms${
+            r.tokens ? ` · ${r.tokens.input + r.tokens.output} tok` : ""
+          }`}
           content={r.output}
         />
       ))}

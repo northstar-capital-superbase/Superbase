@@ -55,7 +55,15 @@ export class AnthropicProvider implements LLMProvider {
         .map((b) => b.text)
         .join("\n")
         .trim();
-      return { text, provider: this.name, model: this.model };
+      return {
+        text,
+        provider: this.name,
+        model: this.model,
+        usage: {
+          inputTokens: res.usage.input_tokens,
+          outputTokens: res.usage.output_tokens,
+        },
+      };
     } catch (err) {
       throw toFriendlyError(err);
     }
