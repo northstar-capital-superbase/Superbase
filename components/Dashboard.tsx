@@ -5,6 +5,7 @@ import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { MemoryPanel } from "./MemoryPanel";
 import { Chat, type ChatTurn } from "./Chat";
+import { Integrations } from "./Integrations";
 import {
   type AgentProfile,
   type CrewRun,
@@ -146,6 +147,8 @@ export function Dashboard() {
             </p>
           </div>
         </header>
+
+        <Integrations />
 
         <AgentRoster agents={agents} statuses={statuses} />
 
