@@ -75,8 +75,9 @@ All optional — see `.env.example`. The lab auto-detects:
 
 - **LLM provider:** `ANTHROPIC_API_KEY` → Claude, else `OPENAI_API_KEY` → OpenAI,
   else **mock**. Force with `LLM_PROVIDER`.
-- **Shared memory:** Supabase if `NEXT_PUBLIC_SUPABASE_URL` + a key are set
-  (apply `supabase/schema.sql` first), otherwise in-process memory.
+- **Shared memory:** Supabase if `SUPABASE_URL` + a key
+  (`SUPABASE_SERVICE_ROLE_KEY`, preferred) are set — apply `supabase/schema.sql`
+  first — otherwise in-process memory. Verify with `/api/health?memory=1`.
 
 ## Tech stack
 
