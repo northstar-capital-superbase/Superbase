@@ -7,6 +7,8 @@ import { MemoryPanel } from "./MemoryPanel";
 import { MemoryExplorer } from "./MemoryExplorer";
 import { Chat, type ChatTurn } from "./Chat";
 import { Integrations } from "./Integrations";
+import { SessionSwitcher } from "./SessionSwitcher";
+import { useSessions } from "./useSessions";
 import {
   type AgentProfile,
   type CrewEvent,
@@ -15,7 +17,6 @@ import {
   type RuntimeInfo,
 } from "./shared";
 
-const SESSION_ID = "default";
 const SPECIALIST_FLOW: AgentProfile["id"][] = [
   "orchestrator",
   "research",
@@ -26,6 +27,7 @@ const SPECIALIST_FLOW: AgentProfile["id"][] = [
 // Top-level client orchestration: loads the roster, drives a chat turn through
 // /api/chat, animates agent statuses, and tails shared memory.
 export function Dashboard() {
+  const { sessions, activeId, create, remove, setActive } = useSessions();
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
@@ -35,10 +37,11 @@ export function Dashboard() {
   const [explorerOpen, setExplorerOpen] = useState(false);
 
   const refreshMemory = useCallback(async () => {
-    const res = await fetch(`/api/memory?sessionId=${SESSION_ID}`);
+    const res = await fetch(`/api/memory?sessionId=${activeId}`);
     if (res.ok) setMemory((await res.json()).entries ?? []);
-  }, []);
+  }, [activeId]);
 
+  // Agent roster + runtime: load once.
   useEffect(() => {
     fetch("/api/agents")
       .then((r) => r.json())
@@ -47,8 +50,16 @@ export function Dashboard() {
         setRuntime(d.runtime ?? null);
       })
       .catch(() => {});
+  }, []);
+
+  // On lab switch (and first load), reset the transcript and reload that lab's
+  // shared memory. Turns are an ephemeral UI view; the memory tail/Explorer is
+  // the persisted history per session.
+  useEffect(() => {
+    setTurns([]);
+    setStatuses({});
     refreshMemory();
-  }, [refreshMemory]);
+  }, [activeId, refreshMemory]);
 
   const pushAssistant = useCallback(
     (content: string, run?: CrewRun) =>
@@ -65,14 +76,14 @@ export function Dashboard() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: SESSION_ID, task }),
+        body: JSON.stringify({ sessionId: activeId, task }),
       });
       const data = (await res.json()) as CrewRun & { error?: string };
       setStatuses(Object.fromEntries(SPECIALIST_FLOW.map((id) => [id, "done"])));
       if (!res.ok || data.error) pushAssistant(`⚠️ ${data.error ?? "Run failed."}`);
       else pushAssistant(data.synthesis.output, data);
     },
-    [pushAssistant],
+    [pushAssistant, activeId],
   );
 
   // Stream a turn through the pipeline, driving real agent statuses from
@@ -90,7 +101,7 @@ export function Dashboard() {
         const res = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: SESSION_ID, task }),
+          body: JSON.stringify({ sessionId: activeId, task }),
         });
         if (!res.ok || !res.body) {
           await runFallback(task);
@@ -153,29 +164,45 @@ export function Dashboard() {
         setTimeout(() => setStatuses({}), 1200);
       }
     },
-    [pushAssistant, refreshMemory, runFallback],
+    [pushAssistant, refreshMemory, runFallback, activeId],
   );
 
   const clearMemory = useCallback(async () => {
-    await fetch(`/api/memory?sessionId=${SESSION_ID}`, { method: "DELETE" });
+    await fetch(`/api/memory?sessionId=${activeId}`, { method: "DELETE" });
     setMemory([]);
-  }, []);
+  }, [activeId]);
+
+  // Delete a lab: wipe its server-side memory, then drop it from the list.
+  const removeSession = useCallback(
+    (id: string) => {
+      fetch(`/api/memory?sessionId=${id}`, { method: "DELETE" }).catch(() => {});
+      remove(id);
+    },
+    [remove],
+  );
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar runtime={runtime} />
 
       <main className="flex min-w-0 flex-1 flex-col gap-4 p-4">
-        <header className="flex items-end justify-between">
+        <header className="flex items-end justify-between gap-3">
           <div>
             <h1 className="text-lg font-semibold text-white">
               Agent Operating System
             </h1>
             <p className="text-[12px] text-slate-500">
-              Local-first multi-agent lab · session{" "}
-              <span className="font-mono text-slate-400">{SESSION_ID}</span>
+              Local-first multi-agent lab · {sessions.length}{" "}
+              {sessions.length === 1 ? "lab" : "labs"}
             </p>
           </div>
+          <SessionSwitcher
+            sessions={sessions}
+            activeId={activeId}
+            onSwitch={setActive}
+            onCreate={create}
+            onRemove={removeSession}
+          />
         </header>
 
         <Integrations />
@@ -195,7 +222,7 @@ export function Dashboard() {
       </main>
 
       <MemoryExplorer
-        sessionId={SESSION_ID}
+        sessionId={activeId}
         open={explorerOpen}
         onClose={() => setExplorerOpen(false)}
       />
