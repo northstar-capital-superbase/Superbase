@@ -1,0 +1,2 @@
+# Optional CrewAI runtime for the Python-native mirror of the agent system.
+crewai>=0.80.0
