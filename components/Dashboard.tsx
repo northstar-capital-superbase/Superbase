@@ -8,6 +8,7 @@ import { Chat, type ChatTurn } from "./Chat";
 import { Integrations } from "./Integrations";
 import {
   type AgentProfile,
+  type CrewEvent,
   type CrewRun,
   type MemoryEntry,
   type RuntimeInfo,
@@ -47,83 +48,110 @@ export function Dashboard() {
     refreshMemory();
   }, [refreshMemory]);
 
-  // Visually walk the agents through the pipeline while the request runs.
-  const animateFlow = useCallback(() => {
-    let i = 0;
-    setStatuses({ orchestrator: "thinking" });
-    const timer = setInterval(() => {
-      i += 1;
-      if (i >= SPECIALIST_FLOW.length) return;
-      setStatuses((prev) => {
-        const next = { ...prev };
-        next[SPECIALIST_FLOW[i - 1]] = "done";
-        next[SPECIALIST_FLOW[i]] = "thinking";
-        return next;
-      });
-    }, 700);
-    return timer;
-  }, []);
+  const pushAssistant = useCallback(
+    (content: string, run?: CrewRun) =>
+      setTurns((t) => [
+        ...t,
+        { id: crypto.randomUUID(), role: "assistant", content, run },
+      ]),
+    [],
+  );
 
+  // Non-streaming fallback if SSE is unavailable.
+  const runFallback = useCallback(
+    async (task: string) => {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: SESSION_ID, task }),
+      });
+      const data = (await res.json()) as CrewRun & { error?: string };
+      setStatuses(Object.fromEntries(SPECIALIST_FLOW.map((id) => [id, "done"])));
+      if (!res.ok || data.error) pushAssistant(`⚠️ ${data.error ?? "Run failed."}`);
+      else pushAssistant(data.synthesis.output, data);
+    },
+    [pushAssistant],
+  );
+
+  // Stream a turn through the pipeline, driving real agent statuses from
+  // CrewEvents and refreshing the memory tail as each agent writes to it.
   const send = useCallback(
     async (task: string) => {
       setBusy(true);
-      const userTurn: ChatTurn = {
-        id: crypto.randomUUID(),
-        role: "user",
-        content: task,
-      };
-      setTurns((t) => [...t, userTurn]);
-      const timer = animateFlow();
+      setTurns((t) => [
+        ...t,
+        { id: crypto.randomUUID(), role: "user", content: task },
+      ]);
+      setStatuses({ orchestrator: "thinking" });
 
       try {
-        const res = await fetch("/api/chat", {
+        const res = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: SESSION_ID, task }),
         });
-        const data = (await res.json()) as CrewRun & { error?: string };
-        clearInterval(timer);
-        setStatuses(
-          Object.fromEntries(SPECIALIST_FLOW.map((id) => [id, "done"])),
-        );
-
-        if (!res.ok || data.error) {
-          setTurns((t) => [
-            ...t,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content: `⚠️ ${data.error ?? "Run failed."}`,
-            },
-          ]);
-        } else {
-          setTurns((t) => [
-            ...t,
-            {
-              id: crypto.randomUUID(),
-              role: "assistant",
-              content: data.synthesis.output,
-              run: data,
-            },
-          ]);
+        if (!res.ok || !res.body) {
+          await runFallback(task);
+          return;
         }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let finished = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() ?? "";
+          for (const chunk of chunks) {
+            const dataLine = chunk.split("\n").find((l) => l.startsWith("data:"));
+            if (!dataLine) continue;
+            const payload = dataLine.slice(5).trim();
+            if (!payload) continue;
+            const ev = JSON.parse(payload) as CrewEvent;
+
+            switch (ev.type) {
+              case "agent_start":
+                setStatuses((s) => ({ ...s, [ev.agent]: "thinking" }));
+                break;
+              case "plan":
+                setStatuses((s) => ({ ...s, orchestrator: "done" }));
+                break;
+              case "agent_result":
+                setStatuses((s) => ({ ...s, [ev.result.agent]: "done" }));
+                refreshMemory();
+                break;
+              case "synthesis_start":
+                setStatuses((s) => ({ ...s, orchestrator: "thinking" }));
+                break;
+              case "synthesis":
+                setStatuses((s) => ({ ...s, orchestrator: "done" }));
+                break;
+              case "done":
+                finished = true;
+                pushAssistant(ev.run.synthesis.output, ev.run);
+                break;
+              case "error":
+                finished = true;
+                pushAssistant(`⚠️ ${ev.error}`);
+                break;
+            }
+          }
+        }
+
+        if (!finished) await runFallback(task);
       } catch (err) {
-        clearInterval(timer);
-        setTurns((t) => [
-          ...t,
-          {
-            id: crypto.randomUUID(),
-            role: "assistant",
-            content: `⚠️ ${err instanceof Error ? err.message : "Network error"}`,
-          },
-        ]);
+        pushAssistant(`⚠️ ${err instanceof Error ? err.message : "Network error"}`);
       } finally {
         setBusy(false);
         await refreshMemory();
         setTimeout(() => setStatuses({}), 1200);
       }
     },
-    [animateFlow, refreshMemory],
+    [pushAssistant, refreshMemory, runFallback],
   );
 
   const clearMemory = useCallback(async () => {

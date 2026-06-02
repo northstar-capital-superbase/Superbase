@@ -31,6 +31,16 @@ export interface CrewRun {
   backend: "supabase" | "in-memory";
 }
 
+// Streamed workflow events from /api/chat/stream (mirrors lib/orchestration).
+export type CrewEvent =
+  | { type: "plan"; content: string }
+  | { type: "agent_start"; agent: AgentProfile["id"] }
+  | { type: "agent_result"; result: AgentResult }
+  | { type: "synthesis_start" }
+  | { type: "synthesis"; result: AgentResult }
+  | { type: "done"; run: CrewRun }
+  | { type: "error"; error: string };
+
 export interface MemoryEntry {
   id: string;
   sessionId: string;

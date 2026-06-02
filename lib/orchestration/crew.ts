@@ -19,81 +19,110 @@ export interface CrewRun {
   backend: "supabase" | "in-memory";
 }
 
-// The core multi-agent workflow:
+// Events emitted as the workflow progresses, so the UI can show each agent's
+// status and output the moment it happens (rather than after the whole run).
+export type CrewEvent =
+  | { type: "plan"; content: string }
+  | { type: "agent_start"; agent: AgentId }
+  | { type: "agent_result"; result: AgentResult }
+  | { type: "synthesis_start" }
+  | { type: "synthesis"; result: AgentResult }
+  | { type: "done"; run: CrewRun }
+  | { type: "error"; error: string };
+
+// The core multi-agent workflow, as a stream:
 //   1. Orchestrator drafts a plan from the task + recent shared memory.
 //   2. Each specialist runs in sequence, each seeing prior specialists' output
 //      via shared memory (research -> strategist -> behavioral).
 //   3. Orchestrator synthesizes everything into the final answer.
-// Every step is written back to shared memory so runs compound over time.
-export async function runCrew(opts: RunOptions): Promise<CrewRun> {
+// Every step is written back to shared memory so runs compound over time, and
+// emitted as a CrewEvent so the dashboard reflects real progress.
+export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
   const { sessionId, task } = opts;
   const specialists = opts.specialists ?? SPECIALIST_ORDER;
   const memory = getMemory();
-
-  // Record the user's task.
-  await memory.append({
-    sessionId,
-    kind: "message",
-    author: "user",
-    content: task,
-  });
-
-  const loadContext = async (): Promise<MemoryEntry[]> =>
+  const loadContext = (): Promise<MemoryEntry[]> =>
     memory.recent({ sessionId, limit: 24 });
 
-  // 1. Orchestrator plans.
-  const orchestrator = getAgent("orchestrator");
-  const planResult = await orchestrator.run({
-    sessionId,
-    task: `Draft a short delegation plan for this task, naming which specialists matter most: "${task}"`,
-    memory: await loadContext(),
-  });
-  await memory.append({
-    sessionId,
-    kind: "plan",
-    author: "orchestrator",
-    content: planResult.output,
-  });
+  try {
+    // Record the user's task.
+    await memory.append({ sessionId, kind: "message", author: "user", content: task });
 
-  // 2. Specialists run in sequence, each building on prior shared memory.
-  const specialistResults: AgentResult[] = [];
-  for (const id of specialists) {
-    const agent = getAgent(id);
-    const result = await agent.run({
+    // 1. Orchestrator plans.
+    yield { type: "agent_start", agent: "orchestrator" };
+    const orchestrator = getAgent("orchestrator");
+    const planResult = await orchestrator.run({
       sessionId,
-      task,
+      task: `Draft a short delegation plan for this task, naming which specialists matter most: "${task}"`,
       memory: await loadContext(),
     });
-    specialistResults.push(result);
+    await memory.append({
+      sessionId,
+      kind: "plan",
+      author: "orchestrator",
+      content: planResult.output,
+    });
+    yield { type: "plan", content: planResult.output };
+
+    // 2. Specialists run in sequence, each building on prior shared memory.
+    const specialistResults: AgentResult[] = [];
+    for (const id of specialists) {
+      yield { type: "agent_start", agent: id };
+      const result = await getAgent(id).run({
+        sessionId,
+        task,
+        memory: await loadContext(),
+      });
+      specialistResults.push(result);
+      await memory.append({
+        sessionId,
+        kind: "agent_output",
+        author: id,
+        content: result.output,
+        metadata: { ms: result.ms, model: result.model },
+      });
+      yield { type: "agent_result", result };
+    }
+
+    // 3. Orchestrator synthesizes the final answer from all contributions.
+    yield { type: "synthesis_start" };
+    const synthesis = await orchestrator.run({
+      sessionId,
+      task: `Synthesize the specialists' contributions into one clear answer for: "${task}"`,
+      memory: await loadContext(),
+    });
     await memory.append({
       sessionId,
       kind: "agent_output",
-      author: id,
-      content: result.output,
-      metadata: { ms: result.ms, model: result.model },
+      author: "orchestrator",
+      content: synthesis.output,
+      metadata: { ms: synthesis.ms, model: synthesis.model, final: true },
     });
+    yield { type: "synthesis", result: synthesis };
+
+    yield {
+      type: "done",
+      run: {
+        sessionId,
+        task,
+        plan: planResult.output,
+        specialistResults,
+        synthesis,
+        backend: memoryBackend(),
+      },
+    };
+  } catch (err) {
+    yield { type: "error", error: err instanceof Error ? err.message : String(err) };
   }
+}
 
-  // 3. Orchestrator synthesizes the final answer from all contributions.
-  const synthesis = await orchestrator.run({
-    sessionId,
-    task: `Synthesize the specialists' contributions into one clear answer for: "${task}"`,
-    memory: await loadContext(),
-  });
-  await memory.append({
-    sessionId,
-    kind: "agent_output",
-    author: "orchestrator",
-    content: synthesis.output,
-    metadata: { ms: synthesis.ms, model: synthesis.model, final: true },
-  });
-
-  return {
-    sessionId,
-    task,
-    plan: planResult.output,
-    specialistResults,
-    synthesis,
-    backend: memoryBackend(),
-  };
+// Non-streaming convenience wrapper — drains the stream to the final result.
+export async function runCrew(opts: RunOptions): Promise<CrewRun> {
+  let run: CrewRun | undefined;
+  for await (const ev of streamCrew(opts)) {
+    if (ev.type === "done") run = ev.run;
+    else if (ev.type === "error") throw new Error(ev.error);
+  }
+  if (!run) throw new Error("crew produced no result");
+  return run;
 }
