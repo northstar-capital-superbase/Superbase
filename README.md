@@ -1,5 +1,11 @@
 # Northstar Labs — Multi-Agent AI Operating System
 
+[![CI](https://github.com/northstar-capital-superbase/Superbase/actions/workflows/ci.yml/badge.svg)](https://github.com/northstar-capital-superbase/Superbase/actions/workflows/ci.yml)
+![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white)
+![License: MIT](https://img.shields.io/badge/License-MIT-green)
+
 A **local-first, experimental multi-agent AI lab**. Hand the orchestrator a
 task; it plans, delegates to three specialist agents that collaborate through a
 shared memory, and synthesizes their work into one answer — all in a dark,
