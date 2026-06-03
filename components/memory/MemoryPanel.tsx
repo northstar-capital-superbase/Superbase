@@ -7,10 +7,12 @@ export function MemoryPanel({
   entries,
   onClear,
   onExplore,
+  onExport,
 }: {
   entries: MemoryEntry[];
   onClear: () => void;
   onExplore: () => void;
+  onExport: () => void;
 }) {
   return (
     <div className="panel flex h-full flex-col">
@@ -27,6 +29,13 @@ export function MemoryPanel({
             className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
           >
             Explore
+          </button>
+          <button
+            onClick={onExport}
+            title="Download this lab's memory as Markdown"
+            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
+          >
+            Export
           </button>
           <button
             onClick={onClear}
