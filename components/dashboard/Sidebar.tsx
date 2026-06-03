@@ -54,6 +54,12 @@ export function Sidebar({ runtime }: { runtime: RuntimeInfo | null }) {
             ? "Mock mode — add an API key in .env.local for live models."
             : "Live model connected."}
         </p>
+        <a
+          href="/tour"
+          className="block px-1 pt-1 text-[11px] text-slate-500 transition hover:text-accent"
+        >
+          UI tour →
+        </a>
       </div>
     </aside>
   );
