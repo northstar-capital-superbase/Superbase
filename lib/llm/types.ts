@@ -14,10 +14,16 @@ export interface CompletionRequest {
   maxTokens?: number;
 }
 
+export interface TokenUsage {
+  inputTokens: number;
+  outputTokens: number;
+}
+
 export interface CompletionResult {
   text: string;
   provider: ProviderName;
   model: string;
+  usage?: TokenUsage;
 }
 
 export type ProviderName = "anthropic" | "openai" | "mock";

@@ -1,6 +1,6 @@
 "use client";
 
-import type { RuntimeInfo } from "./shared";
+import type { RuntimeInfo } from "@/components/shared";
 
 // Left rail: brand, runtime status, and a quick legend of the lab's pipeline.
 export function Sidebar({ runtime }: { runtime: RuntimeInfo | null }) {

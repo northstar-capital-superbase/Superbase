@@ -40,6 +40,9 @@ export class Agent {
       provider: res.provider,
       model: res.model,
       ms: Date.now() - started,
+      tokens: res.usage
+        ? { input: res.usage.inputTokens, output: res.usage.outputTokens }
+        : undefined,
     };
   }
 }
