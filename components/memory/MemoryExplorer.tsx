@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import clsx from "clsx";
-import { AGENT_META, type MemoryEntry } from "./shared";
+import { AGENT_META, type MemoryEntry } from "@/components/shared";
 
 const KINDS = ["all", "message", "plan", "agent_output", "fact"] as const;
 const AUTHORS = [

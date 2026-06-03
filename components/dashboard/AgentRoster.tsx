@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import type { AgentProfile } from "./shared";
+import type { AgentProfile } from "@/components/shared";
 
 export type AgentStatus = "idle" | "thinking" | "done";
 

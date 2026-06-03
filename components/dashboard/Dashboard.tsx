@@ -3,19 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
-import { MemoryPanel } from "./MemoryPanel";
-import { MemoryExplorer } from "./MemoryExplorer";
-import { Chat, type ChatTurn } from "./Chat";
 import { Integrations } from "./Integrations";
-import { SessionSwitcher } from "./SessionSwitcher";
-import { useSessions } from "./useSessions";
+import { MemoryPanel } from "@/components/memory/MemoryPanel";
+import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
+import { Chat, type ChatTurn } from "@/components/chat/Chat";
+import { SessionSwitcher } from "@/components/session/SessionSwitcher";
+import { useSessions } from "@/components/session/useSessions";
 import {
   type AgentProfile,
   type CrewEvent,
   type CrewRun,
   type MemoryEntry,
   type RuntimeInfo,
-} from "./shared";
+} from "@/components/shared";
 
 const SPECIALIST_FLOW: AgentProfile["id"][] = [
   "orchestrator",

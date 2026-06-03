@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { AGENT_META, type CrewRun } from "./shared";
+import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
 
 export interface ChatTurn {
   id: string;
@@ -128,6 +128,7 @@ function AgentTrace({ run }: { run: CrewRun }) {
   const inTok = steps.reduce((a, r) => a + (r.tokens?.input ?? 0), 0);
   const outTok = steps.reduce((a, r) => a + (r.tokens?.output ?? 0), 0);
   const hasTokens = inTok + outTok > 0;
+  const cost = estimateCostUSD(run.synthesis.model, inTok, outTok);
 
   return (
     <div className="ml-2 max-w-[85%] space-y-2 border-l border-white/5 pl-3">
@@ -145,6 +146,9 @@ function AgentTrace({ run }: { run: CrewRun }) {
           </span>
         )}
         <span>· {run.specialistResults.length + 1} agent calls</span>
+        {cost !== null && cost > 0 && (
+          <span className="text-slate-400">· ~${cost.toFixed(4)}</span>
+        )}
       </div>
       <TraceStep author="orchestrator" label="Plan" content={run.plan} />
       {run.specialistResults.map((r) => (

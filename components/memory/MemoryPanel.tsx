@@ -1,6 +1,6 @@
 "use client";
 
-import { AGENT_META, type MemoryEntry } from "./shared";
+import { AGENT_META, type MemoryEntry } from "@/components/shared";
 
 // Right rail: a live tail of the shared memory the agents read and write.
 export function MemoryPanel({

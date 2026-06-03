@@ -48,22 +48,45 @@ a run and runs compound across a session.
 
 ## Architecture
 
+Grouped by feature so each folder maps to one concern. See
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full data-flow walkthrough.
+
 ```
-app/
-  page.tsx                 # dashboard entry
+app/                       # Next.js App Router
+  page.tsx                 # renders the dashboard
   api/
-    chat/route.ts          # POST → runs the full crew workflow
+    chat/route.ts          # POST → run the crew (non-streaming)
+    chat/stream/route.ts   # POST → run the crew, streamed as SSE
     agents/route.ts        # GET  → agent roster + runtime info
-    memory/route.ts        # GET/DELETE → shared memory
-components/                # dark dashboard UI (Sidebar, Roster, Chat, Memory)
-lib/
+    memory/route.ts        # GET/DELETE → shared memory (filterable)
+    health/route.ts        # GET  → readiness + ?ping / ?memory self-tests
+
+components/                # dark dashboard UI, grouped by feature
+  dashboard/               # Dashboard shell, Sidebar, Integrations, AgentRoster
+  chat/                    # Chat console + agent trace + run metrics
+  memory/                  # MemoryPanel (live tail) + MemoryExplorer (search)
+  session/                 # SessionSwitcher + useSessions (multi-lab)
+  shared.ts                # shared client types, pricing/cost helper
+
+lib/                       # framework-agnostic core
   agents/                  # agent profiles, base agent, registry
   llm/                     # provider abstraction: Anthropic | OpenAI | mock
   memory/                  # shared memory: Supabase | in-process
-  orchestration/crew.ts    # the multi-agent workflow runner
-supabase/schema.sql        # optional shared-memory table
+  orchestration/crew.ts    # the multi-agent workflow (streaming generator)
+
+supabase/schema.sql        # shared-memory table
 agents-py/                 # optional CrewAI-native mirror of the agents
+Dockerfile · vercel.json   # deploy targets
+.github/workflows/ci.yml   # typecheck + build on push/PR
 ```
+
+### Features
+
+- **Streaming runs** — agents light up live via SSE as each one works
+- **Sessions** — multiple named labs, each with isolated, persisted memory
+- **Memory Explorer** — search/filter the shared memory by kind, author, text
+- **Run metrics** — per-agent latency, token usage, and estimated cost
+- **Integration cockpit** — live provider/memory status + one-click diagnostics
 
 **Design principles:** modular (agents are declarative profiles; adding one is a
 single entry), provider-agnostic (swap Claude/OpenAI/mock via env), and
