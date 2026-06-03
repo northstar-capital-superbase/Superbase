@@ -129,6 +129,13 @@ export function Dashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: activeId, task }),
         });
+        // Rate-limited / bad input: show the reason, don't fall back (the
+        // fallback endpoint would just hit the same limit).
+        if (res.status === 429 || res.status === 400) {
+          const d = await res.json().catch(() => ({}));
+          pushAssistant(`⚠️ ${d.error ?? "Request rejected."}`);
+          return;
+        }
         if (!res.ok || !res.body) {
           await runFallback(task);
           return;
