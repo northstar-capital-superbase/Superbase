@@ -129,6 +129,13 @@ export function Dashboard() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ sessionId: activeId, task }),
         });
+        // Rate-limited / bad input: show the reason, don't fall back (the
+        // fallback endpoint would just hit the same limit).
+        if (res.status === 429 || res.status === 400) {
+          const d = await res.json().catch(() => ({}));
+          pushAssistant(`⚠️ ${d.error ?? "Request rejected."}`);
+          return;
+        }
         if (!res.ok || !res.body) {
           await runFallback(task);
           return;
@@ -207,6 +214,28 @@ export function Dashboard() {
     [remove],
   );
 
+  // Export this lab's full memory as a Markdown file (client-side download).
+  const exportLab = useCallback(async () => {
+    const res = await fetch(`/api/memory?sessionId=${activeId}&limit=500`);
+    if (!res.ok) return;
+    const entries: MemoryEntry[] = (await res.json()).entries ?? [];
+    const name = sessions.find((s) => s.id === activeId)?.name ?? activeId;
+    const header = `# Northstar Labs — ${name}\n\n_Lab \`${activeId}\` · exported ${new Date().toLocaleString()}_\n`;
+    const body = entries
+      .map(
+        (e) =>
+          `\n## ${e.author} · ${e.kind} · ${new Date(e.createdAt).toLocaleString()}\n\n${e.content}`,
+      )
+      .join("\n");
+    const blob = new Blob([header + body + "\n"], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `lab-${name.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeId, sessions]);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
       <Sidebar runtime={runtime} />
@@ -242,6 +271,7 @@ export function Dashboard() {
               entries={memory}
               onClear={clearMemory}
               onExplore={() => setExplorerOpen(true)}
+              onExport={exportLab}
             />
           </div>
         </div>
