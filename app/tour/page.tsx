@@ -137,7 +137,7 @@ export default function TourPage() {
       <div className="mt-10 flex items-center justify-between border-t border-white/5 pt-6">
         <p className="text-[12px] text-slate-500">Ready to try it?</p>
         <Link
-          href="/"
+          href="/labs"
           className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-base-900 transition hover:bg-accent-soft"
         >
           Open the live lab →
