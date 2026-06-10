@@ -18,17 +18,29 @@ interface CheckResult {
   reply?: string;
   live?: boolean;
   persisted?: boolean;
+  // trading-specific
+  enabled?: boolean;
+  toolCount?: number;
 }
 
 type Probe = CheckResult | "loading" | null;
 
+interface TradingStatus {
+  ok: boolean;
+  enabled: boolean;
+  endpoint: string;
+  error?: string;
+}
+
 // Live integration cockpit: shows the active LLM + memory backend and runs
 // real connectivity diagnostics (the same /api/health probes used in CI) so
-// the whole stack — Claude, Supabase — is verifiable from the dashboard.
+// the whole stack — Claude, Supabase, Robinhood — is verifiable from the dashboard.
 export function Integrations() {
   const [health, setHealth] = useState<Health | null>(null);
   const [llm, setLlm] = useState<Probe>(null);
   const [mem, setMem] = useState<Probe>(null);
+  const [trading, setTrading] = useState<Probe>(null);
+  const [tradingStatus, setTradingStatus] = useState<TradingStatus | null>(null);
 
   const loadHealth = useCallback(async () => {
     try {
@@ -39,16 +51,28 @@ export function Integrations() {
     }
   }, []);
 
+  const loadTradingStatus = useCallback(async () => {
+    try {
+      const res = await fetch("/api/trading");
+      if (res.ok) setTradingStatus(await res.json());
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
   useEffect(() => {
     loadHealth();
-  }, [loadHealth]);
+    loadTradingStatus();
+  }, [loadHealth, loadTradingStatus]);
 
   const runDiagnostics = useCallback(async () => {
     setLlm("loading");
     setMem("loading");
-    const [llmRes, memRes] = await Promise.allSettled([
+    setTrading("loading");
+    const [llmRes, memRes, tradingRes] = await Promise.allSettled([
       fetch("/api/health?ping=1").then((r) => r.json()),
       fetch("/api/health?memory=1").then((r) => r.json()),
+      fetch("/api/trading?probe=1").then((r) => r.json()),
     ]);
     setLlm(
       llmRes.status === "fulfilled"
@@ -60,11 +84,18 @@ export function Integrations() {
         ? memRes.value
         : { ok: false, error: "request failed" },
     );
+    setTrading(
+      tradingRes.status === "fulfilled"
+        ? tradingRes.value
+        : { ok: false, error: "request failed" },
+    );
     loadHealth();
-  }, [loadHealth]);
+    loadTradingStatus();
+  }, [loadHealth, loadTradingStatus]);
 
   const llmHealthy = health && !health.mock;
   const memHealthy = health?.memory === "supabase";
+  const tradingEnabled = tradingStatus?.enabled ?? false;
 
   return (
     <div className="panel p-4">
@@ -83,7 +114,7 @@ export function Integrations() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile
           label="LLM provider"
           value={health ? health.provider : "…"}
@@ -111,6 +142,23 @@ export function Integrations() {
           }
           probe={mem}
           okLabel={(r) => (r.persisted ? "persisted" : "ok")}
+        />
+        <Tile
+          label="Robinhood Trading"
+          value={tradingStatus ? (tradingEnabled ? "connected" : "not configured") : "…"}
+          sub={tradingEnabled ? "agentic account" : undefined}
+          state={tradingStatus ? (tradingEnabled ? "ok" : "warn") : "idle"}
+          note={
+            tradingEnabled
+              ? "MCP token active"
+              : "set ROBINHOOD_MCP_TOKEN to enable"
+          }
+          probe={trading}
+          okLabel={(r) =>
+            typeof r.toolCount === "number"
+              ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""} available`
+              : "reachable"
+          }
         />
         <Tile
           label="GitHub"

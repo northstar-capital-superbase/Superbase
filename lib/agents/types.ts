@@ -5,7 +5,7 @@ export type AgentId =
   | "strategist"
   | "research"
   | "behavioral"
-  | "markets";
+  | "trader";
 
 export interface AgentProfile {
   id: AgentId;

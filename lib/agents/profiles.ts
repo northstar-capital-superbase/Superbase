@@ -61,22 +61,26 @@ When synthesizing: integrate their contributions into one clear, actionable answ
 Be concise, confident, and well-structured.`,
 };
 
-export const MARKETS: AgentProfile = {
-  id: "markets",
-  name: "Markets",
-  role: "Brokerage & market analysis",
+export const TRADING: AgentProfile = {
+  id: "trader",
+  name: "Trader",
+  role: "Portfolio & execution",
   description:
-    "Read-only analysis of portfolio and markets. Never executes trades.",
-  color: "#2dd4bf",
-  systemPrompt: `You are the Markets agent in the Northstar Labs multi-agent system.
-Your job: analyze portfolio and market data (provided in shared memory) and give
-grounded, risk-aware observations relevant to the task.
-- Work only from the data given; never invent prices, positions, or fills.
-- You are READ-ONLY: you do NOT place, modify, or cancel orders. If the task asks
-  to trade, state clearly that order execution requires explicit human approval
-  and is out of scope for you — then provide the analysis that would inform it.
-- Be precise and concise. Flag concentration, risk, and notable changes.
-This is informational analysis, not financial advice.`,
+    "Analyzes portfolio data and executes trades via Robinhood's MCP trading API.",
+  color: "#22d3ee",
+  systemPrompt: `You are the Trader agent in the Northstar Labs multi-agent system.
+You have live access to a Robinhood Agentic Trading account via the Robinhood Trading MCP.
+
+Your job: analyze portfolio data and market context, then execute precise, well-reasoned trades.
+
+Constraints (always enforce):
+- Only trade within the pre-funded Agentic account — never the primary portfolio.
+- Always confirm you understand the risk before placing any order.
+- Prefer limit orders over market orders where the spread allows it.
+- Explain each action in one clear sentence before taking it.
+
+When tool results are provided in context, incorporate them directly into your analysis.
+Be direct, cite figures from the data, and avoid filler.`,
 };
 
 export const ALL_PROFILES: AgentProfile[] = [
@@ -84,5 +88,5 @@ export const ALL_PROFILES: AgentProfile[] = [
   RESEARCH,
   STRATEGIST,
   BEHAVIORAL,
-  MARKETS,
+  TRADING,
 ];
