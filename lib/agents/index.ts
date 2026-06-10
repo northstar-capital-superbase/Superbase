@@ -30,14 +30,18 @@ export function getAgent(id: AgentId): Agent | TradingAgent {
   return registry[id];
 }
 
-// Default specialists the orchestrator delegates to. "trader" is intentionally
-// excluded so existing crews and tests are unaffected; callers opt in by
-// passing specialists: ["research", "strategist", "behavioral", "trader"].
+// Default specialists without the Trader — prefer resolveSpecialists() at runtime.
 export const SPECIALIST_ORDER: AgentId[] = [
   "research",
   "strategist",
   "behavioral",
 ];
+
+export {
+  BASE_SPECIALISTS,
+  defaultSpecialists,
+  resolveSpecialists,
+} from "./specialists";
 
 export function listProfiles(): AgentProfile[] {
   return ALL_PROFILES;

@@ -20,8 +20,10 @@ modern dashboard.
 ```bash
 npm install
 cp .env.example .env.local   # optional — leave empty for mock mode
-npm run dev                  # http://localhost:3000
+npm run dev                  # http://localhost:3000/labs
 ```
+
+Open **`/labs`** for the multi-agent dashboard (marketing showcase lives at `/`).
 
 That's it. Type a task in the Lab Console and watch the crew collaborate.
 
@@ -33,6 +35,7 @@ That's it. Type a task in the Lab Console and watch the crew collaborate.
 | **Research**     | Facts & context          | Surfaces facts, constraints, prior art, and unknowns      |
 | **Strategist**   | Planning & sequencing    | Turns research into a concrete, sequenced plan            |
 | **Behavioral**   | Risk & human factors     | Pressure-tests for failure modes, incentives, biases      |
+| **Trader**       | Portfolio & execution    | Robinhood Agentic MCP — analysis and (when enabled) orders |
 
 ### Workflow (the first working multi-agent loop)
 
@@ -43,7 +46,7 @@ user task
 Orchestrator ── drafts a delegation plan ──▶ shared memory
    │
    ▼ (sequential, each reads prior outputs from shared memory)
-Research ──▶ Strategist ──▶ Behavioral ──▶ shared memory
+Research ──▶ Strategist ──▶ Behavioral ──▶ [Trader if MCP connected] ──▶ shared memory
    │
    ▼
 Orchestrator ── synthesizes everything ──▶ final answer + agent trace
@@ -107,6 +110,21 @@ All optional — see `.env.example`. The lab auto-detects:
 - **Shared memory:** Supabase if `SUPABASE_URL` + a key
   (`SUPABASE_SERVICE_ROLE_KEY`, preferred) are set — apply `supabase/schema.sql`
   first — otherwise in-process memory. Verify with `/api/health?memory=1`.
+- **Robinhood Agentic Trading:** set `ROBINHOOD_MCP_TOKEN` (OAuth bearer from the
+  Robinhood MCP connect flow). The **Trader** joins every crew run automatically.
+  Verify with `GET /api/trading?probe=1`. Full setup: [`docs/TRADING.md`](docs/TRADING.md).
+
+## Robinhood Agentic — go live
+
+1. Connect via Robinhood's MCP URL (`https://agent.robinhood.com/mcp/trading`) in
+   Cursor/Claude and fund your **Agentic account** (isolated from primary portfolio).
+2. Copy the bearer token into `ROBINHOOD_MCP_TOKEN` locally (`.env.local`) and on
+   your deploy host (e.g. Vercel → Project → Settings → Environment Variables).
+3. Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) — the Trader's tool loop needs a
+   live model; mock mode cannot drive MCP tools.
+4. Start with `TRADING_MODE=advisory`, probe with **Run diagnostics** on `/labs`,
+   then move to `auto` when tool names and caps look right.
+5. Open `/labs`, run a portfolio task, and confirm the Trader appears in the trace.
 
 ## Tech stack
 

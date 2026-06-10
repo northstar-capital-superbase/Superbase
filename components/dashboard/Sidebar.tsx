@@ -1,9 +1,17 @@
 "use client";
 
-import type { RuntimeInfo } from "@/components/shared";
+import type { RuntimeInfo, TradingInfo } from "@/components/shared";
 
 // Left rail: brand, runtime status, and a quick legend of the lab's pipeline.
-export function Sidebar({ runtime }: { runtime: RuntimeInfo | null }) {
+export function Sidebar({
+  runtime,
+  trading,
+}: {
+  runtime: RuntimeInfo | null;
+  trading: TradingInfo | null;
+}) {
+  const traderLive = trading?.traderInCrew ?? false;
+
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col gap-6 border-r border-white/5 bg-base-850/60 p-5">
       <div className="flex items-center gap-3">
@@ -33,6 +41,11 @@ export function Sidebar({ runtime }: { runtime: RuntimeInfo | null }) {
           <li className="flex items-center gap-2">
             <Dot color="#fbbf24" /> Behavioral checks
           </li>
+          {traderLive && (
+            <li className="flex items-center gap-2">
+              <Dot color="#22d3ee" /> Trader executes (Robinhood MCP)
+            </li>
+          )}
           <li className="flex items-center gap-2">
             <Dot color="#6d8bff" /> Orchestrator synthesizes
           </li>
@@ -48,11 +61,23 @@ export function Sidebar({ runtime }: { runtime: RuntimeInfo | null }) {
             label="Memory"
             value={runtime?.memory === "supabase" ? "Supabase" : "In-memory"}
           />
+          <Row
+            label="Robinhood MCP"
+            value={
+              trading
+                ? trading.enabled
+                  ? `live · ${trading.mode}`
+                  : "advisory (no token)"
+                : "…"
+            }
+          />
         </div>
         <p className="px-1 text-[11px] leading-relaxed text-slate-600">
           {runtime?.provider === "mock"
-            ? "Mock mode — add an API key in .env.local for live models."
-            : "Live model connected."}
+            ? "Mock mode — add ANTHROPIC_API_KEY for live models."
+            : traderLive
+              ? `Trader joins every crew run · cap $${trading?.maxOrderUsd} / order`
+              : "Live model connected."}
         </p>
         <a
           href="/tour"

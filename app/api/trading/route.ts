@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getMcpClient, mcpEnabled, evaluateToolCall } from "@/lib/mcp";
+import { getMcpClient, mcpEnabled, evaluateToolCall, maxOrderUsd, maxOrdersPerRun, tradingMode } from "@/lib/mcp";
 import { clientKey, rateLimit } from "@/lib/guardrails";
 
 export const runtime = "nodejs";
@@ -17,7 +17,13 @@ export async function GET(req: Request) {
   const probe = searchParams.get("probe") === "1";
 
   const enabled = mcpEnabled();
-  const base = { enabled, endpoint: "https://agent.robinhood.com/mcp/trading" };
+  const base = {
+    enabled,
+    endpoint: "https://agent.robinhood.com/mcp/trading",
+    mode: tradingMode(),
+    maxOrderUsd: maxOrderUsd(),
+    maxOrdersPerRun: maxOrdersPerRun(),
+  };
 
   if (!probe) {
     return NextResponse.json({ ok: true, ...base });

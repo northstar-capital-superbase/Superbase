@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { Integrations } from "./Integrations";
@@ -14,15 +14,10 @@ import {
   type CrewEvent,
   type CrewRun,
   type MemoryEntry,
+  pipelineAgentIds,
   type RuntimeInfo,
+  type TradingInfo,
 } from "@/components/shared";
-
-const SPECIALIST_FLOW: AgentProfile["id"][] = [
-  "orchestrator",
-  "research",
-  "strategist",
-  "behavioral",
-];
 
 // Rebuild a chat transcript from persisted memory: user messages become user
 // turns, the orchestrator's synthesis (its agent_output) becomes the assistant
@@ -46,6 +41,7 @@ export function Dashboard() {
   const { sessions, activeId, create, remove, setActive } = useSessions();
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
+  const [trading, setTrading] = useState<TradingInfo | null>(null);
   const [turns, setTurns] = useState<ChatTurn[]>([]);
   const [memory, setMemory] = useState<MemoryEntry[]>([]);
   const [statuses, setStatuses] = useState<Record<string, AgentStatus>>({});
@@ -57,6 +53,11 @@ export function Dashboard() {
     if (res.ok) setMemory((await res.json()).entries ?? []);
   }, [activeId]);
 
+  const pipelineFlow = useMemo(
+    () => pipelineAgentIds(trading?.traderInCrew ?? false),
+    [trading?.traderInCrew],
+  );
+
   // Agent roster + runtime: load once.
   useEffect(() => {
     fetch("/api/agents")
@@ -64,6 +65,7 @@ export function Dashboard() {
       .then((d) => {
         setAgents(d.agents ?? []);
         setRuntime(d.runtime ?? null);
+        setTrading(d.trading ?? null);
       })
       .catch(() => {});
   }, []);
@@ -105,11 +107,11 @@ export function Dashboard() {
         body: JSON.stringify({ sessionId: activeId, task }),
       });
       const data = (await res.json()) as CrewRun & { error?: string };
-      setStatuses(Object.fromEntries(SPECIALIST_FLOW.map((id) => [id, "done"])));
+      setStatuses(Object.fromEntries(pipelineFlow.map((id) => [id, "done"])));
       if (!res.ok || data.error) pushAssistant(`⚠️ ${data.error ?? "Run failed."}`);
       else pushAssistant(data.synthesis.output, data);
     },
-    [pushAssistant, activeId],
+    [pushAssistant, activeId, pipelineFlow],
   );
 
   // Stream a turn through the pipeline, driving real agent statuses from
@@ -238,7 +240,7 @@ export function Dashboard() {
 
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar runtime={runtime} />
+      <Sidebar runtime={runtime} trading={trading} />
 
       <main className="flex min-w-0 flex-1 flex-col gap-4 p-4">
         <header className="flex items-end justify-between gap-3">
@@ -265,7 +267,12 @@ export function Dashboard() {
         <AgentRoster agents={agents} statuses={statuses} />
 
         <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-          <Chat turns={turns} busy={busy} onSend={send} />
+          <Chat
+            turns={turns}
+            busy={busy}
+            onSend={send}
+            tradingEnabled={trading?.traderInCrew ?? false}
+          />
           <div className="hidden min-h-0 lg:block">
             <MemoryPanel
               entries={memory}

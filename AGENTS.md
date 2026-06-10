@@ -6,7 +6,7 @@ Guidance for AI agents working in this repository.
 
 ### Product
 
-Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The main dev surface is the dashboard at `http://localhost:3000`. No Docker, Supabase, or API keys are required for local development — mock LLM and in-memory shared memory are the defaults.
+Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The multi-agent lab dashboard is at **`http://localhost:3000/labs`** (marketing showcase at `/`). No Docker, Supabase, or API keys are required for local development — mock LLM and in-memory shared memory are the defaults.
 
 ### Standard commands
 
@@ -27,8 +27,10 @@ CI runs: `npm ci` → typecheck → lint → test → build (`.github/workflows/
 - Copy `.env.example` → `.env.local` if missing. All vars are optional.
 - Without keys: `LLM_PROVIDER=mock`, memory backend is in-process.
 - Optional: `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` for live models; `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` after applying `supabase/schema.sql`.
+- **Robinhood Agentic:** `ROBINHOOD_MCP_TOKEN` + `TRADING_MODE` / caps — see `docs/TRADING.md`. When the token is set, the Trader auto-joins crew runs.
 
 Verify runtime: `curl http://localhost:3000/api/health` → `{"ok":true,"provider":"mock",...}`.
+Verify Robinhood MCP: `curl http://localhost:3000/api/trading?probe=1` (requires token).
 
 ### Running the dev server
 

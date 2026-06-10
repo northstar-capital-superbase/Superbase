@@ -49,3 +49,18 @@ trace and Memory Explorer.
 
 > Real money: start in `advisory`, confirm the live `tools/list` names, set the
 > caps you're comfortable with, then move to `auto`.
+
+## Go live checklist
+
+1. **Fund the Agentic account** in the Robinhood app (separate from primary portfolio).
+2. **Obtain MCP bearer token** via Cursor → Settings → Tools & MCPs → Connect →
+   `https://agent.robinhood.com/mcp/trading` (or Claude Code `claude mcp add …`).
+3. **Set env on the server** (never in the browser):
+   - `ROBINHOOD_MCP_TOKEN`
+   - `ANTHROPIC_API_KEY` (Trader tool loop needs a live LLM)
+   - `TRADING_MODE=advisory` first, then `auto`
+   - `TRADING_MAX_ORDER_USD` / `TRADING_MAX_ORDERS_PER_RUN`
+4. **Probe:** `GET /api/trading?probe=1` → `{ ok: true, toolCount: N }`.
+5. **Dashboard:** open `/labs` → Integrations → **Run diagnostics** (Robinhood tile).
+6. **Run a task** in the Lab Console — Trader should appear as the 4th specialist when MCP is configured.
+7. **Deploy:** push `main` (or merge PR) — Vercel picks up env vars on redeploy.

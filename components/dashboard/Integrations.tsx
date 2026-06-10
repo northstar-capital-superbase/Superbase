@@ -29,6 +29,9 @@ interface TradingStatus {
   ok: boolean;
   enabled: boolean;
   endpoint: string;
+  mode?: string;
+  maxOrderUsd?: number;
+  maxOrdersPerRun?: number;
   error?: string;
 }
 
@@ -146,12 +149,16 @@ export function Integrations() {
         <Tile
           label="Robinhood Trading"
           value={tradingStatus ? (tradingEnabled ? "connected" : "not configured") : "…"}
-          sub={tradingEnabled ? "agentic account" : undefined}
+          sub={
+            tradingEnabled
+              ? `agentic · ${tradingStatus?.mode ?? "auto"}`
+              : undefined
+          }
           state={tradingStatus ? (tradingEnabled ? "ok" : "warn") : "idle"}
           note={
             tradingEnabled
-              ? "MCP token active"
-              : "set ROBINHOOD_MCP_TOKEN to enable"
+              ? `MCP live · $${tradingStatus?.maxOrderUsd ?? 100} cap / order`
+              : "set ROBINHOOD_MCP_TOKEN · see docs/TRADING.md"
           }
           probe={trading}
           okLabel={(r) =>
