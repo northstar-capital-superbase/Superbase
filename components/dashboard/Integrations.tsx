@@ -24,7 +24,9 @@ type Probe = CheckResult | "loading" | null;
 
 // Live integration cockpit: shows the active LLM + memory backend and runs
 // real connectivity diagnostics (the same /api/health probes used in CI) so
-// the whole stack — Claude, Supabase — is verifiable from the dashboard.
+// the whole stack — Claude, Supabase, GitHub, Robinhood — is visible from the
+// dashboard. (MCP integrations like Robinhood connect at the agent layer via
+// OAuth, so they show as configured rather than server-probed here.)
 export function Integrations() {
   const [health, setHealth] = useState<Health | null>(null);
   const [llm, setLlm] = useState<Probe>(null);
@@ -83,7 +85,7 @@ export function Integrations() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile
           label="LLM provider"
           value={health ? health.provider : "…"}
@@ -118,6 +120,15 @@ export function Integrations() {
           sub="northstar-capital-superbase/superbase"
           state="ok"
           note="commits pushed to branch"
+          probe={null}
+          okLabel={() => "ok"}
+        />
+        <Tile
+          label="Robinhood"
+          value="agentic trading"
+          sub="agent.robinhood.com/mcp/trading"
+          state="ok"
+          note="official MCP · OAuth (dedicated account)"
           probe={null}
           okLabel={() => "ok"}
         />

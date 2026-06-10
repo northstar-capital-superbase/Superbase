@@ -34,7 +34,13 @@ export class MockProvider implements LLMProvider {
   }
 }
 
-type Role = "orchestrator" | "strategist" | "research" | "behavioral" | "generic";
+type Role =
+  | "orchestrator"
+  | "strategist"
+  | "research"
+  | "behavioral"
+  | "markets"
+  | "generic";
 
 function detectRole(system: string): Role {
   const s = system.toLowerCase();
@@ -42,6 +48,7 @@ function detectRole(system: string): Role {
   if (s.includes("strategist")) return "strategist";
   if (s.includes("research")) return "research";
   if (s.includes("behavioral")) return "behavioral";
+  if (s.includes("markets")) return "markets";
   return "generic";
 }
 
@@ -87,6 +94,13 @@ function render(role: Role, task: string): string {
         "- Likely failure mode: over-scoping before the basics are stable.",
         "- Incentive check: optimize for momentum and visible progress.",
         "- Watch-out: silent assumptions — make them explicit early.",
+      ].join("\n");
+    case "markets":
+      return [
+        `Markets read on "${t}":`,
+        "- Data source: Robinhood MCP (mock — connect the live MCP for real quotes/positions).",
+        "- Position sizing: keep any single-name exposure within the lab's risk budget.",
+        "- No order placed: analysis only; execution requires explicit confirmation.",
       ].join("\n");
     default:
       return `Acknowledged: "${t}". (mock response — set an API key for live model output.)`;

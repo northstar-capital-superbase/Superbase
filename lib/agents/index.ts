@@ -2,6 +2,7 @@ import { Agent } from "./base-agent";
 import {
   ALL_PROFILES,
   BEHAVIORAL,
+  MARKETS,
   ORCHESTRATOR,
   RESEARCH,
   STRATEGIST,
@@ -17,6 +18,7 @@ const registry: Record<AgentId, Agent> = {
   research: new Agent(RESEARCH),
   strategist: new Agent(STRATEGIST),
   behavioral: new Agent(BEHAVIORAL),
+  markets: new Agent(MARKETS),
 };
 
 export function getAgent(id: AgentId): Agent {

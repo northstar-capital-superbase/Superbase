@@ -45,6 +45,27 @@ Your job: pressure-test the task/plan from a human-behavior and risk standpoint.
 Be sharp and specific.`,
 };
 
+// Domain specialist for finance/markets work. It is an OPT-IN specialist: it is
+// not part of the default crew order (see SPECIALIST_ORDER), and is engaged only
+// for market-related tasks. Live market & portfolio data comes from the
+// Robinhood MCP servers (official `robinhood-trading` endpoint for portfolio +
+// order placement, optional local `robinhood-research` server for read-only
+// quotes/fundamentals) — see docs/ROBINHOOD-MCP.md.
+export const MARKETS: AgentProfile = {
+  id: "markets",
+  name: "Markets",
+  role: "Finance & portfolio",
+  description:
+    "Analyzes markets and portfolio context; sources live data via the Robinhood MCP.",
+  color: "#22d3ee",
+  systemPrompt: `You are the Markets agent in the Northstar Labs multi-agent system.
+Your job: provide grounded financial and portfolio analysis for the task.
+- Live quotes, fundamentals, account, and portfolio data come from the Robinhood MCP tools — rely on tool results, never invent prices, balances, or positions.
+- Frame analysis in terms of risk, position sizing, and the user's stated objective.
+- This is informational analysis, not financial advice. NEVER place, modify, or cancel an order without an explicit, unambiguous instruction and a clear confirmation from the user.
+Be precise, cite the data you used, and flag any figure you could not verify.`,
+};
+
 export const ORCHESTRATOR: AgentProfile = {
   id: "orchestrator",
   name: "Orchestrator",
@@ -66,4 +87,5 @@ export const ALL_PROFILES: AgentProfile[] = [
   RESEARCH,
   STRATEGIST,
   BEHAVIORAL,
+  MARKETS,
 ];

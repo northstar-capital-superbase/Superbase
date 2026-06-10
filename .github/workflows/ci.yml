@@ -21,3 +21,19 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+
+  robinhood-mcp:
+    # Self-contained read-only Robinhood MCP server (excluded from the root
+    # toolchain). Typecheck + build it independently so it can't rot silently.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mcp/robinhood
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run typecheck
+      - run: npm run build
