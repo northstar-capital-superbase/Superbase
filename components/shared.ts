@@ -14,6 +14,23 @@ export interface RuntimeInfo {
   memory: "supabase" | "in-memory";
 }
 
+export interface TradingInfo {
+  enabled: boolean;
+  endpoint: string;
+  mode: "advisory" | "confirm" | "auto";
+  maxOrderUsd: number;
+  maxOrdersPerRun: number;
+  traderInCrew: boolean;
+}
+
+/** Agent ids lit up during a crew run (orchestrator leads the pipeline). */
+export function pipelineAgentIds(tradingEnabled: boolean): AgentProfile["id"][] {
+  const mids: AgentProfile["id"][] = tradingEnabled
+    ? ["research", "strategist", "behavioral", "trader"]
+    : ["research", "strategist", "behavioral"];
+  return ["orchestrator", ...mids];
+}
+
 export interface AgentResult {
   agent: AgentProfile["id"];
   output: string;

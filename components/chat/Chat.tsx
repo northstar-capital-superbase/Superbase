@@ -14,10 +14,12 @@ export function Chat({
   turns,
   busy,
   onSend,
+  tradingEnabled = false,
 }: {
   turns: ChatTurn[];
   busy: boolean;
   onSend: (text: string) => void;
+  tradingEnabled?: boolean;
 }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -47,7 +49,9 @@ export function Chat({
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
-        {turns.length === 0 && <EmptyState onPick={onSend} />}
+        {turns.length === 0 && (
+          <EmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
+        )}
         {turns.map((t) =>
           t.role === "user" ? (
             <UserBubble key={t.id} text={t.content} />
@@ -203,7 +207,20 @@ const SAMPLES = [
   "Plan a 3-month roadmap for an open-source dev tool",
 ];
 
-function EmptyState({ onPick }: { onPick: (t: string) => void }) {
+const TRADING_SAMPLES = [
+  "What is my Agentic account balance and top holdings?",
+  "Should I add $50 to VOO this week given my buffer target?",
+  "Summarize portfolio drift vs my 55/25/20 allocation",
+];
+
+function EmptyState({
+  onPick,
+  tradingEnabled,
+}: {
+  onPick: (t: string) => void;
+  tradingEnabled: boolean;
+}) {
+  const samples = tradingEnabled ? TRADING_SAMPLES : SAMPLES;
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow">
@@ -219,12 +236,13 @@ function EmptyState({ onPick }: { onPick: (t: string) => void }) {
           Northstar Labs is ready
         </div>
         <p className="mt-1 max-w-sm text-[12px] text-slate-500">
-          Hand the orchestrator a task. It plans, delegates to the research,
-          strategist, and behavioral agents, then synthesizes their work.
+          {tradingEnabled
+            ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
+            : "Hand the orchestrator a task. It plans, delegates to the research, strategist, and behavioral agents, then synthesizes their work."}
         </p>
       </div>
       <div className="flex max-w-md flex-wrap justify-center gap-2">
-        {SAMPLES.map((s) => (
+        {samples.map((s) => (
           <button
             key={s}
             onClick={() => onPick(s)}

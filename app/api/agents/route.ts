@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { listProfiles } from "@/lib/agents";
 import { getProvider } from "@/lib/llm";
 import { memoryBackend } from "@/lib/memory";
+import {
+  mcpEnabled,
+  maxOrderUsd,
+  maxOrdersPerRun,
+  tradingMode,
+} from "@/lib/mcp";
 
 export const runtime = "nodejs";
 // Reads runtime env (active provider/model), so it must not be statically
@@ -11,12 +17,21 @@ export const dynamic = "force-dynamic";
 // GET /api/agents — agent roster + active runtime config for the dashboard.
 export async function GET() {
   const provider = getProvider();
+  const tradingEnabled = mcpEnabled();
   return NextResponse.json({
     agents: listProfiles(),
     runtime: {
       provider: provider.name,
       model: provider.model,
       memory: memoryBackend(),
+    },
+    trading: {
+      enabled: tradingEnabled,
+      endpoint: "https://agent.robinhood.com/mcp/trading",
+      mode: tradingMode(),
+      maxOrderUsd: maxOrderUsd(),
+      maxOrdersPerRun: maxOrdersPerRun(),
+      traderInCrew: tradingEnabled,
     },
   });
 }

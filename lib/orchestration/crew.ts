@@ -1,4 +1,5 @@
-import { getAgent, SPECIALIST_ORDER, type AgentId } from "../agents";
+import { getAgent, type AgentId } from "../agents";
+import { resolveSpecialists } from "../agents/specialists";
 import type { AgentResult } from "../agents/types";
 import { getMemory, memoryBackend } from "../memory";
 import type { MemoryEntry } from "../memory/types";
@@ -39,7 +40,7 @@ export type CrewEvent =
 // emitted as a CrewEvent so the dashboard reflects real progress.
 export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
   const { sessionId, task } = opts;
-  const specialists = opts.specialists ?? SPECIALIST_ORDER;
+  const specialists = resolveSpecialists(opts.specialists);
   const memory = getMemory();
   const loadContext = (): Promise<MemoryEntry[]> =>
     memory.recent({ sessionId, limit: 24 });

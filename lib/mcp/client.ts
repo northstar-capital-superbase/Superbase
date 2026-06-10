@@ -27,7 +27,28 @@ export class RobinhoodMcpClient implements IMcpClient {
       clientInfo: { name: "northstar-labs", version: "0.1.0" },
       capabilities: { tools: {} },
     });
+    await this.notify("notifications/initialized");
     this._initialized = true;
+  }
+
+  // Fire-and-forget JSON-RPC notification (no id, no result expected).
+  private async notify(method: string): Promise<void> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+    try {
+      await fetch(this.url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json, text/event-stream",
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ jsonrpc: "2.0", method }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   // JSON-RPC 2.0 POST with Bearer auth and a hard timeout.
