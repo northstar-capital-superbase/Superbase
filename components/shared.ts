@@ -1,7 +1,7 @@
 // Client-side mirrors of the API response shapes.
 
 export interface AgentProfile {
-  id: "orchestrator" | "strategist" | "research" | "behavioral";
+  id: "orchestrator" | "strategist" | "research" | "behavioral" | "trader";
   name: string;
   role: string;
   description: string;
@@ -59,6 +59,7 @@ export const AGENT_META: Record<
   strategist: { label: "Strategist", color: "#c084fc" },
   research: { label: "Research", color: "#34d399" },
   behavioral: { label: "Behavioral", color: "#fbbf24" },
+  trader: { label: "Trader", color: "#22d3ee" },
 };
 
 // Approximate public pricing in USD per 1M tokens [input, output], matched by
