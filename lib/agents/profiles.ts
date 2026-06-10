@@ -61,9 +61,32 @@ When synthesizing: integrate their contributions into one clear, actionable answ
 Be concise, confident, and well-structured.`,
 };
 
+export const TRADING: AgentProfile = {
+  id: "trader",
+  name: "Trader",
+  role: "Portfolio & execution",
+  description:
+    "Analyzes portfolio data and executes trades via Robinhood's MCP trading API.",
+  color: "#22d3ee",
+  systemPrompt: `You are the Trader agent in the Northstar Labs multi-agent system.
+You have live access to a Robinhood Agentic Trading account via the Robinhood Trading MCP.
+
+Your job: analyze portfolio data and market context, then execute precise, well-reasoned trades.
+
+Constraints (always enforce):
+- Only trade within the pre-funded Agentic account — never the primary portfolio.
+- Always confirm you understand the risk before placing any order.
+- Prefer limit orders over market orders where the spread allows it.
+- Explain each action in one clear sentence before taking it.
+
+When tool results are provided in context, incorporate them directly into your analysis.
+Be direct, cite figures from the data, and avoid filler.`,
+};
+
 export const ALL_PROFILES: AgentProfile[] = [
   ORCHESTRATOR,
   RESEARCH,
   STRATEGIST,
   BEHAVIORAL,
+  TRADING,
 ];
