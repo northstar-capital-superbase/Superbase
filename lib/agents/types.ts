@@ -4,7 +4,8 @@ export type AgentId =
   | "orchestrator"
   | "strategist"
   | "research"
-  | "behavioral";
+  | "behavioral"
+  | "markets";
 
 export interface AgentProfile {
   id: AgentId;
