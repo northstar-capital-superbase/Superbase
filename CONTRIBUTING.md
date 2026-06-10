@@ -1,7 +1,7 @@
 # Contributing to Northstar Labs
 
 Thanks for your interest! This is a local-first multi-agent AI lab — see
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for how the pieces fit together.
+[`docs/NORTHSTAR.md`](docs/NORTHSTAR.md) — the master architecture — for how the pieces fit together.
 
 ## Setup
 
