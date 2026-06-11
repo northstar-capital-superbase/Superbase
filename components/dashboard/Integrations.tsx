@@ -96,6 +96,19 @@ export function Integrations() {
     loadTradingStatus();
   }, [loadHealth, loadTradingStatus]);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("rh_connected") !== "1") return;
+    params.delete("rh_connected");
+    const qs = params.toString();
+    window.history.replaceState(
+      {},
+      "",
+      `${window.location.pathname}${qs ? `?${qs}` : ""}`,
+    );
+    void runDiagnostics();
+  }, [runDiagnostics]);
+
   const llmHealthy = health && !health.mock;
   const memHealthy = health?.memory === "supabase";
   const tradingEnabled = tradingStatus?.enabled ?? false;
@@ -116,6 +129,25 @@ export function Integrations() {
           Run diagnostics
         </button>
       </div>
+
+      {!tradingEnabled && (
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[12px] text-amber-100/90">
+          <span>
+            Connect Robinhood Agentic on desktop — OAuth opens Robinhood, then
+            stores a local token for MCP.
+          </span>
+          <a
+            href="/api/trading/oauth/start"
+            className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-1 font-medium text-accent transition hover:bg-accent/20"
+          >
+            Connect Robinhood
+          </a>
+          <span className="text-slate-500">
+            or Cursor → Tools &amp; MCPs →{" "}
+            <code className="text-[11px]">agent.robinhood.com/mcp/trading</code>
+          </span>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile
@@ -158,7 +190,7 @@ export function Integrations() {
           note={
             tradingEnabled
               ? `MCP live · $${tradingStatus?.maxOrderUsd ?? 100} cap / order`
-              : "set ROBINHOOD_MCP_TOKEN · see docs/TRADING.md"
+              : "Connect Robinhood above or set ROBINHOOD_MCP_TOKEN"
           }
           probe={trading}
           okLabel={(r) =>

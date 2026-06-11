@@ -34,7 +34,8 @@ export async function GET(req: Request) {
       {
         ok: false,
         ...base,
-        error: "ROBINHOOD_MCP_TOKEN is not configured",
+        error:
+          "ROBINHOOD_MCP_TOKEN is not configured — connect via GET /api/trading/oauth/start",
       },
       { status: 503 },
     );
@@ -59,7 +60,10 @@ export async function POST(req: Request) {
 
   if (!mcpEnabled()) {
     return NextResponse.json(
-      { error: "ROBINHOOD_MCP_TOKEN is not configured" },
+      {
+        error:
+          "ROBINHOOD_MCP_TOKEN is not configured — connect via GET /api/trading/oauth/start",
+      },
       { status: 503 },
     );
   }

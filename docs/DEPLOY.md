@@ -12,8 +12,13 @@ A personal/internal deploy. Pick one path. Both need the same env vars.
 | `SUPABASE_SERVICE_ROLE_KEY` | for persistence | server-side only; apply `supabase/schema.sql` first |
 | `RATE_LIMIT_PER_MIN` | optional | default 20 |
 | `MAX_TASK_CHARS` | optional | default 4000 |
+| `ROBINHOOD_MCP_TOKEN` | for live trading | OAuth bearer from `/api/trading/oauth/start` or Cursor MCP connect |
+| `TRADING_MODE` | optional | `advisory` (read-only) · `confirm` · `auto` (default) |
+| `TRADING_MAX_ORDER_USD` | optional | default `100` |
+| `TRADING_MAX_ORDERS_PER_RUN` | optional | default `3` |
 
 > The app auto-detects: no keys → mock LLM + in-memory store, so it always boots.
+> Local dev can also read `.robinhood-mcp-token` after in-app OAuth (see `docs/TRADING.md`).
 
 ---
 

@@ -1,28 +1,40 @@
 import { RobinhoodMcpClient } from "./client";
 import type { IMcpClient } from "./types";
+import { getRobinhoodMcpToken } from "./token";
 
 export * from "./types";
 export * from "./trading-policy";
+export * from "./oauth";
+export { getRobinhoodMcpToken, saveRobinhoodMcpToken, robinhoodTokenFileName } from "./token";
 
-// Lazily-constructed singleton — avoids instantiating the client (and burning
-// a network request) when the token is absent (e.g. in mock/dev mode).
-let _client: IMcpClient | null = null;
+let _injected: IMcpClient | null = null;
+let _singleton: IMcpClient | null = null;
+let _singletonToken: string | null = null;
 
 export function getMcpClient(): IMcpClient | null {
-  // If a client was explicitly injected (e.g. in tests), return it regardless
-  // of whether the token env var is present.
-  if (_client) return _client;
-  const token = process.env.ROBINHOOD_MCP_TOKEN;
+  if (_injected) return _injected;
+
+  const token = getRobinhoodMcpToken();
   if (!token) return null;
-  _client = new RobinhoodMcpClient(token);
-  return _client;
+
+  if (_singleton && _singletonToken === token) return _singleton;
+
+  _singleton = new RobinhoodMcpClient(token);
+  _singletonToken = token;
+  return _singleton;
 }
 
 export function mcpEnabled(): boolean {
-  return Boolean(process.env.ROBINHOOD_MCP_TOKEN);
+  return Boolean(getRobinhoodMcpToken());
 }
 
-// Swap the singleton — useful for tests.
+// Swap the client — useful for tests.
 export function setMcpClient(client: IMcpClient | null): void {
-  _client = client;
+  _injected = client;
+}
+
+export function resetMcpClient(): void {
+  _injected = null;
+  _singleton = null;
+  _singletonToken = null;
 }
