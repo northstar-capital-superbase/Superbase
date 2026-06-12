@@ -1,7 +1,7 @@
 # Northstar — Project Review Pack (for GPT / human reviewers)
 
 > **Purpose:** One self-contained document to paste into ChatGPT (or attach with repo link) for architecture, UX, security, and go-live review.  
-> **Repo:** https://github.com/northstar-capital-superbase/Superbase  
+> **Repo:** [https://github.com/northstar-capital-superbase/Superbase](https://github.com/northstar-capital-superbase/Superbase)  
 > **Review branch:** `cursor/northstar-os-ui-redesign-5717` (PR #11) unless noted.
 
 ---
@@ -22,18 +22,20 @@
 
 ## 2. Information architecture
 
-| Route | Page | Primary component |
-|-------|------|-------------------|
-| `/` | Homepage showcase | `NorthstarShowcase` |
-| `/tour` | UI tour | `app/tour/page.tsx` |
-| `/dashboard` | Mission Control | `MissionControl` |
-| `/labs` | R&D + crew console | `LabsWorkspace` |
-| `/agents` | Agent directory | `AgentsDirectory` |
-| `/research` | Intelligence terminal | `ResearchTerminal` |
-| `/trading` | Trading console | `TradingConsole` |
-| `/memory` | Memory explorer | `MemoryWorkspace` |
-| `/integrations` | Diagnostics | `IntegrationsPage` |
-| `/settings` | Environment summary | `SettingsPanel` |
+
+| Route           | Page                  | Primary component   |
+| --------------- | --------------------- | ------------------- |
+| `/`             | Homepage showcase     | `NorthstarShowcase` |
+| `/tour`         | UI tour               | `app/tour/page.tsx` |
+| `/dashboard`    | Mission Control       | `MissionControl`    |
+| `/labs`         | R&D + crew console    | `LabsWorkspace`     |
+| `/agents`       | Agent directory       | `AgentsDirectory`   |
+| `/research`     | Intelligence terminal | `ResearchTerminal`  |
+| `/trading`      | Trading console       | `TradingConsole`    |
+| `/memory`       | Memory explorer       | `MemoryWorkspace`   |
+| `/integrations` | Diagnostics           | `IntegrationsPage`  |
+| `/settings`     | Environment summary   | `SettingsPanel`     |
+
 
 **Shell:** `components/os/AppShell.tsx` — desktop sidebar, mobile drawer, bottom nav, command palette.
 
@@ -46,11 +48,13 @@ components/*  ──fetch──▶  app/api/*  ──▶  lib/*
    (UI)                    (HTTP)         (engine)
 ```
 
-| Layer | Responsibility |
-|-------|----------------|
-| `lib/` | Agents, LLM, memory, MCP, orchestration — **no React** |
-| `app/api/` | Thin routes; secrets stay server-side |
-| `components/` | UI only; never imports `lib/` directly |
+
+| Layer         | Responsibility                                         |
+| ------------- | ------------------------------------------------------ |
+| `lib/`        | Agents, LLM, memory, MCP, orchestration — **no React** |
+| `app/api/`    | Thin routes; secrets stay server-side                  |
+| `components/` | UI only; never imports `lib/` directly                 |
+
 
 **Crew flow:** `Dashboard/LabsWorkspace` → `POST /api/chat/stream` → `streamCrew()` → agents write/read `sessionId` memory → SSE events update UI.
 
@@ -60,13 +64,15 @@ See `docs/ARCHITECTURE.md` for detail.
 
 ## 4. Agents
 
-| ID | Name | Role |
-|----|------|------|
-| `orchestrator` | Orchestrator | Plan + synthesize |
-| `research` | Research | Facts & context |
-| `strategist` | Strategist | Sequencing & trade-offs |
-| `behavioral` | Behavioral | Bias & risk framing |
-| `trader` | Trader | Robinhood MCP tool loop (optional) |
+
+| ID             | Name         | Role                               |
+| -------------- | ------------ | ---------------------------------- |
+| `orchestrator` | Orchestrator | Plan + synthesize                  |
+| `research`     | Research     | Facts & context                    |
+| `strategist`   | Strategist   | Sequencing & trade-offs            |
+| `behavioral`   | Behavioral   | Bias & risk framing                |
+| `trader`       | Trader       | Robinhood MCP tool loop (optional) |
+
 
 **Trader joins crew when:** `ROBINHOOD_MCP_TOKEN` is set (`lib/agents/specialists.ts`).
 
@@ -76,18 +82,20 @@ See `docs/ARCHITECTURE.md` for detail.
 
 ## 5. API reference
 
-| Endpoint | Notes |
-|----------|-------|
-| `GET /api/health` | `{ provider, model, memory, mock }` |
-| `GET /api/health?ping=1` | Live LLM probe |
-| `GET /api/health?memory=1` | Memory round-trip |
-| `GET /api/agents` | Roster + runtime + trading |
-| `POST /api/chat` | Sync crew run |
-| `POST /api/chat/stream` | SSE crew events |
-| `GET/DELETE /api/memory?sessionId=` | Read / clear memory |
-| `GET /api/trading` | MCP status |
-| `GET /api/trading?probe=1` | MCP handshake + tool count |
-| `POST /api/trading?action=tools\|call` | MCP proxy |
+
+| Endpoint                              | Notes                               |
+| ------------------------------------- | ----------------------------------- |
+| `GET /api/health`                     | `{ provider, model, memory, mock }` |
+| `GET /api/health?ping=1`              | Live LLM probe                      |
+| `GET /api/health?memory=1`            | Memory round-trip                   |
+| `GET /api/agents`                     | Roster + runtime + trading          |
+| `POST /api/chat`                      | Sync crew run                       |
+| `POST /api/chat/stream`               | SSE crew events                     |
+| `GET/DELETE /api/memory?sessionId=`   | Read / clear memory                 |
+| `GET /api/trading`                    | MCP status                          |
+| `GET /api/trading?probe=1`            | MCP handshake + tool count          |
+| `POST /api/trading?action=tools|call` | MCP proxy                           |
+
 
 **OAuth (PR #10, separate branch):** `/api/trading/oauth/start`, `/api/trading/oauth/callback`.
 
@@ -97,22 +105,25 @@ See `docs/ARCHITECTURE.md` for detail.
 
 Copy `.env.example` → `.env.local`. All optional for demo mode.
 
-| Variable | Effect |
-|----------|--------|
-| `ANTHROPIC_API_KEY` | Live Claude (preferred if set) |
-| `OPENAI_API_KEY` | Live OpenAI |
-| `LLM_PROVIDER` | Force `anthropic` \| `openai` \| `mock` |
-| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` | Persistent memory |
-| `ROBINHOOD_MCP_TOKEN` | Trader + Robinhood MCP |
-| `TRADING_MODE` | `advisory` (read-only orders) default recommended |
-| `TRADING_MAX_ORDER_USD` / `TRADING_MAX_ORDERS_PER_RUN` | Hard caps |
-| `RATE_LIMIT_PER_MIN` / `MAX_TASK_CHARS` | Abuse guardrails |
+
+| Variable                                               | Effect                                            |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| `ANTHROPIC_API_KEY`                                    | Live Claude (preferred if set)                    |
+| `OPENAI_API_KEY`                                       | Live OpenAI                                       |
+| `LLM_PROVIDER`                                         | Force `anthropic` | `openai` | `mock`             |
+| `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`           | Persistent memory                                 |
+| `ROBINHOOD_MCP_TOKEN`                                  | Trader + Robinhood MCP                            |
+| `TRADING_MODE`                                         | `advisory` (read-only orders) default recommended |
+| `TRADING_MAX_ORDER_USD` / `TRADING_MAX_ORDERS_PER_RUN` | Hard caps                                         |
+| `RATE_LIMIT_PER_MIN` / `MAX_TASK_CHARS`                | Abuse guardrails                                  |
+
 
 ---
 
 ## 7. Complete source file index
 
 ### App routes
+
 - `app/layout.tsx` — root layout, viewport
 - `app/page.tsx` — homepage
 - `app/(os)/layout.tsx` — AppShell
@@ -133,6 +144,7 @@ Copy `.env.example` → `.env.local`. All optional for demo mode.
 - `app/api/trading/route.ts`
 
 ### Design system & platform UI
+
 - `components/os/*` — AppShell, nav, MetricCard, AgentCard, CommandPalette, etc.
 - `components/mission/MissionControl.tsx`
 - `components/labs/LabsWorkspace.tsx`
@@ -147,6 +159,7 @@ Copy `.env.example` → `.env.local`. All optional for demo mode.
 - `components/showcase/*` — marketing identity
 
 ### Core engine
+
 - `lib/orchestration/crew.ts`
 - `lib/agents/*` — profiles, base-agent, trading-agent, specialists
 - `lib/llm/*` — anthropic, openai, mock
@@ -155,9 +168,11 @@ Copy `.env.example` → `.env.local`. All optional for demo mode.
 - `lib/guardrails.ts`
 
 ### Tests (43)
+
 - `tests/crew.test.ts`, `memory.test.ts`, `trading.test.ts`, `trading-policy.test.ts`, `specialists.test.ts`, `guardrails.test.ts`, `pricing.test.ts`
 
 ### Docs & ops
+
 - `README.md`, `AGENTS.md`, `CONTRIBUTING.md`
 - `docs/ARCHITECTURE.md`, `DEPLOY.md`, `TRADING.md`, `UI-TOUR.md`
 - `supabase/schema.sql`, `Dockerfile`, `vercel.json`, `.github/workflows/ci.yml`
@@ -166,11 +181,13 @@ Copy `.env.example` → `.env.local`. All optional for demo mode.
 
 ## 8. Open PRs / branches (review scope)
 
-| PR | Branch | Scope |
-|----|--------|-------|
-| #11 | `cursor/northstar-os-ui-redesign-5717` | OS shell, design system, mobile-first, new routes |
-| #10 | `cursor/robinhood-mcp-connection-5717` | OAuth connect, MCP session headers, `.robinhood-mcp-token` |
-| `main` | — | Through #8 Robinhood go-live wiring |
+
+| PR     | Branch                                 | Scope                                                      |
+| ------ | -------------------------------------- | ---------------------------------------------------------- |
+| #11    | `cursor/northstar-os-ui-redesign-5717` | OS shell, design system, mobile-first, new routes          |
+| #10    | `cursor/robinhood-mcp-connection-5717` | OAuth connect, MCP session headers, `.robinhood-mcp-token` |
+| `main` | —                                      | Through #8 Robinhood go-live wiring                        |
+
 
 ---
 
