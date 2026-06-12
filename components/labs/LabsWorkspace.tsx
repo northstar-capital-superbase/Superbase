@@ -1,0 +1,317 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AgentRoster, type AgentStatus } from "@/components/dashboard/AgentRoster";
+import { Chat, type ChatTurn } from "@/components/chat/Chat";
+import { MemoryPanel } from "@/components/memory/MemoryPanel";
+import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
+import { SessionSwitcher } from "@/components/session/SessionSwitcher";
+import { useSessions } from "@/components/session/useSessions";
+import { PageHeader } from "@/components/os/PageHeader";
+import { StatusBadge } from "@/components/os/StatusBadge";
+import {
+  type AgentProfile,
+  type CrewEvent,
+  type CrewRun,
+  type MemoryEntry,
+  pipelineAgentIds,
+  type RuntimeInfo,
+  type TradingInfo,
+} from "@/components/shared";
+
+function reconstructTurns(entries: MemoryEntry[]): ChatTurn[] {
+  const turns: ChatTurn[] = [];
+  for (const e of entries) {
+    if (e.author === "user" && e.kind === "message") {
+      turns.push({ id: e.id, role: "user", content: e.content });
+    } else if (e.author === "orchestrator" && e.kind === "agent_output") {
+      turns.push({ id: e.id, role: "assistant", content: e.content });
+    }
+  }
+  return turns;
+}
+
+const LAB_TOOLS = [
+  {
+    title: "Workflow Builder",
+    body: "Compose multi-agent pipelines visually.",
+    tag: "Coming soon",
+  },
+  {
+    title: "Prompt Studio",
+    body: "Save, version, and test crew prompts.",
+    tag: "Beta",
+  },
+  {
+    title: "Experiment Tracker",
+    body: "Log runs, models, and outcomes.",
+    tag: "Active",
+  },
+  {
+    title: "Model Bench",
+    body: "Compare outputs side-by-side.",
+    tag: "Planned",
+  },
+];
+
+export function LabsWorkspace() {
+  const { sessions, activeId, create, remove, setActive } = useSessions();
+  const [agents, setAgents] = useState<AgentProfile[]>([]);
+  const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
+  const [trading, setTrading] = useState<TradingInfo | null>(null);
+  const [turns, setTurns] = useState<ChatTurn[]>([]);
+  const [memory, setMemory] = useState<MemoryEntry[]>([]);
+  const [statuses, setStatuses] = useState<Record<string, AgentStatus>>({});
+  const [busy, setBusy] = useState(false);
+  const [explorerOpen, setExplorerOpen] = useState(false);
+
+  const refreshMemory = useCallback(async () => {
+    const res = await fetch(`/api/memory?sessionId=${activeId}`);
+    if (res.ok) setMemory((await res.json()).entries ?? []);
+  }, [activeId]);
+
+  const pipelineFlow = useMemo(
+    () => pipelineAgentIds(trading?.traderInCrew ?? false),
+    [trading?.traderInCrew],
+  );
+
+  useEffect(() => {
+    fetch("/api/agents")
+      .then((r) => r.json())
+      .then((d) => {
+        setAgents(d.agents ?? []);
+        setRuntime(d.runtime ?? null);
+        setTrading(d.trading ?? null);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    setStatuses({});
+    let cancelled = false;
+    (async () => {
+      const res = await fetch(`/api/memory?sessionId=${activeId}&limit=300`);
+      const entries: MemoryEntry[] = res.ok
+        ? ((await res.json()).entries ?? [])
+        : [];
+      if (cancelled) return;
+      setMemory(entries.slice(-50));
+      setTurns(reconstructTurns(entries));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeId]);
+
+  const pushAssistant = useCallback(
+    (content: string, run?: CrewRun) =>
+      setTurns((t) => [
+        ...t,
+        { id: crypto.randomUUID(), role: "assistant", content, run },
+      ]),
+    [],
+  );
+
+  const runFallback = useCallback(
+    async (task: string) => {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: activeId, task }),
+      });
+      const data = (await res.json()) as CrewRun & { error?: string };
+      setStatuses(Object.fromEntries(pipelineFlow.map((id) => [id, "done"])));
+      if (!res.ok || data.error) pushAssistant(`⚠️ ${data.error ?? "Run failed."}`);
+      else pushAssistant(data.synthesis.output, data);
+    },
+    [pushAssistant, activeId, pipelineFlow],
+  );
+
+  const send = useCallback(
+    async (task: string) => {
+      setBusy(true);
+      setTurns((t) => [
+        ...t,
+        { id: crypto.randomUUID(), role: "user", content: task },
+      ]);
+      setStatuses({ orchestrator: "thinking" });
+
+      try {
+        const res = await fetch("/api/chat/stream", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ sessionId: activeId, task }),
+        });
+        if (res.status === 429 || res.status === 400) {
+          const d = await res.json().catch(() => ({}));
+          pushAssistant(`⚠️ ${d.error ?? "Request rejected."}`);
+          return;
+        }
+        if (!res.ok || !res.body) {
+          await runFallback(task);
+          return;
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let finished = false;
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+          const chunks = buffer.split("\n\n");
+          buffer = chunks.pop() ?? "";
+          for (const chunk of chunks) {
+            const dataLine = chunk.split("\n").find((l) => l.startsWith("data:"));
+            if (!dataLine) continue;
+            const payload = dataLine.slice(5).trim();
+            if (!payload) continue;
+            const ev = JSON.parse(payload) as CrewEvent;
+
+            switch (ev.type) {
+              case "agent_start":
+                setStatuses((s) => ({ ...s, [ev.agent]: "thinking" }));
+                break;
+              case "plan":
+                setStatuses((s) => ({ ...s, orchestrator: "done" }));
+                break;
+              case "agent_result":
+                setStatuses((s) => ({ ...s, [ev.result.agent]: "done" }));
+                refreshMemory();
+                break;
+              case "synthesis_start":
+                setStatuses((s) => ({ ...s, orchestrator: "thinking" }));
+                break;
+              case "synthesis":
+                setStatuses((s) => ({ ...s, orchestrator: "done" }));
+                break;
+              case "done":
+                finished = true;
+                pushAssistant(ev.run.synthesis.output, ev.run);
+                break;
+              case "error":
+                finished = true;
+                pushAssistant(`⚠️ ${ev.error}`);
+                break;
+            }
+          }
+        }
+
+        if (!finished) await runFallback(task);
+      } catch (err) {
+        pushAssistant(`⚠️ ${err instanceof Error ? err.message : "Network error"}`);
+      } finally {
+        setBusy(false);
+        await refreshMemory();
+        setTimeout(() => setStatuses({}), 1200);
+      }
+    },
+    [pushAssistant, refreshMemory, runFallback, activeId],
+  );
+
+  const clearMemory = useCallback(async () => {
+    await fetch(`/api/memory?sessionId=${activeId}`, { method: "DELETE" });
+    setMemory([]);
+  }, [activeId]);
+
+  const removeSession = useCallback(
+    (id: string) => {
+      fetch(`/api/memory?sessionId=${id}`, { method: "DELETE" }).catch(() => {});
+      remove(id);
+    },
+    [remove],
+  );
+
+  const exportLab = useCallback(async () => {
+    const res = await fetch(`/api/memory?sessionId=${activeId}&limit=500`);
+    if (!res.ok) return;
+    const entries: MemoryEntry[] = (await res.json()).entries ?? [];
+    const name = sessions.find((s) => s.id === activeId)?.name ?? activeId;
+    const header = `# Northstar Labs — ${name}\n\n_Lab \`${activeId}\` · exported ${new Date().toLocaleString()}_\n`;
+    const body = entries
+      .map(
+        (e) =>
+          `\n## ${e.author} · ${e.kind} · ${new Date(e.createdAt).toLocaleString()}\n\n${e.content}`,
+      )
+      .join("\n");
+    const blob = new Blob([header + body + "\n"], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `lab-${name.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }, [activeId, sessions]);
+
+  return (
+    <div className="flex flex-col gap-5">
+      <PageHeader
+        eyebrow="Northstar Labs"
+        title="Research & Development"
+        description="Experimental agent workspace — run crews, test prompts, and ship the future of autonomous finance."
+        actions={
+          <SessionSwitcher
+            sessions={sessions}
+            activeId={activeId}
+            onSwitch={setActive}
+            onCreate={create}
+            onRemove={removeSession}
+          />
+        }
+      />
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        {LAB_TOOLS.map((tool) => (
+          <div key={tool.title} className="os-card p-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-sm font-medium text-white">{tool.title}</span>
+              <StatusBadge tone="idle" dot={false}>
+                {tool.tag}
+              </StatusBadge>
+            </div>
+            <p className="mt-2 text-[12px] text-slate-500">{tool.body}</p>
+          </div>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
+        <StatusBadge tone={runtime?.provider === "mock" ? "warn" : "ok"}>
+          {runtime?.provider ?? "…"} · {runtime?.model ?? "…"}
+        </StatusBadge>
+        <StatusBadge tone="idle">{sessions.length} labs</StatusBadge>
+        {trading?.traderInCrew && (
+          <StatusBadge tone="live">Trader in crew</StatusBadge>
+        )}
+      </div>
+
+      <AgentRoster agents={agents} statuses={statuses} />
+
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[1fr_300px]">
+        <div className="flex min-h-[420px] flex-col lg:min-h-[520px]">
+          <Chat
+            turns={turns}
+            busy={busy}
+            onSend={send}
+            tradingEnabled={trading?.traderInCrew ?? false}
+          />
+        </div>
+        <div className="flex min-h-[280px] flex-col xl:min-h-0">
+          <MemoryPanel
+            entries={memory}
+            onClear={clearMemory}
+            onExplore={() => setExplorerOpen(true)}
+            onExport={exportLab}
+          />
+        </div>
+      </div>
+
+      <MemoryExplorer
+        sessionId={activeId}
+        open={explorerOpen}
+        onClose={() => setExplorerOpen(false)}
+      />
+    </div>
+  );
+}
