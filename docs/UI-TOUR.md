@@ -7,49 +7,41 @@ the team can click through everything live.
 ## Layout
 
 ```
-┌───────────┬──────────────────────────────────────────────────────────┐
-│  Sidebar  │  Header: "Agent Operating System"        [ Lab ▾ ]        │
-│           │──────────────────────────────────────────────────────────│
-│ • brand   │  Integrations cockpit   [ Run diagnostics ]               │
-│ • pipeline│   LLM · Memory · GitHub  (live status pills)               │
-│ • runtime │──────────────────────────────────────────────────────────│
-│           │  Agent roster:  Orchestrator  Research  Strategist  Behav. │
-│           │──────────────────────────────────────┬───────────────────│
-│           │  Lab Console (chat)                  │  Shared Memory      │
-│           │   ▸ task input                       │   live tail         │
-│           │   ▸ streamed answer + agent trace    │  [Explore][Export]  │
-└───────────┴──────────────────────────────────────┴───────────────────┘
+┌─────────────────────────────────────────────────────────────────────────┐
+│  Nav: Home · Labs · Settings                          [ Open console ]   │
+├─────────────────────────────────────────────────────────────────────────┤
+│  HERO: "Operational core" — live crew status            [ Workspace ▾ ]  │
+├─────────────────────────────────────────────────────────────────────────┤
+│  Active agents — large alive cards (standby → active → complete)         │
+├──────────────────────────────┬──────────────────────────────────────────┤
+│  Running workflow strip      │  Autonomous activity (live memory stream) │
+├──────────────────────────────┴──────────────────────────────────────────┤
+│  Task console (chat)         │  Research & insights (generated intel)   │
+└──────────────────────────────┴──────────────────────────────────────────┘
 ```
+
+Technical configuration (LLM provider, memory backend, Robinhood MCP, GitHub,
+diagnostics) lives under **Settings → Developer**, not on the Labs surface.
 
 ## The screens / components
 
-1. **Sidebar** — brand, the 5-step pipeline legend, and a live **Runtime** panel
-   (active model provider, model, memory backend).
-2. **Integrations cockpit** — three status tiles (LLM provider, shared memory,
-   GitHub) with a **Run diagnostics** button that live-tests connectivity and
-   shows pass/fail + latency inline.
-3. **Agent roster** — one card per agent. Cards **light up in real time** as each
-   agent works during a run (idle → working → done).
-4. **Lab Console (chat)** — the task input and the conversation. Each answer is
-   the orchestrator's synthesis, with an expandable **agent trace**.
-5. **Agent trace + run metrics** — under each answer: the plan, each specialist's
-   output, and a metrics line (model · total latency · tokens in/out · agent
-   calls · estimated cost).
-6. **Shared Memory panel** — a live tail of what every agent reads/writes, with
-   **Explore** (full search/filter modal) and **Export** (download the lab as
-   Markdown).
-7. **Lab switcher** (header) — create/switch/delete **labs**; each lab keeps its
-   own isolated, persisted memory and transcript.
+1. **Labs hero** — large operational headline, live crew status, workspace switcher.
+2. **Active agents** — premium agent cards that pulse and glow during runs.
+3. **Workflow strip** — pipeline progress (plan → research → strategy → risk → execute).
+4. **Autonomous activity** — live tail of what every agent reads and writes.
+5. **Task console (chat)** — give intent; receive orchestrator synthesis with expandable trace.
+6. **Research & insights** — distilled agent outputs, plans, and facts; Explore / Export / Clear.
+7. **Settings → Developer** — runtime env, integrations tiles, **Run diagnostics**.
+8. **Workspace switcher** — create/switch/delete labs; each keeps isolated memory and transcript.
 
 ## A run, as the user sees it
 
-1. Type a task in the Lab Console, hit **Run**.
-2. The **Orchestrator** card lights up (planning).
-3. **Research → Strategist → Behavioral** cards light up in sequence; the Shared
-   Memory tail fills in live as each writes its contribution.
-4. The Orchestrator card lights up again (synthesizing).
-5. The final answer appears in the console; expand the trace to see each agent's
-   work and the run metrics.
+1. Type a task in the Task console, hit **Run**.
+2. The **Orchestrator** card lights up (planning); the workflow strip advances.
+3. **Research → Strategist → Behavioral** (and **Trader** when MCP is connected) light up
+   in sequence; autonomous activity and insights fill in live.
+4. The Orchestrator synthesizes; the final answer appears in the console.
+5. Expand the trace to see each agent's work and run metrics.
 
 > In mock mode the agents return canned, role-appropriate text — perfect for
 > reviewing the **flow and UI** without spending tokens. Add an Anthropic key

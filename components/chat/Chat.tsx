@@ -15,11 +15,15 @@ export function Chat({
   busy,
   onSend,
   tradingEnabled = false,
+  title = "Lab Console",
+  subtitle = "orchestrated multi-agent chat",
 }: {
   turns: ChatTurn[];
   busy: boolean;
   onSend: (text: string) => void;
   tradingEnabled?: boolean;
+  title?: string;
+  subtitle?: string;
 }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,10 +46,8 @@ export function Chat({
     <div className="panel flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
         <span className="h-2 w-2 rounded-full bg-signal-research" />
-        <span className="text-sm font-semibold text-white">Lab Console</span>
-        <span className="ml-auto text-[11px] text-slate-500">
-          orchestrated multi-agent chat
-        </span>
+        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="ml-auto text-[11px] text-slate-500">{subtitle}</span>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
