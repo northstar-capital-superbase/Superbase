@@ -39,6 +39,7 @@ function Section({
 export function HomePage({ onLaunch }: { onLaunch: () => void }) {
   const [scrolled, setScrolled] = useState(false);
   const [ready, setReady] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -160,6 +161,14 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
           </nav>
           <button
             type="button"
+            className="ns-nav-mobile-toggle"
+            aria-label="Open menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            ☰
+          </button>
+          <button
+            type="button"
             className="ns-btn ns-btn-ghost ns-nav-cta"
             onClick={onLaunch}
           >
@@ -167,6 +176,38 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
           </button>
         </div>
       </header>
+
+      <div
+        className={`ns-nav-drawer ${menuOpen ? "is-open" : ""}`}
+        onClick={() => setMenuOpen(false)}
+        role="presentation"
+      >
+        <nav
+          className="ns-nav-drawer-panel"
+          aria-label="Mobile"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <a href="#platform" onClick={() => setMenuOpen(false)}>
+            Platform
+          </a>
+          <a href="#vision" onClick={() => setMenuOpen(false)}>
+            Vision
+          </a>
+          <a href="#labs" onClick={() => setMenuOpen(false)}>
+            Labs
+          </a>
+          <a href="#art" onClick={() => setMenuOpen(false)}>
+            System
+          </a>
+          <Link
+            href="/dashboard"
+            className="ns-nav-drawer-cta"
+            onClick={() => setMenuOpen(false)}
+          >
+            Open Dashboard →
+          </Link>
+        </nav>
+      </div>
 
       <section className="ns-hero" id="top" aria-labelledby="hero-title">
         <div className="ns-hero-bg" aria-hidden="true">

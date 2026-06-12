@@ -6,7 +6,7 @@ Guidance for AI agents working in this repository.
 
 ### Product
 
-Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The multi-agent lab dashboard is at **`http://localhost:3000/labs`** (marketing showcase at `/`). No Docker, Supabase, or API keys are required for local development — mock LLM and in-memory shared memory are the defaults.
+Northstar Labs is a single Next.js 14 app (TypeScript, App Router). Platform shell routes live under **`/dashboard`**, **`/labs`**, **`/agents`**, **`/research`**, **`/trading`**, **`/memory`**, **`/integrations`**, **`/settings`** (shared `AppShell` sidebar + mobile nav). Marketing showcase at **`/`**. No Docker, Supabase, or API keys are required for local development — mock LLM and in-memory shared memory are the defaults.
 
 ### Standard commands
 

@@ -20,10 +20,12 @@ modern dashboard.
 ```bash
 npm install
 cp .env.example .env.local   # optional — leave empty for mock mode
-npm run dev                  # http://localhost:3000/labs
+npm run dev                  # http://localhost:3000
 ```
 
-Open **`/labs`** for the multi-agent dashboard (marketing showcase lives at `/`).
+- **`/`** — Northstar OS marketing showcase  
+- **`/dashboard`** — Mission control overview  
+- **`/labs`** — Multi-agent R&D workspace (crew console)
 
 That's it. Type a task in the Lab Console and watch the crew collaborate.
 

@@ -14,7 +14,7 @@ export function AgentRoster({
   statuses: Record<string, AgentStatus>;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
       {agents.map((a) => (
         <AgentCard key={a.id} agent={a} status={statuses[a.id] ?? "idle"} />
       ))}
