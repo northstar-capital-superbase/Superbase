@@ -116,10 +116,12 @@ All optional — see `.env.example`. The lab auto-detects:
 
 ## Robinhood Agentic — go live
 
-1. Connect via Robinhood's MCP URL (`https://agent.robinhood.com/mcp/trading`) in
-   Cursor/Claude and fund your **Agentic account** (isolated from primary portfolio).
-2. Copy the bearer token into `ROBINHOOD_MCP_TOKEN` locally (`.env.local`) and on
-   your deploy host (e.g. Vercel → Project → Settings → Environment Variables).
+1. **Connect (desktop):** open `/labs` → Integrations → **Connect Robinhood**
+   (`GET /api/trading/oauth/start`), or use Cursor → Tools & MCPs with
+   `https://agent.robinhood.com/mcp/trading` (see repo `.mcp.json`). Fund your
+   **Agentic account** when Robinhood prompts.
+2. Locally the token is saved to `.robinhood-mcp-token`; for deploy set
+   `ROBINHOOD_MCP_TOKEN` on your host (e.g. Vercel → Environment Variables).
 3. Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) — the Trader's tool loop needs a
    live model; mock mode cannot drive MCP tools.
 4. Start with `TRADING_MODE=advisory`, probe with **Run diagnostics** on `/labs`,

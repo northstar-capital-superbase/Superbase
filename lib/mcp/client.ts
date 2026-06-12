@@ -1,6 +1,5 @@
 import type { IMcpClient, McpCallResult, McpProbeResult, McpTool } from "./types";
-
-const ROBINHOOD_MCP_URL = "https://agent.robinhood.com/mcp/trading";
+import { ROBINHOOD_MCP_URL } from "./oauth";
 
 // MCP client timeout — tool calls can be slow (market data fetch, order routing).
 const TIMEOUT_MS = 15_000;
@@ -13,10 +12,28 @@ export class RobinhoodMcpClient implements IMcpClient {
   private token: string;
   private _cachedTools: McpTool[] | null = null;
   private _initialized = false;
+  private sessionId: string | null = null;
 
   constructor(token: string, url = ROBINHOOD_MCP_URL) {
     this.token = token;
     this.url = url;
+  }
+
+  private headers(): Record<string, string> {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+      Accept: "application/json, text/event-stream",
+      Authorization: `Bearer ${this.token}`,
+    };
+    if (this.sessionId) {
+      headers["Mcp-Session-Id"] = this.sessionId;
+    }
+    return headers;
+  }
+
+  private captureSessionId(res: Response): void {
+    const id = res.headers.get("mcp-session-id");
+    if (id) this.sessionId = id;
   }
 
   // Lazily initializes the MCP session (required by protocol before tool use).
@@ -36,16 +53,13 @@ export class RobinhoodMcpClient implements IMcpClient {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
     try {
-      await fetch(this.url, {
+      const res = await fetch(this.url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json, text/event-stream",
-          Authorization: `Bearer ${this.token}`,
-        },
+        headers: this.headers(),
         body: JSON.stringify({ jsonrpc: "2.0", method }),
         signal: controller.signal,
       });
+      this.captureSessionId(res);
     } finally {
       clearTimeout(timer);
     }
@@ -60,11 +74,7 @@ export class RobinhoodMcpClient implements IMcpClient {
     try {
       res = await fetch(this.url, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json, text/event-stream",
-          Authorization: `Bearer ${this.token}`,
-        },
+        headers: this.headers(),
         body: JSON.stringify({
           jsonrpc: "2.0",
           id: Date.now(),
@@ -77,9 +87,17 @@ export class RobinhoodMcpClient implements IMcpClient {
       clearTimeout(timer);
     }
 
+    this.captureSessionId(res);
+
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      throw new Error(`Robinhood MCP HTTP ${res.status}: ${body.slice(0, 200)}`);
+      const hint =
+        res.status === 401
+          ? " — reconnect via /api/trading/oauth/start or refresh ROBINHOOD_MCP_TOKEN"
+          : "";
+      throw new Error(
+        `Robinhood MCP HTTP ${res.status}: ${body.slice(0, 200)}${hint}`,
+      );
     }
 
     const contentType = res.headers.get("content-type") ?? "";
@@ -125,6 +143,7 @@ export class RobinhoodMcpClient implements IMcpClient {
     // Reset cache so the probe fires a real network request.
     this._cachedTools = null;
     this._initialized = false;
+    this.sessionId = null;
     try {
       const tools = await this.listTools();
       return { ok: true, ms: Date.now() - started, toolCount: tools.length };

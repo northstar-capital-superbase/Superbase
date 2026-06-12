@@ -19,9 +19,21 @@ Trader agent ──> lib/mcp client (JSON-RPC / Streamable HTTP, bearer auth)
 
 ## Setup
 
-1. Connect Robinhood Agentic Trading and obtain the MCP bearer token
-   (Robinhood → Agentic Trading; or `claude mcp add` / Cursor MCP connect).
-2. Set it where the app runs (`.env.local` or your deploy host):
+### Option A — In-app OAuth (recommended for Northstar Labs)
+
+1. Open **`/labs`** → Integrations → **Connect Robinhood** (desktop browser).
+2. Sign in at Robinhood and complete Agentic account onboarding if prompted.
+3. Locally, the bearer token is saved to `.robinhood-mcp-token` (gitignored).
+   For production, copy `ROBINHOOD_MCP_TOKEN` from the success page into your host env.
+4. Verify: `GET /api/trading?probe=1` → `{ ok: true, toolCount: N }`.
+
+Direct link: `GET /api/trading/oauth/start`
+
+### Option B — Cursor / Claude MCP connect
+
+1. Cursor → Settings → Tools & MCPs → Connect → `https://agent.robinhood.com/mcp/trading`
+   (or use the `robinhood-trading` entry in repo `.mcp.json`).
+2. Copy the bearer token into `.env.local` / deploy host:
    ```
    ROBINHOOD_MCP_TOKEN=...
    ```
