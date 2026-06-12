@@ -15,11 +15,17 @@ export function Chat({
   busy,
   onSend,
   tradingEnabled = false,
+  title = "Lab Console",
+  subtitle = "orchestrated multi-agent chat",
+  variant = "default",
 }: {
   turns: ChatTurn[];
   busy: boolean;
   onSend: (text: string) => void;
   tradingEnabled?: boolean;
+  title?: string;
+  subtitle?: string;
+  variant?: "default" | "operational";
 }) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -42,15 +48,17 @@ export function Chat({
     <div className="panel flex h-full flex-col">
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
         <span className="h-2 w-2 rounded-full bg-signal-research" />
-        <span className="text-sm font-semibold text-white">Lab Console</span>
-        <span className="ml-auto text-[11px] text-slate-500">
-          orchestrated multi-agent chat
-        </span>
+        <span className="text-sm font-semibold text-white">{title}</span>
+        <span className="ml-auto text-[11px] text-slate-500">{subtitle}</span>
       </div>
 
       <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
         {turns.length === 0 && (
-          <EmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
+          <EmptyState
+            onPick={onSend}
+            tradingEnabled={tradingEnabled}
+            variant={variant}
+          />
         )}
         {turns.map((t) =>
           t.role === "user" ? (
@@ -74,7 +82,11 @@ export function Chat({
               }
             }}
             rows={1}
-            placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+            placeholder={
+              variant === "operational"
+                ? "Issue a directive to the crew…"
+                : "Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+            }
             className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
           />
           <button
@@ -82,7 +94,7 @@ export function Chat({
             disabled={busy || !input.trim()}
             className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-base-900 transition enabled:hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
           >
-            Run
+            {variant === "operational" ? "Execute" : "Run"}
           </button>
         </div>
       </div>
@@ -213,14 +225,60 @@ const TRADING_SAMPLES = [
   "Summarize portfolio drift vs my 55/25/20 allocation",
 ];
 
+const OPERATIONAL_SAMPLES = [
+  "Analyze sector rotation risk across my current allocation",
+  "Research macro headwinds for the next 90 days",
+  "Draft an execution plan for rebalancing to target weights",
+];
+
+const OPERATIONAL_TRADING = [
+  "Summarize portfolio exposure and largest position risks",
+  "Evaluate whether to add to core index positions this week",
+  "Report drift vs target allocation with recommended actions",
+];
+
 function EmptyState({
   onPick,
   tradingEnabled,
+  variant,
 }: {
   onPick: (t: string) => void;
   tradingEnabled: boolean;
+  variant: "default" | "operational";
 }) {
-  const samples = tradingEnabled ? TRADING_SAMPLES : SAMPLES;
+  const samples =
+    variant === "operational"
+      ? tradingEnabled
+        ? OPERATIONAL_TRADING
+        : OPERATIONAL_SAMPLES
+      : tradingEnabled
+        ? TRADING_SAMPLES
+        : SAMPLES;
+
+  if (variant === "operational") {
+    return (
+      <div className="ops-empty">
+        <div className="ops-empty-title">Awaiting directive</div>
+        <p className="ops-empty-body">
+          The crew is on standby. Issue a directive to begin research,
+          workflow execution, and synthesis.
+        </p>
+        <div className="ops-directives">
+          {samples.map((s) => (
+            <button
+              key={s}
+              type="button"
+              onClick={() => onPick(s)}
+              className="ops-directive"
+            >
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
       <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow">
@@ -237,8 +295,8 @@ function EmptyState({
         </div>
         <p className="mt-1 max-w-sm text-[12px] text-slate-500">
           {tradingEnabled
-            ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
-            : "Hand the orchestrator a task. It plans, delegates to the research, strategist, and behavioral agents, then synthesizes their work."}
+            ? "Portfolio execution is enabled. Ask for analysis or actions within policy limits."
+            : "Hand the orchestrator a task. It plans, delegates to specialists, then synthesizes."}
         </p>
       </div>
       <div className="flex max-w-md flex-wrap justify-center gap-2">

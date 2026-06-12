@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import { Dashboard } from "@/components/dashboard/Dashboard";
+import { LabsOperatingCore } from "@/components/labs/LabsOperatingCore";
 
 export const metadata: Metadata = {
-  title: "Northstar Labs — Multi-Agent OS",
+  title: "Northstar Labs — Operational Core",
   description:
-    "A local-first experimental multi-agent AI operating system by Northstar.",
+    "The autonomous research and execution center of Northstar OS.",
 };
 
 export default function LabsPage() {
-  return <Dashboard />;
+  return <LabsOperatingCore />;
 }

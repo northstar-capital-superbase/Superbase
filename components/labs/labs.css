@@ -1,0 +1,673 @@
+/* Northstar Labs — operational intelligence terminal */
+
+.labs-root {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ns-bg);
+  color: var(--ns-text);
+  font-family: var(--ns-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+.labs-root a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.labs-root button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ── Nav (Linear-style) ── */
+.labs-nav {
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--ns-line);
+  background: rgba(6, 7, 10, 0.92);
+  backdrop-filter: blur(12px);
+}
+
+.labs-nav-inner {
+  height: 52px;
+  max-width: none;
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.labs-nav-brand {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.labs-nav-os {
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--ns-text-3);
+  margin-left: 8px;
+}
+
+.labs-nav-links {
+  gap: 18px;
+}
+
+.labs-nav-links a {
+  font-size: 13px;
+}
+
+.labs-nav-cta {
+  display: none;
+}
+
+/* ── Terminal body ── */
+.ops-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 0 20px 16px;
+  gap: 12px;
+}
+
+/* ── Operational header ── */
+.ops-header {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: 16px 24px;
+  padding: 16px 0 12px;
+  border-bottom: 1px solid var(--ns-line);
+}
+
+@media (max-width: 900px) {
+  .ops-header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+}
+
+.ops-title {
+  font-size: clamp(26px, 3.2vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin: 0;
+}
+
+.ops-subtitle {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--ns-text-2);
+  letter-spacing: -0.01em;
+}
+
+.ops-kpi-strip {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.ops-kpi {
+  min-width: 108px;
+  padding: 10px 14px;
+  background: var(--ns-surface);
+  border: 1px solid var(--ns-line);
+  border-radius: 10px;
+}
+
+.ops-kpi.is-live {
+  border-color: rgba(110, 139, 255, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(110, 139, 255, 0.08);
+}
+
+.ops-kpi-label {
+  display: block;
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ns-text-3);
+}
+
+.ops-kpi-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.ops-kpi.is-live .ops-kpi-value {
+  color: var(--ns-accent);
+}
+
+.ops-kpi-sub {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--ns-text-3);
+}
+
+/* ── 3-column terminal grid ── */
+.ops-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 240px 1fr 300px;
+  gap: 12px;
+}
+
+@media (max-width: 1100px) {
+  .ops-grid {
+    grid-template-columns: 200px 1fr;
+  }
+  .ops-grid > .ops-intel-stack {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .ops-grid {
+    grid-template-columns: 1fr;
+    overflow-y: auto;
+  }
+  .ops-grid > .ops-intel-stack {
+    grid-template-columns: 1fr;
+  }
+  .labs-root {
+    height: auto;
+    min-height: 100dvh;
+    overflow: auto;
+  }
+}
+
+.ops-center {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ops-command {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Panels ── */
+.ops-panel {
+  background: var(--ns-surface);
+  border: 1px solid var(--ns-line);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.ops-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--ns-line);
+  flex-shrink: 0;
+}
+
+.ops-panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.ops-panel-meta {
+  font-family: var(--ns-mono);
+  font-size: 10px;
+  color: var(--ns-text-3);
+}
+
+.ops-pill {
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ns-text-3);
+  border: 1px solid var(--ns-line);
+  border-radius: 4px;
+  padding: 2px 6px;
+}
+
+.ops-pill.is-live {
+  color: var(--ns-good);
+  border-color: rgba(127, 179, 155, 0.35);
+}
+
+.ops-text-btn {
+  background: none;
+  border: none;
+  font-size: 11px;
+  color: var(--ns-text-3);
+  padding: 0;
+}
+
+.ops-text-btn:hover {
+  color: var(--ns-accent);
+}
+
+/* ── Agent rail ── */
+.ops-agents {
+  overflow: hidden;
+}
+
+.ops-agent-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ops-agent-row {
+  padding: 10px 10px;
+  border-radius: 8px;
+  margin-bottom: 2px;
+  transition: background 0.2s;
+}
+
+.ops-agent-row.is-active {
+  background: rgba(110, 139, 255, 0.08);
+  animation: ops-breathe 2s ease-in-out infinite;
+}
+
+.ops-agent-row.is-done {
+  background: rgba(127, 179, 155, 0.06);
+}
+
+@keyframes ops-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.82;
+  }
+}
+
+.ops-agent-row-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ops-agent-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.ops-agent-name {
+  font-size: 13px;
+  font-weight: 600;
+  flex: 1;
+  letter-spacing: -0.01em;
+}
+
+.ops-status-chip {
+  font-family: var(--ns-mono);
+  font-size: 8.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-text-3);
+}
+
+.ops-status-chip.is-active {
+  color: var(--ns-accent);
+}
+
+.ops-status-chip.is-done {
+  color: var(--ns-good);
+}
+
+.ops-agent-action {
+  margin: 4px 0 0 15px;
+  font-size: 11.5px;
+  color: var(--ns-text-2);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ops-agent-time {
+  display: block;
+  margin: 2px 0 0 15px;
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  color: var(--ns-text-3);
+}
+
+/* ── Timeline ── */
+.ops-timeline {
+  max-height: 220px;
+  flex-shrink: 0;
+}
+
+.ops-timeline-list {
+  list-style: none;
+  margin: 0;
+  padding: 8px 10px 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ops-timeline-item {
+  display: flex;
+  gap: 10px;
+  padding: 8px 4px;
+}
+
+.ops-timeline-node {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ns-text-3);
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+.ops-timeline-item.tone-user .ops-timeline-node {
+  border-color: var(--ns-flow);
+}
+
+.ops-timeline-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ops-timeline-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ns-text);
+}
+
+.ops-timeline-time {
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  color: var(--ns-text-3);
+  flex-shrink: 0;
+}
+
+.ops-timeline-detail {
+  margin: 3px 0 0;
+  font-size: 11.5px;
+  color: var(--ns-text-2);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ops-timeline-empty {
+  padding: 12px 8px;
+}
+
+.ops-timeline-empty-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ns-text);
+}
+
+.ops-timeline-empty-body {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--ns-text-3);
+  line-height: 1.4;
+}
+
+/* ── Intelligence stack ── */
+.ops-intel-stack {
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.ops-portfolio-body {
+  padding: 14px;
+}
+
+.ops-portfolio-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.ops-portfolio-num {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+.ops-portfolio-cap {
+  font-size: 13px;
+  color: var(--ns-text-2);
+}
+
+.ops-portfolio-note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--ns-text-3);
+  line-height: 1.45;
+}
+
+.ops-insights {
+  flex: 1;
+  min-height: 0;
+}
+
+.ops-insight-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ops-insight-row {
+  padding: 10px 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.ops-insight-row:last-child {
+  border-bottom: none;
+}
+
+.ops-insight-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ops-insight-source {
+  font-family: var(--ns-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.ops-insight-time {
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  color: var(--ns-text-3);
+}
+
+.ops-insight-headline {
+  margin: 5px 0 0;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--ns-text);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.ops-insight-placeholder {
+  padding: 12px 10px;
+  font-size: 12px;
+  color: var(--ns-text-3);
+  line-height: 1.45;
+}
+
+.ops-actions {
+  flex-shrink: 0;
+}
+
+.ops-action-list {
+  list-style: none;
+  margin: 0;
+  padding: 6px 8px 10px;
+}
+
+.ops-action-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px;
+  font-size: 12px;
+}
+
+.ops-action-row.is-idle {
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ops-action-label {
+  font-weight: 500;
+  color: var(--ns-text);
+}
+
+.ops-action-detail {
+  color: var(--ns-text-3);
+  font-size: 11.5px;
+}
+
+.ops-action-time {
+  font-family: var(--ns-mono);
+  font-size: 9px;
+  color: var(--ns-text-3);
+}
+
+/* ── Command surface (chat) ── */
+.ops-command .panel {
+  border-radius: 12px;
+  border-color: var(--ns-line);
+  background: var(--ns-surface);
+  flex: 1;
+  min-height: 0;
+}
+
+.ops-command .panel > div:first-child {
+  border-color: var(--ns-line);
+  padding: 12px 16px;
+}
+
+.ops-command .panel > div:first-child .text-sm {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ns-text);
+}
+
+.ops-command .panel > div:first-child .text-\[11px\] {
+  font-family: var(--ns-mono);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ns-text-3);
+}
+
+.ops-command textarea {
+  font-size: 15px !important;
+}
+
+.ops-command .ops-empty {
+  padding: 20px 16px;
+  text-align: left;
+}
+
+.ops-command .ops-empty-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--ns-text);
+}
+
+.ops-command .ops-empty-body {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--ns-text-2);
+  max-width: 42ch;
+  line-height: 1.45;
+}
+
+.ops-command .ops-directives {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.ops-command .ops-directive {
+  text-align: left;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--ns-line);
+  background: var(--ns-bg);
+  font-size: 12.5px;
+  color: var(--ns-text-2);
+  transition: border-color 0.2s, color 0.2s;
+}
+
+.ops-command .ops-directive:hover {
+  border-color: rgba(110, 139, 255, 0.35);
+  color: var(--ns-text);
+}
+
+.ops-command button.rounded-lg.bg-accent {
+  border-radius: 8px;
+  background: var(--ns-text) !important;
+  color: var(--ns-bg) !important;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px !important;
+}
+
+/* ── Session switcher ── */
+.labs-session-trigger {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.labs-session-menu {
+  border-radius: 10px !important;
+}
