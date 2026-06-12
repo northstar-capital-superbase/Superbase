@@ -83,18 +83,18 @@ See `docs/ARCHITECTURE.md` for detail.
 ## 5. API reference
 
 
-| Endpoint                              | Notes                               |
-| ------------------------------------- | ----------------------------------- |
-| `GET /api/health`                     | `{ provider, model, memory, mock }` |
-| `GET /api/health?ping=1`              | Live LLM probe                      |
-| `GET /api/health?memory=1`            | Memory round-trip                   |
-| `GET /api/agents`                     | Roster + runtime + trading          |
-| `POST /api/chat`                      | Sync crew run                       |
-| `POST /api/chat/stream`               | SSE crew events                     |
-| `GET/DELETE /api/memory?sessionId=`   | Read / clear memory                 |
-| `GET /api/trading`                    | MCP status                          |
-| `GET /api/trading?probe=1`            | MCP handshake + tool count          |
-| `POST /api/trading?action=tools|call` | MCP proxy                           |
+| Endpoint                            | Notes                               |
+| ----------------------------------- | ----------------------------------- |
+| `GET /api/health`                   | `{ provider, model, memory, mock }` |
+| `GET /api/health?ping=1`            | Live LLM probe                      |
+| `GET /api/health?memory=1`          | Memory round-trip                   |
+| `GET /api/agents`                   | Roster + runtime + trading          |
+| `POST /api/chat`                    | Sync crew run                       |
+| `POST /api/chat/stream`             | SSE crew events                     |
+| `GET/DELETE /api/memory?sessionId=` | Read / clear memory                 |
+| `GET /api/trading`                  | MCP status                          |
+| `GET /api/trading?probe=1`          | MCP handshake + tool count          |
+| `POST /api/trading?action=tools\|call` | MCP proxy                           |
 
 
 **OAuth (PR #10, separate branch):** `/api/trading/oauth/start`, `/api/trading/oauth/callback`.
@@ -110,7 +110,7 @@ Copy `.env.example` → `.env.local`. All optional for demo mode.
 | ------------------------------------------------------ | ------------------------------------------------- |
 | `ANTHROPIC_API_KEY`                                    | Live Claude (preferred if set)                    |
 | `OPENAI_API_KEY`                                       | Live OpenAI                                       |
-| `LLM_PROVIDER`                                         | Force `anthropic` | `openai` | `mock`             |
+| `LLM_PROVIDER`                                         | Force anthropic, openai, or mock                  |
 | `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY`           | Persistent memory                                 |
 | `ROBINHOOD_MCP_TOKEN`                                  | Trader + Robinhood MCP                            |
 | `TRADING_MODE`                                         | `advisory` (read-only orders) default recommended |
