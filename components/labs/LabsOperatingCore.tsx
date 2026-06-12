@@ -13,12 +13,18 @@ import {
   pipelineAgentIds,
   type TradingInfo,
 } from "@/components/shared";
-import { AliveAgentGrid } from "./AliveAgentGrid";
-import { AutonomousActivity } from "./AutonomousActivity";
-import { InsightsPanel } from "./InsightsPanel";
+import { AgentOpsRail } from "./AgentOpsRail";
+import { ExecutionTimeline } from "./ExecutionTimeline";
+import { IntelligenceStack } from "./IntelligenceStack";
 import { LabsNav } from "./LabsNav";
-import { LabsSessionSwitcher } from "./LabsSessionSwitcher";
-import { WorkflowStrip } from "./WorkflowStrip";
+import { OperationalHeader } from "./OperationalHeader";
+import {
+  buildAgentActivity,
+  buildExecutionTimeline,
+  buildInsights,
+  countDirectives,
+  formatTime,
+} from "./labsIntel";
 import "@/components/showcase/showcase.css";
 import "./labs.css";
 
@@ -73,7 +79,7 @@ export function LabsOperatingCore() {
         ? ((await res.json()).entries ?? [])
         : [];
       if (cancelled) return;
-      setMemory(entries.slice(-50));
+      setMemory(entries.slice(-80));
       setTurns(reconstructTurns(entries));
     })();
     return () => {
@@ -189,11 +195,6 @@ export function LabsOperatingCore() {
     [pushAssistant, refreshMemory, runFallback, activeId],
   );
 
-  const clearMemory = useCallback(async () => {
-    await fetch(`/api/memory?sessionId=${activeId}`, { method: "DELETE" });
-    setMemory([]);
-  }, [activeId]);
-
   const removeSession = useCallback(
     (id: string) => {
       fetch(`/api/memory?sessionId=${id}`, { method: "DELETE" }).catch(() => {});
@@ -202,108 +203,82 @@ export function LabsOperatingCore() {
     [remove],
   );
 
-  const exportLab = useCallback(async () => {
-    const res = await fetch(`/api/memory?sessionId=${activeId}&limit=500`);
-    if (!res.ok) return;
-    const entries: MemoryEntry[] = (await res.json()).entries ?? [];
-    const name = sessions.find((s) => s.id === activeId)?.name ?? activeId;
-    const header = `# Northstar Labs — ${name}\n\n_Workspace \`${activeId}\` · exported ${new Date().toLocaleString()}_\n`;
-    const body = entries
-      .map(
-        (e) =>
-          `\n## ${e.author} · ${e.kind} · ${new Date(e.createdAt).toLocaleString()}\n\n${e.content}`,
-      )
-      .join("\n");
-    const blob = new Blob([header + body + "\n"], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `lab-${name.replace(/\s+/g, "-").toLowerCase()}-${Date.now()}.md`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }, [activeId, sessions]);
-
   const activeCount = Object.values(statuses).filter((s) => s === "thinking").length;
+  const timeline = useMemo(
+    () => buildExecutionTimeline(memory, turns, busy),
+    [memory, turns, busy],
+  );
+  const insights = useMemo(() => buildInsights(memory), [memory]);
+  const agentActivity = useMemo(
+    () => buildAgentActivity(memory, agents),
+    [memory, agents],
+  );
+  const directiveCount = useMemo(() => countDirectives(memory), [memory]);
+
+  const recentActions = useMemo(() => {
+    return [...memory]
+      .filter((e) => e.kind === "agent_output" || e.kind === "plan")
+      .reverse()
+      .slice(0, 4)
+      .map((e) => ({
+        id: e.id,
+        label:
+          e.kind === "plan"
+            ? "Plan published"
+            : `${e.author} synthesis`,
+        time: formatTime(e.createdAt),
+      }));
+  }, [memory]);
 
   return (
-    <div className="labs-root ns-root labs-scroll">
+    <div className="labs-root ns-root">
       <LabsNav />
 
-      <section className="labs-hero">
-        <div className="labs-hero-inner ns-view">
-          <span className="ns-eyebrow">Northstar Labs</span>
-          <h1 className="labs-hero-title">Operational core</h1>
-          <p className="labs-hero-sub">
-            Where autonomous agents research, reason, and execute — the living
-            center of Northstar OS. Give intent; the crew handles the rest.
-          </p>
-          <div className="labs-hero-bar">
-            <span
-              className={`labs-hero-status ${busy ? "is-running" : ""}`}
-            >
-              <span className="ns-live" />
-              {busy
-                ? `Crew running · ${activeCount} agent${activeCount !== 1 ? "s" : ""} active`
-                : "Systems ready · crew on standby"}
-            </span>
-            <LabsSessionSwitcher
-              sessions={sessions}
-              activeId={activeId}
-              onSwitch={setActive}
-              onCreate={create}
-              onRemove={removeSession}
-            />
-          </div>
-        </div>
-      </section>
-
-      <section className="labs-section">
-        <div className="labs-section-head">
-          <div>
-            <span className="ns-eyebrow">Active agents</span>
-            <h2 className="labs-section-title">Your autonomous crew</h2>
-            <p className="labs-section-lede">
-              Specialists light up in real time as they research, strategize, and
-              act on your behalf.
-            </p>
-          </div>
-        </div>
-        <AliveAgentGrid agents={agents} statuses={statuses} />
-      </section>
-
-      <section className="labs-section labs-split">
-        <WorkflowStrip
-          pipeline={pipelineFlow}
-          statuses={statuses}
+      <div className="ops-body">
+        <OperationalHeader
+          sessions={sessions}
+          activeId={activeId}
+          onSwitch={setActive}
+          onCreate={create}
+          onRemove={removeSession}
           busy={busy}
+          activeAgents={activeCount}
+          insightCount={insights.length}
+          directiveCount={directiveCount}
+          trading={trading}
         />
-        <AutonomousActivity entries={memory} busy={busy} />
-      </section>
 
-      <section className="labs-section labs-main-grid">
-        <div className="labs-console-wrap">
-          <div className="labs-section-head" style={{ marginBottom: 14 }}>
-            <div>
-              <span className="ns-eyebrow">Task execution</span>
-              <h2 className="labs-section-title">Command the crew</h2>
+        <div className="ops-grid">
+          <AgentOpsRail
+            agents={agents}
+            statuses={statuses}
+            activity={agentActivity}
+            busy={busy}
+          />
+
+          <div className="ops-center">
+            <ExecutionTimeline events={timeline} />
+            <div className="ops-command">
+              <Chat
+                turns={turns}
+                busy={busy}
+                onSend={send}
+                tradingEnabled={trading?.traderInCrew ?? false}
+                title="Active work"
+                subtitle={busy ? "Executing" : "Ready"}
+                variant="operational"
+              />
             </div>
           </div>
-          <Chat
-            turns={turns}
-            busy={busy}
-            onSend={send}
-            tradingEnabled={trading?.traderInCrew ?? false}
-            title="Task console"
-            subtitle="Intent in · synthesis out"
+
+          <IntelligenceStack
+            insights={insights}
+            trading={trading}
+            onExplore={() => setExplorerOpen(true)}
+            recentActions={recentActions}
           />
         </div>
-        <InsightsPanel
-          entries={memory}
-          onExplore={() => setExplorerOpen(true)}
-          onExport={exportLab}
-          onClear={clearMemory}
-        />
-      </section>
+      </div>
 
       <MemoryExplorer
         sessionId={activeId}
