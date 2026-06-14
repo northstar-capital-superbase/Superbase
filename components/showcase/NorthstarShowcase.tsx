@@ -1,68 +1,106 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { HomePage } from "./HomePage";
-import { Login } from "./Login";
-import { OsDashboard } from "./OsDashboard";
-import { MOCK, type MockUser, type ShowcaseView } from "./types";
+import { useEffect, useState } from "react";
+import { StarGlyph } from "./icons";
+import { Landing } from "./studio/Landing";
+import { Overview } from "./studio/Overview";
+import { RobinhoodAgentic } from "./studio/RobinhoodAgentic";
+import { LabsSection } from "./studio/LabsSection";
+import type { StudioSection } from "./types";
 import "./showcase.css";
+import "./studio.css";
+
+const SECTIONS: { id: StudioSection; label: string }[] = [
+  { id: "home", label: "Home" },
+  { id: "overview", label: "Overview" },
+  { id: "robinhood", label: "Robinhood" },
+  { id: "labs", label: "Labs" },
+];
 
 export function NorthstarShowcase() {
-  const [view, setView] = useState<ShowcaseView>("home");
-  const [user, setUser] = useState<MockUser | null>(null);
+  const [section, setSection] = useState<StudioSection>("home");
 
-  const go = (v: ShowcaseView) => {
-    if (v === "dashboard" && !user) setUser(MOCK.user);
-    setView(v);
-  };
+  // Jump back to the top whenever the active section changes.
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [section]);
 
   return (
-    <div className="ns-root">
-      <div className="ns-view" key={view}>
-        {view === "home" && <HomePage onLaunch={() => setView("login")} />}
-        {view === "login" && (
-          <Login
-            onLogin={(u) => {
-              setUser(u);
-              setView("dashboard");
-            }}
-            onBack={() => setView("home")}
-          />
-        )}
-        {view === "dashboard" && (
-          <OsDashboard
-            user={user || MOCK.user}
-            onLogout={() => {
-              setUser(null);
-              setView("home");
-            }}
-          />
-        )}
-      </div>
+    <div className="nx">
+      <div className="nx-aura" aria-hidden="true" />
 
-      <div className="ns-rev" role="navigation" aria-label="Showcase navigation">
-        <span className="ns-rev-label">SHOWCASE</span>
-        {(
-          [
-            ["home", "Home"],
-            ["login", "Login"],
-            ["dashboard", "Dashboard"],
-          ] as const
-        ).map(([v, l]) => (
+      <header className="nx-nav">
+        <div className="nx-container nx-nav-inner">
           <button
-            key={v}
             type="button"
-            className={`ns-rev-btn ${view === v ? "is-active" : ""}`}
-            onClick={() => go(v)}
+            className="nx-brand"
+            onClick={() => setSection("home")}
+            aria-label="Northstar home"
           >
-            {l}
+            <span className="nx-brand-mark">
+              <StarGlyph size={16} />
+            </span>
+            Northstar
+            <span className="nx-brand-os">OS</span>
           </button>
-        ))}
-        <Link href="/labs" className="ns-rev-link">
-          Labs
-        </Link>
-      </div>
+
+          <nav className="nx-tabs" aria-label="Sections">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`nx-tab ${section === s.id ? "is-active" : ""}`}
+                onClick={() => setSection(s.id)}
+              >
+                <span className="nx-tab-dot" />
+                {s.label}
+              </button>
+            ))}
+          </nav>
+
+          <div className="nx-nav-right">
+            <span className="nx-sync">
+              <span className="nx-live" /> SYNCED
+            </span>
+            <Link href="/labs" className="nx-nav-link">
+              Live lab
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main key={section}>
+        {section === "home" && <Landing onNavigate={setSection} />}
+        {section === "overview" && <Overview onNavigate={setSection} />}
+        {section === "robinhood" && <RobinhoodAgentic />}
+        {section === "labs" && <LabsSection />}
+      </main>
+
+      <footer className="nx-footer">
+        <div className="nx-container nx-footer-inner">
+          <div className="nx-footer-brand">
+            <StarGlyph color="#7d879c" size={16} />
+            <span>Northstar Capital</span>
+          </div>
+          <nav className="nx-tabs" aria-label="Footer sections">
+            {SECTIONS.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`nx-tab ${section === s.id ? "is-active" : ""}`}
+                onClick={() => setSection(s.id)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </nav>
+          <div className="nx-footer-meta">
+            NORTHSTAR OS · BUILD 0.3
+            <br />© {new Date().getFullYear()} Northstar Capital
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
