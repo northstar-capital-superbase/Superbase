@@ -73,7 +73,7 @@ export const AGENT_META: Record<
   { label: string; color: string }
 > = {
   orchestrator: { label: "Orchestrator", color: "#6d8bff" },
-  strategist: { label: "Strategist", color: "#c084fc" },
+  strategist: { label: "Strategist", color: "#a78bfa" },
   research: { label: "Research", color: "#34d399" },
   behavioral: { label: "Behavioral", color: "#fbbf24" },
   trader: { label: "Trader", color: "#22d3ee" },

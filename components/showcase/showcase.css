@@ -1,10 +1,6 @@
-:root{
-  --ns-bg:#06070A;--ns-surface:#0C0E13;--ns-surface-2:#11141B;--ns-line:rgba(255,255,255,.08);
-  --ns-text:#EDEFF4;--ns-text-2:#9AA0B0;--ns-text-3:#6B7180;
-  --ns-accent:#6E8BFF;--ns-accent-soft:rgba(110,139,255,.14);--ns-flow:#E2B17C;--ns-good:#7FB39B;
-  --ns-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;
-  --ns-sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Inter,system-ui,sans-serif;--ns-max:1180px;
-}
+/* showcase.css — Northstar marketing & showcase shell.
+   Font vars are resolved from globals.css .ns-root block which reads
+   the Geist CSS variables injected by layout.tsx. */
 *{box-sizing:border-box}
 .ns-root{background:var(--ns-bg);color:var(--ns-text);font-family:var(--ns-sans);-webkit-font-smoothing:antialiased;line-height:1.5;overflow-x:hidden}
 .ns-root a{color:inherit;text-decoration:none}.ns-root button{font-family:inherit;cursor:pointer}.ns-root input{font-family:inherit}
@@ -130,11 +126,12 @@
 .ns-d-timeline{list-style:none;margin:0;padding:0 0 0 6px}.ns-d-timeline li{position:relative;padding:0 0 22px 26px;border-left:1px solid var(--ns-line)}.ns-d-timeline li:last-child{padding-bottom:0}
 .ns-d-tl-node{position:absolute;left:-5px;top:3px;width:9px;height:9px;border-radius:50%;background:#0C0E13;border:1.5px solid var(--ns-accent)}
 .ns-d-tl-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.ns-d-tl-date{font-family:var(--ns-mono);font-size:10.5px;letter-spacing:.08em;color:var(--ns-text-3);width:48px;flex:none}.ns-d-tl-title{font-size:14px;font-weight:500}.ns-d-tl-detail{font-size:13px;color:var(--ns-text-2);margin-top:4px;padding-left:60px}
-.ns-rev{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:6px;padding:7px 8px 7px 14px;border-radius:999px;background:rgba(10,12,17,.82);backdrop-filter:blur(16px) saturate(150%);-webkit-backdrop-filter:blur(16px) saturate(150%);border:1px solid var(--ns-line);box-shadow:0 20px 60px -20px rgba(0,0,0,.8)}
-.ns-rev-label{font-family:var(--ns-mono);font-size:9.5px;letter-spacing:.16em;color:var(--ns-text-3);margin-right:4px}
-.ns-rev-btn{background:transparent;border:none;color:var(--ns-text-2);font-size:13px;padding:7px 14px;border-radius:999px;transition:color .2s,background .2s}.ns-rev-btn:hover{color:var(--ns-text)}
-.ns-rev-btn.is-active{background:#EDEFF4;color:#06070A;font-weight:500}
-.ns-rev-link{background:transparent;border:none;color:var(--ns-text-2);font-size:13px;padding:7px 14px;border-radius:999px;transition:color .2s,background .2s;text-decoration:none}.ns-rev-link:hover{color:var(--ns-text);background:rgba(255,255,255,.06)}
+.ns-rev{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:2px;padding:5px;border-radius:999px;background:rgba(7,8,15,.88);backdrop-filter:blur(20px) saturate(160%);-webkit-backdrop-filter:blur(20px) saturate(160%);border:1px solid rgba(255,255,255,.08);box-shadow:0 24px 64px -20px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.04)}
+.ns-rev-label{display:none}
+.ns-rev-btn{background:transparent;border:none;color:var(--ns-text-3);font-size:13px;font-family:var(--ns-sans);padding:7px 16px;border-radius:999px;transition:color .2s,background .2s;cursor:pointer}.ns-rev-btn:hover{color:var(--ns-text-2)}
+.ns-rev-btn.is-active{background:rgba(255,255,255,.08);color:var(--ns-text);font-weight:500}
+.ns-rev-link{background:transparent;border:none;color:var(--ns-text-3);font-size:13px;font-family:var(--ns-sans);padding:7px 16px;border-radius:999px;transition:color .2s,background .2s;text-decoration:none}.ns-rev-link:hover{color:var(--ns-text-2);background:rgba(255,255,255,.05)}
+.ns-rev-divider{width:1px;height:20px;background:rgba(255,255,255,.07);margin:0 2px;flex-shrink:0}
 @media(max-width:980px){.ns-platform-grid{grid-template-columns:repeat(2,1fr)}.ns-vision-grid{grid-template-columns:1fr}}
 @media(max-width:920px){.ns-d-grid{grid-template-columns:repeat(2,1fr)}.ns-d-span-2,.ns-d-span-3{grid-column:span 2}.ns-d-tabs{display:none}}
 @media(max-width:680px){

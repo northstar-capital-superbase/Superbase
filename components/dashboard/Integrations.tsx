@@ -18,7 +18,6 @@ interface CheckResult {
   reply?: string;
   live?: boolean;
   persisted?: boolean;
-  // trading-specific
   enabled?: boolean;
   toolCount?: number;
 }
@@ -35,9 +34,6 @@ interface TradingStatus {
   error?: string;
 }
 
-// Live integration cockpit: shows the active LLM + memory backend and runs
-// real connectivity diagnostics (the same /api/health probes used in CI) so
-// the whole stack — Claude, Supabase, Robinhood — is verifiable from the dashboard.
 export function Integrations() {
   const [health, setHealth] = useState<Health | null>(null);
   const [llm, setLlm] = useState<Probe>(null);
@@ -49,18 +45,14 @@ export function Integrations() {
     try {
       const res = await fetch("/api/health");
       if (res.ok) setHealth(await res.json());
-    } catch {
-      /* ignore — surfaced by diagnostics */
-    }
+    } catch { /* ignore */ }
   }, []);
 
   const loadTradingStatus = useCallback(async () => {
     try {
       const res = await fetch("/api/trading");
       if (res.ok) setTradingStatus(await res.json());
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   }, []);
 
   useEffect(() => {
@@ -77,21 +69,9 @@ export function Integrations() {
       fetch("/api/health?memory=1").then((r) => r.json()),
       fetch("/api/trading?probe=1").then((r) => r.json()),
     ]);
-    setLlm(
-      llmRes.status === "fulfilled"
-        ? llmRes.value
-        : { ok: false, error: "request failed" },
-    );
-    setMem(
-      memRes.status === "fulfilled"
-        ? memRes.value
-        : { ok: false, error: "request failed" },
-    );
-    setTrading(
-      tradingRes.status === "fulfilled"
-        ? tradingRes.value
-        : { ok: false, error: "request failed" },
-    );
+    setLlm(llmRes.status === "fulfilled" ? llmRes.value : { ok: false, error: "request failed" });
+    setMem(memRes.status === "fulfilled" ? memRes.value : { ok: false, error: "request failed" });
+    setTrading(tradingRes.status === "fulfilled" ? tradingRes.value : { ok: false, error: "request failed" });
     loadHealth();
     loadTradingStatus();
   }, [loadHealth, loadTradingStatus]);
@@ -101,11 +81,7 @@ export function Integrations() {
     if (params.get("rh_connected") !== "1") return;
     params.delete("rh_connected");
     const qs = params.toString();
-    window.history.replaceState(
-      {},
-      "",
-      `${window.location.pathname}${qs ? `?${qs}` : ""}`,
-    );
+    window.history.replaceState({}, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
     void runDiagnostics();
   }, [runDiagnostics]);
 
@@ -115,96 +91,81 @@ export function Integrations() {
 
   return (
     <div className="panel p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-semibold text-white">Integrations</span>
-          <span className="text-[11px] text-slate-500">
-            live status &amp; diagnostics
-          </span>
+      <div className="mb-3 flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="label-mono">Connections</div>
+          <div className="flex items-center gap-1.5">
+            <span
+              className={clsx(
+                "h-1.5 w-1.5 rounded-full",
+                llmHealthy ? "bg-status-success" : "bg-slate-700",
+              )}
+            />
+            <span className="text-[11px] text-slate-600">
+              {health ? (llmHealthy ? `${health.provider} · ${health.model}` : "mock mode") : "loading…"}
+            </span>
+          </div>
         </div>
         <button
           onClick={runDiagnostics}
-          className="rounded-lg border border-white/5 bg-base-750/60 px-3 py-1.5 text-[12px] font-medium text-slate-200 transition hover:border-accent/40"
+          className="btn btn-secondary btn-xs"
         >
           Run diagnostics
         </button>
       </div>
 
       {!tradingEnabled && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/5 px-3 py-2 text-[12px] text-amber-100/90">
-          <span>
-            Connect Robinhood Agentic on desktop — OAuth opens Robinhood, then
-            stores a local token for MCP.
+        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-status-warning/15 bg-status-warning/5 px-3 py-2 text-[11px]">
+          <span className="flex-1 text-slate-500">
+            Connect Robinhood Agentic for autonomous trading — OAuth stores a local MCP token.
           </span>
           <a
             href="/api/trading/oauth/start"
-            className="rounded-md border border-accent/40 bg-accent/10 px-2.5 py-1 font-medium text-accent transition hover:bg-accent/20"
+            className="flex-shrink-0 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1 font-medium text-accent transition hover:bg-accent/15"
           >
             Connect Robinhood
           </a>
-          <span className="text-slate-500">
-            or Cursor → Tools &amp; MCPs →{" "}
-            <code className="text-[11px]">agent.robinhood.com/mcp/trading</code>
-          </span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <Tile
-          label="LLM provider"
-          value={health ? health.provider : "…"}
+          label="LLM"
+          value={health ? health.provider : "—"}
           sub={health?.model}
           state={health ? (llmHealthy ? "ok" : "warn") : "idle"}
-          note={
-            health?.mock
-              ? "mock mode — add ANTHROPIC_API_KEY"
-              : llmHealthy
-                ? "live model"
-                : undefined
-          }
+          note={health?.mock ? "add API key for live" : "live model"}
           probe={llm}
           okLabel={(r) => (r.live ? "reachable" : "ok")}
         />
         <Tile
-          label="Shared memory"
-          value={health ? prettyMemory(health.memory) : "…"}
-          sub={health?.memory === "supabase" ? "persistent" : "process-local"}
+          label="Memory"
+          value={health ? prettyMemory(health.memory) : "—"}
+          sub={health?.memory === "supabase" ? "persistent" : "ephemeral"}
           state={health ? (memHealthy ? "ok" : "warn") : "idle"}
-          note={
-            memHealthy
-              ? "Supabase connected"
-              : "in-memory (set SUPABASE_URL to persist)"
-          }
+          note={memHealthy ? "Supabase" : "in-process"}
           probe={mem}
           okLabel={(r) => (r.persisted ? "persisted" : "ok")}
         />
         <Tile
-          label="Robinhood Trading"
-          value={tradingStatus ? (tradingEnabled ? "connected" : "not configured") : "…"}
-          sub={
-            tradingEnabled
-              ? `agentic · ${tradingStatus?.mode ?? "auto"}`
-              : undefined
-          }
+          label="Robinhood"
+          value={tradingStatus ? (tradingEnabled ? "Connected" : "Not configured") : "—"}
+          sub={tradingEnabled ? `${tradingStatus?.mode} · $${tradingStatus?.maxOrderUsd} cap` : undefined}
           state={tradingStatus ? (tradingEnabled ? "ok" : "warn") : "idle"}
-          note={
-            tradingEnabled
-              ? `MCP live · $${tradingStatus?.maxOrderUsd ?? 100} cap / order`
-              : "Connect Robinhood above or set ROBINHOOD_MCP_TOKEN"
-          }
+          note={tradingEnabled ? "MCP live" : "OAuth required"}
           probe={trading}
           okLabel={(r) =>
             typeof r.toolCount === "number"
-              ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""} available`
+              ? `${r.toolCount} tools`
               : "reachable"
           }
         />
         <Tile
           label="GitHub"
-          value="connected"
-          sub="northstar-capital-superbase/superbase"
+          value="Connected"
+          sub="main"
           state="ok"
-          note="commits pushed to branch"
+          note="commits synced"
           probe={null}
           okLabel={() => "ok"}
         />
@@ -230,46 +191,42 @@ function Tile({
   probe: Probe;
   okLabel: (r: CheckResult) => string;
 }) {
-  const dot =
+  const dotClass =
     state === "ok"
-      ? "bg-signal-research"
+      ? "bg-status-success"
       : state === "warn"
-        ? "bg-signal-behavioral"
-        : "bg-slate-600";
+        ? "bg-status-warning"
+        : "bg-slate-700";
+
   return (
     <div className="panel-tight p-3">
-      <div className="flex items-center justify-between">
-        <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-          {label}
-        </span>
-        <span className={clsx("h-2 w-2 rounded-full", dot)} />
+      <div className="flex items-center justify-between gap-2">
+        <span className="label-mono">{label}</span>
+        <span className={clsx("h-1.5 w-1.5 rounded-full", dotClass)} />
       </div>
-      <div className="mt-1.5 truncate text-sm font-semibold text-white" title={value}>
+      <div className="mt-1.5 truncate text-[13px] font-semibold text-slate-100" title={value}>
         {value}
       </div>
-      {sub && <div className="truncate text-[11px] text-slate-500">{sub}</div>}
-      {note && <div className="mt-1 text-[11px] text-slate-500">{note}</div>}
+      {sub && <div className="truncate text-[10px] text-slate-600">{sub}</div>}
+      {note && !probe && <div className="mt-1 text-[10px] text-slate-700">{note}</div>}
 
       {probe === "loading" && (
-        <div className="mt-2 flex items-center gap-1.5 text-[11px] text-slate-400">
-          <span className="h-1.5 w-1.5 animate-pulseSoft rounded-full bg-accent" />
+        <div className="mt-1.5 flex items-center gap-1.5 text-[10px] text-slate-500">
+          <span className="h-1 w-1 animate-pulseSoft rounded-full bg-accent" />
           testing…
         </div>
       )}
       {probe && probe !== "loading" && (
         <div
           className={clsx(
-            "mt-2 rounded-md px-2 py-1 text-[11px]",
+            "mt-1.5 rounded px-1.5 py-0.5 text-[10px]",
             probe.ok
-              ? "bg-signal-research/10 text-signal-research"
-              : "bg-red-500/10 text-red-300",
+              ? "bg-status-success/10 text-status-success"
+              : "bg-status-danger/10 text-status-danger",
           )}
         >
           {probe.ok ? (
-            <span>
-              ✓ {okLabel(probe)}
-              {typeof probe.ms === "number" ? ` · ${probe.ms}ms` : ""}
-            </span>
+            <span>✓ {okLabel(probe)}{typeof probe.ms === "number" ? ` · ${probe.ms}ms` : ""}</span>
           ) : (
             <span title={probe.error}>✗ {truncate(probe.error)}</span>
           )}
@@ -285,5 +242,5 @@ function prettyMemory(m: string): string {
 
 function truncate(s?: string): string {
   if (!s) return "failed";
-  return s.length > 64 ? s.slice(0, 64) + "…" : s;
+  return s.length > 48 ? s.slice(0, 48) + "…" : s;
 }

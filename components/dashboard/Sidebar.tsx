@@ -1,8 +1,18 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import clsx from "clsx";
 import type { RuntimeInfo, TradingInfo } from "@/components/shared";
 
-// Left rail: brand, runtime status, and a quick legend of the lab's pipeline.
+const NAV = [
+  { href: "/dashboard", label: "Dashboard", short: "D" },
+  { href: "/trading", label: "Trading", short: "T" },
+  { href: "/labs", label: "Labs", short: "L" },
+  { href: "/agents", label: "Agents", short: "A" },
+  { href: "/memory", label: "Memory", short: "M" },
+];
+
 export function Sidebar({
   runtime,
   trading,
@@ -10,81 +20,105 @@ export function Sidebar({
   runtime: RuntimeInfo | null;
   trading: TradingInfo | null;
 }) {
+  const pathname = usePathname();
   const traderLive = trading?.traderInCrew ?? false;
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col gap-6 border-r border-white/5 bg-base-850/60 p-5">
-      <div className="flex items-center gap-3">
-        <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent/15 text-accent shadow-glow">
+    <aside className="flex h-full w-[220px] shrink-0 flex-col border-r border-white/[0.04] bg-base-900/80 backdrop-blur-sm">
+      {/* Brand */}
+      <div className="flex items-center gap-2.5 border-b border-white/[0.04] px-4 py-4">
+        <div className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg bg-accent/15 shadow-glow-accent">
           <StarIcon />
         </div>
-        <div>
-          <div className="text-sm font-semibold tracking-wide text-white">
-            Northstar Labs
+        <div className="min-w-0">
+          <div className="truncate text-[13px] font-semibold tracking-tight text-slate-100">
+            Northstar
           </div>
-          <div className="text-[11px] text-slate-500">Multi-Agent OS</div>
+          <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-slate-600">
+            OS · Labs
+          </div>
         </div>
       </div>
 
-      <div className="space-y-2">
-        <SectionLabel>Pipeline</SectionLabel>
-        <ol className="space-y-1.5 text-[13px] text-slate-400">
+      {/* Navigation */}
+      <div className="px-2 py-3">
+        <div className="label-mono mb-2 px-2">Navigation</div>
+        <div className="space-y-0.5">
+          {NAV.map((item) => {
+            const active = pathname === item.href;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={clsx(
+                  "flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] font-medium transition-colors",
+                  active
+                    ? "bg-accent/10 text-accent"
+                    : "text-slate-500 hover:bg-white/[0.04] hover:text-slate-300",
+                )}
+              >
+                <span className="font-mono text-[10px] w-3 text-center opacity-50">{item.short}</span>
+                {item.label}
+                {active && <span className="ml-auto h-1.5 w-1.5 rounded-full bg-accent opacity-75" />}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Pipeline legend */}
+      <div className="border-t border-white/[0.04] px-4 py-3">
+        <div className="label-mono mb-2">Pipeline</div>
+        <ol className="space-y-1.5 text-[12px] text-slate-500">
           <li className="flex items-center gap-2">
-            <Dot color="#6d8bff" /> Orchestrator plans
+            <Dot color="#6d8bff" /> Orchestrator
           </li>
           <li className="flex items-center gap-2">
-            <Dot color="#34d399" /> Research gathers
+            <Dot color="#34d399" /> Research
           </li>
           <li className="flex items-center gap-2">
-            <Dot color="#c084fc" /> Strategist sequences
+            <Dot color="#a78bfa" /> Strategist
           </li>
           <li className="flex items-center gap-2">
-            <Dot color="#fbbf24" /> Behavioral checks
+            <Dot color="#fbbf24" /> Behavioral
           </li>
           {traderLive && (
             <li className="flex items-center gap-2">
-              <Dot color="#22d3ee" /> Trader executes (Robinhood MCP)
+              <Dot color="#22d3ee" /> Trader
             </li>
           )}
           <li className="flex items-center gap-2">
-            <Dot color="#6d8bff" /> Orchestrator synthesizes
+            <Dot color="#6d8bff" /> Synthesis
           </li>
         </ol>
       </div>
 
-      <div className="mt-auto space-y-2">
-        <SectionLabel>Runtime</SectionLabel>
-        <div className="panel-tight space-y-2 p-3 text-[12px]">
-          <Row label="Model provider" value={runtime?.provider ?? "…"} />
+      {/* Runtime status */}
+      <div className="mt-auto border-t border-white/[0.04] px-4 py-3">
+        <div className="label-mono mb-2">Runtime</div>
+        <div className="panel-tight space-y-1.5 p-2.5 text-[11px]">
+          <Row label="Provider" value={runtime?.provider ?? "…"} />
           <Row label="Model" value={runtime?.model ?? "…"} />
           <Row
             label="Memory"
             value={runtime?.memory === "supabase" ? "Supabase" : "In-memory"}
           />
           <Row
-            label="Robinhood MCP"
+            label="Robinhood"
             value={
               trading
                 ? trading.enabled
-                  ? `live · ${trading.mode}`
-                  : "advisory (no token)"
+                  ? "live"
+                  : "advisory"
                 : "…"
             }
           />
         </div>
-        <p className="px-1 text-[11px] leading-relaxed text-slate-600">
-          {runtime?.provider === "mock"
-            ? "Mock mode — add ANTHROPIC_API_KEY for live models."
-            : traderLive
-              ? `Trader joins every crew run · cap $${trading?.maxOrderUsd} / order`
-              : "Live model connected."}
-        </p>
-        <a
-          href="/tour"
-          className="block px-1 pt-1 text-[11px] text-slate-500 transition hover:text-accent"
-        >
-          UI tour →
-        </a>
+        {runtime?.provider === "mock" && (
+          <p className="mt-2 text-[10px] leading-relaxed text-slate-700">
+            Mock mode — add ANTHROPIC_API_KEY for live models.
+          </p>
+        )}
       </div>
     </aside>
   );
@@ -93,18 +127,10 @@ export function Sidebar({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-center justify-between gap-2">
-      <span className="text-slate-500">{label}</span>
-      <span className="truncate font-mono text-slate-300" title={value}>
+      <span className="text-slate-600">{label}</span>
+      <span className="truncate font-mono text-slate-400" title={value}>
         {value}
       </span>
-    </div>
-  );
-}
-
-function SectionLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-600">
-      {children}
     </div>
   );
 }
@@ -112,7 +138,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 function Dot({ color }: { color: string }) {
   return (
     <span
-      className="inline-block h-1.5 w-1.5 rounded-full"
+      className="inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full"
       style={{ backgroundColor: color }}
     />
   );
@@ -120,10 +146,11 @@ function Dot({ color }: { color: string }) {
 
 function StarIcon() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
       <path
-        d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"
+        d="M12 2l1.8 5.8 5.8 1.2-4.8 3.8 1.8 5.8-4.6-3.2-4.6 3.2 1.8-5.8L3.4 9l5.8-1.2L12 2z"
         fill="currentColor"
+        className="text-accent"
       />
     </svg>
   );

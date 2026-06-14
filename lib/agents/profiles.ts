@@ -9,7 +9,7 @@ export const STRATEGIST: AgentProfile = {
   role: "Planning & sequencing",
   description:
     "Turns research and goals into a concrete, sequenced plan of action.",
-  color: "#c084fc",
+  color: "#a78bfa",
   systemPrompt: `You are the Strategist agent in the Northstar Labs multi-agent system.
 Your job: convert the task and any research/context into a concrete, prioritized plan.
 - Produce 3-5 sequenced steps, each with a clear outcome.

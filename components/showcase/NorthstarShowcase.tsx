@@ -41,13 +41,13 @@ export function NorthstarShowcase() {
         )}
       </div>
 
-      <div className="ns-rev" role="navigation" aria-label="Showcase navigation">
-        <span className="ns-rev-label">SHOWCASE</span>
+      {/* Product navigation pill */}
+      <nav className="ns-rev" role="navigation" aria-label="Product navigation">
         {(
           [
             ["home", "Home"],
-            ["login", "Login"],
-            ["dashboard", "Dashboard"],
+            ["login", "Sign in"],
+            ["dashboard", "Preview"],
           ] as const
         ).map(([v, l]) => (
           <button
@@ -59,10 +59,14 @@ export function NorthstarShowcase() {
             {l}
           </button>
         ))}
+        <span className="ns-rev-divider" aria-hidden="true" />
+        <Link href="/dashboard" className="ns-rev-link">
+          Dashboard →
+        </Link>
         <Link href="/labs" className="ns-rev-link">
           Labs
         </Link>
-      </div>
+      </nav>
     </div>
   );
 }
