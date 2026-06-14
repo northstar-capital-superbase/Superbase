@@ -223,7 +223,7 @@ function EmptyState({
   const samples = tradingEnabled ? TRADING_SAMPLES : SAMPLES;
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow">
+      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow-accent">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
           <path
             d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"

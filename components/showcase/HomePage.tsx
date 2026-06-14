@@ -55,19 +55,21 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
 
   const vision = [
     {
-      tag: "PARENT",
-      name: "Northstar Capital",
-      body: "The holding structure for autonomous finance — capital, research, and infrastructure under one architecture.",
+      tag: "INTELLIGENCE",
+      name: "Dashboard",
+      body: "Your AI Chief Investment Officer — briefing you on portfolio health, agent activity, and emerging opportunities every morning.",
+      href: "/dashboard",
     },
     {
-      tag: "PLATFORM",
-      name: "Northstar OS",
-      body: "The operating system where capital is allocated, routed, and put to work by intelligent systems.",
+      tag: "EXECUTION",
+      name: "Trading",
+      body: "Robinhood Agentic account center — understand what the AI is doing with your capital, and why every decision was made.",
+      href: "/trading",
     },
     {
-      tag: "RESEARCH",
-      name: "Northstar Labs",
-      body: "Where new agent architectures, memory models, and allocation logic are proven before they ship.",
+      tag: "CREATION",
+      name: "Labs",
+      body: "The orchestration workspace. Build agents, run multi-agent crews, launch research, and create strategies.",
       href: "/labs",
     },
   ];
@@ -154,17 +156,12 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
           </a>
           <nav className="ns-nav-links" aria-label="Primary">
             <a href="#platform">Platform</a>
-            <a href="#vision">Vision</a>
-            <a href="#labs">Labs</a>
-            <a href="#art">System</a>
+            <a href="#vision">OS</a>
+            <Link href="/labs">Labs</Link>
           </nav>
-          <button
-            type="button"
-            className="ns-btn ns-btn-ghost ns-nav-cta"
-            onClick={onLaunch}
-          >
-            Launch Northstar <Arrow />
-          </button>
+          <Link href="/dashboard" className="ns-btn ns-btn-ghost ns-nav-cta">
+            Open Dashboard <Arrow />
+          </Link>
         </div>
       </header>
 
@@ -199,15 +196,11 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
             className="ns-hero-cta ns-fade"
             style={{ transitionDelay: "440ms" }}
           >
-            <button
-              type="button"
-              className="ns-btn ns-btn-primary"
-              onClick={onLaunch}
-            >
-              Launch Northstar <Arrow />
-            </button>
+            <Link href="/dashboard" className="ns-btn ns-btn-primary">
+              Open Dashboard <Arrow />
+            </Link>
             <a href="#platform" className="ns-btn ns-btn-ghost">
-              Explore the platform <Arrow />
+              Explore platform <Arrow />
             </a>
           </div>
           <div
@@ -231,11 +224,11 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
 
       <Section id="vision">
         <div className="ns-head">
-          <span className="ns-eyebrow">THE STRUCTURE</span>
-          <h2 className="ns-h2">One architecture. Three disciplines.</h2>
+          <span className="ns-eyebrow">THE OS</span>
+          <h2 className="ns-h2">Every area. One system.</h2>
           <p className="ns-lede">
-            Northstar is built as a system, not a product line. Each part holds a
-            clear mandate, and they compound into something durable.
+            Dashboard, Trading, Labs — each a different room in the same building.
+            Every surface reads from the same intelligence layer.
           </p>
         </div>
         <div className="ns-vision-grid">
@@ -253,7 +246,7 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
               <p className="ns-vision-body">{v.body}</p>
               {"href" in v && v.href && (
                 <Link href={v.href} className="ns-vision-link">
-                  Open Northstar Labs <Arrow />
+                  Open {v.name} <Arrow />
                 </Link>
               )}
             </article>
@@ -266,8 +259,8 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
           <span className="ns-eyebrow">THE PLATFORM</span>
           <h2 className="ns-h2">Everything capital needs to run itself.</h2>
           <p className="ns-lede">
-            Six systems, one runtime. Composable, observable, and built to
-            allocate without a person in the loop for every decision.
+            Six systems, one runtime. Composable, observable, and designed to
+            allocate without a human in the loop for every decision.
           </p>
         </div>
         <div className="ns-platform-grid">
@@ -359,15 +352,16 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
             <br />
             outlast decisions.
           </h2>
-          <button
-            type="button"
-            className="ns-btn ns-btn-primary ns-btn-lg"
-            onClick={onLaunch}
-          >
-            Enter Northstar <Arrow />
-          </button>
+          <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", justifyContent: "center" }}>
+            <Link href="/dashboard" className="ns-btn ns-btn-primary ns-btn-lg">
+              Open Dashboard <Arrow />
+            </Link>
+            <Link href="/labs" className="ns-btn ns-btn-ghost ns-btn-lg">
+              Open Labs <Arrow />
+            </Link>
+          </div>
           <p className="ns-final-note">
-            Northstar OS is currently in private development.
+            Northstar OS · Private beta
           </p>
         </div>
       </section>
@@ -380,14 +374,17 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
           </div>
           <div className="ns-footer-cols">
             <div>
-              <span className="ns-mono-tag">PLATFORM</span>
-              <a href="#platform">Systems</a>
-              <a href="#art">The system</a>
+              <span className="ns-mono-tag">APP</span>
+              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/trading">Trading</Link>
+              <Link href="/labs">Labs</Link>
+              <Link href="/agents">Agents</Link>
             </div>
             <div>
-              <span className="ns-mono-tag">COMPANY</span>
-              <a href="#vision">Vision</a>
-              <Link href="/labs">Labs</Link>
+              <span className="ns-mono-tag">PRODUCT</span>
+              <a href="#vision">OS</a>
+              <a href="#platform">Platform</a>
+              <a href="#art">System</a>
             </div>
           </div>
           <div className="ns-footer-meta">
