@@ -75,9 +75,9 @@ export function ConfidenceGauge({ pct }: { pct: number }) {
     >
       <defs>
         <linearGradient id={gid} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stopColor="#6e8bff" />
-          <stop offset="55%" stopColor="#a78bfa" />
-          <stop offset="100%" stopColor="#3fe0a6" />
+          <stop offset="0%" stopColor="#4d6bff" />
+          <stop offset="55%" stopColor="#6e8bff" />
+          <stop offset="100%" stopColor="#9db4ff" />
         </linearGradient>
       </defs>
       <path

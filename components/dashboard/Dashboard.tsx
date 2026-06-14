@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
-import { Integrations } from "./Integrations";
+import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
 import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { Chat, type ChatTurn } from "@/components/chat/Chat";
@@ -239,50 +239,61 @@ export function Dashboard() {
   }, [activeId, sessions]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar runtime={runtime} trading={trading} />
+    <div className="relative flex h-screen w-full overflow-hidden">
+      {/* White-fades-into-dark premium backdrop */}
+      <div
+        className="pointer-events-none absolute inset-0 z-0"
+        aria-hidden="true"
+        style={{
+          background:
+            "radial-gradient(1200px 560px at 50% -220px, rgba(214,224,255,0.16), transparent 62%), linear-gradient(180deg, rgba(120,140,210,0.08), transparent 28%)",
+        }}
+      />
+      <div className="relative z-10 flex h-full w-full overflow-hidden">
+        <Sidebar runtime={runtime} trading={trading} />
 
-      <main className="flex min-w-0 flex-1 flex-col gap-4 p-4">
-        <header className="flex items-end justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-white">
-              Agent Operating System
-            </h1>
-            <p className="text-[12px] text-slate-500">
-              Local-first multi-agent lab · {sessions.length}{" "}
-              {sessions.length === 1 ? "lab" : "labs"}
-            </p>
-          </div>
-          <SessionSwitcher
-            sessions={sessions}
-            activeId={activeId}
-            onSwitch={setActive}
-            onCreate={create}
-            onRemove={removeSession}
-          />
-        </header>
-
-        <Integrations />
-
-        <AgentRoster agents={agents} statuses={statuses} />
-
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-          <Chat
-            turns={turns}
-            busy={busy}
-            onSend={send}
-            tradingEnabled={trading?.traderInCrew ?? false}
-          />
-          <div className="hidden min-h-0 lg:block">
-            <MemoryPanel
-              entries={memory}
-              onClear={clearMemory}
-              onExplore={() => setExplorerOpen(true)}
-              onExport={exportLab}
+        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
+          <header className="flex items-end justify-between gap-3">
+            <div>
+              <h1 className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-lg font-semibold text-transparent">
+                Northstar Labs · Multi-Agent OS
+              </h1>
+              <p className="text-[12px] text-slate-500">
+                Local-first multi-agent lab · {sessions.length}{" "}
+                {sessions.length === 1 ? "lab" : "labs"}
+              </p>
+            </div>
+            <SessionSwitcher
+              sessions={sessions}
+              activeId={activeId}
+              onSwitch={setActive}
+              onCreate={create}
+              onRemove={removeSession}
             />
+          </header>
+
+          <Connections />
+
+          <AgentRoster agents={agents} statuses={statuses} />
+
+          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+            <Chat
+              turns={turns}
+              busy={busy}
+              onSend={send}
+              tradingEnabled={trading?.traderInCrew ?? false}
+            />
+            <div className="hidden min-h-0 lg:block">
+              <MemoryPanel
+                entries={memory}
+                onClear={clearMemory}
+                onExplore={() => setExplorerOpen(true)}
+                onExport={exportLab}
+              />
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
 
       <MemoryExplorer
         sessionId={activeId}

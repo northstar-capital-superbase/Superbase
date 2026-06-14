@@ -192,7 +192,7 @@ export const ROBINHOOD = {
       dayPct: 0.9,
       value: 10963,
       weight: 38,
-      color: "#6E8BFF",
+      color: "#4D6BFF",
     },
     {
       ticker: "QQQM",
@@ -202,7 +202,7 @@ export const ROBINHOOD = {
       dayPct: 1.6,
       value: 7591,
       weight: 27,
-      color: "#A78BFA",
+      color: "#8AA6FF",
     },
     {
       ticker: "NVDA",
@@ -212,7 +212,7 @@ export const ROBINHOOD = {
       dayPct: 2.7,
       value: 1183,
       weight: 12,
-      color: "#3FE0A6",
+      color: "#9DB4FF",
     },
     {
       ticker: "VXUS",

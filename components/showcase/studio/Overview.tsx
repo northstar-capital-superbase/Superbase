@@ -66,7 +66,7 @@ export function Overview({
         </div>
         <button
           type="button"
-          className="nx-btn nx-btn-green"
+          className="nx-btn nx-btn-aurora"
           onClick={() => onNavigate("robinhood")}
         >
           Open the trading desk <Arrow />

@@ -1,10 +1,27 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { CapitalFlow } from "../art";
+import {
+  CapitalFlow,
+  StudyAgentMesh,
+  StudyCapitalFlow,
+  StudyCommand,
+  StudyNorthStar,
+  StudyPortfolioOS,
+  StudyRouting,
+} from "../art";
 import { Arrow, Glyph } from "../icons";
 import type { GlyphKind, StudioSection } from "../types";
 import { useReveal } from "../utils";
+
+const ART = [
+  { Comp: StudyCapitalFlow, label: "CAPITAL FLOW", coord: "INCOME → RESERVE · 5 STAGES", caption: "How capital moves" },
+  { Comp: StudyAgentMesh, label: "AGENT MESH", coord: "AGENTS 7 · CONSENSUS 100%", caption: "How agents agree" },
+  { Comp: StudyPortfolioOS, label: "PORTFOLIO OS", coord: "CORE 55 · GROWTH 25 · INTL 20", caption: "How weight is held" },
+  { Comp: StudyRouting, label: "ROUTING", coord: "TRACES 9 · Δ 12MS", caption: "How decisions route" },
+  { Comp: StudyCommand, label: "COMMAND", coord: "OPS QUEUE · 3 PENDING", caption: "How operators steer" },
+  { Comp: StudyNorthStar, label: "NORTH STAR", coord: "OBJECTIVE · LONG-TERM", caption: "The guiding objective" },
+];
 
 function Reveal({
   children,
@@ -98,31 +115,32 @@ export function Landing({
       <section className="nx-hero">
         <div className="nx-container">
           <span className="nx-hero-pill">
-            <span className="nx-live" /> <b>Robinhood Agentic</b> · now live in
-            the OS
+            <span className="nx-live" /> <b>Robinhood Agentic</b> · live in the
+            operating system
           </span>
           <h1 className="nx-h1">
             The operating system for{" "}
-            <span className="nx-grad">autonomous finance</span>
+            <span className="nx-grad">autonomous capital</span>
           </h1>
           <p className="nx-lede">
-            Build, orchestrate, and scale intelligent financial systems —
-            capital routed, traded, and put to work, automatically.
+            Northstar gives capital a mind of its own — a coordinated crew of
+            agents that research, decide, and execute, with every move
+            observable and every decision accountable.
           </p>
           <div className="nx-hero-cta">
             <button
               type="button"
-              className="nx-btn nx-btn-aurora"
+              className="nx-btn nx-btn-aurora nx-glowpulse"
               onClick={() => onNavigate("overview")}
             >
-              Launch Northstar <Arrow />
+              Enter the OS <Arrow />
             </button>
             <button
               type="button"
               className="nx-btn nx-btn-ghost"
               onClick={() => onNavigate("robinhood")}
             >
-              Meet the trading agent <Arrow />
+              See the trading agent <Arrow />
             </button>
           </div>
 
@@ -130,7 +148,7 @@ export function Landing({
             {[
               ["4", "Specialist agents"],
               ["78%", "Live conviction"],
-              ["0", "API keys to start"],
+              ["<1s", "To first signal"],
             ].map(([n, l]) => (
               <div key={l}>
                 <div className="nx-hero-stat-n">{n}</div>
@@ -160,8 +178,8 @@ export function Landing({
           <span className="nx-eyebrow">THE STRUCTURE</span>
           <h2 className="nx-h2">One architecture. Three disciplines.</h2>
           <p className="nx-lede">
-            Northstar is built as a system, not a product line. Each part holds
-            a clear mandate, and they compound into something durable.
+            Northstar is engineered as a single system, not a product line — a
+            platform to run it, a desk to trade it, and a lab to advance it.
           </p>
         </div>
         <div className="nx-pillars">
@@ -193,7 +211,7 @@ export function Landing({
           <span className="nx-eyebrow">THE PLATFORM</span>
           <h2 className="nx-h2">Everything capital needs to run itself.</h2>
           <p className="nx-lede">
-            Six systems, one runtime. Composable, observable, and built to
+            Six systems, one runtime — composable, observable, and built to
             allocate without a person in the loop for every decision.
           </p>
         </div>
@@ -210,6 +228,35 @@ export function Landing({
         </div>
       </Reveal>
 
+      {/* AI-art system showcase */}
+      <Reveal>
+        <div className="nx-head">
+          <span className="nx-eyebrow">THE SYSTEM, RENDERED</span>
+          <h2 className="nx-h2">Generative studies of a system at work.</h2>
+          <p className="nx-lede">
+            Live, generated renderings of the machinery underneath — capital
+            flow, agent consensus, and decision routing, drawn in real time.
+            Drag to explore.
+          </p>
+        </div>
+        <div className="nx-art-rail" role="list">
+          {ART.map(({ Comp, label, coord, caption }) => (
+            <figure className="nx-art-panel" role="listitem" key={label}>
+              <div className="nx-art-frame">
+                <Comp />
+                <span className="nx-art-corner tl" aria-hidden="true" />
+                <span className="nx-art-corner br" aria-hidden="true" />
+              </div>
+              <figcaption className="nx-art-cap">
+                <span className="nx-art-label">{label}</span>
+                <span className="nx-art-caption">{caption}</span>
+                <span className="nx-art-coord">{coord}</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </Reveal>
+
       {/* CTA */}
       <section className="nx-cta">
         <div className="nx-cta-glow" aria-hidden="true" />
@@ -217,7 +264,7 @@ export function Landing({
           <h2 className="nx-h2">Build systems that outlast decisions.</h2>
           <button
             type="button"
-            className="nx-btn nx-btn-aurora nx-btn-lg"
+            className="nx-btn nx-btn-aurora nx-btn-lg nx-glowpulse"
             onClick={() => onNavigate("robinhood")}
           >
             Enter Northstar <Arrow />

@@ -34,7 +34,7 @@ function Card({
 }
 
 const ACTIVITY_COLOR: Record<ActivityState, string> = {
-  active: "#3fe0a6",
+  active: "#8aa6ff",
   done: "#6e8bff",
   queued: "#e2b17c",
 };
@@ -90,7 +90,7 @@ export function RobinhoodAgentic() {
               every decision before a single order goes out.
             </p>
             <div className="nx-rh-actions">
-              <button type="button" className="nx-btn nx-btn-green">
+              <button type="button" className="nx-btn nx-btn-aurora nx-glowpulse">
                 Connect Robinhood <Arrow />
               </button>
               <div className="nx-toggle" role="group" aria-label="Trading mode">
@@ -145,7 +145,7 @@ export function RobinhoodAgentic() {
             <span className="nx-delta-sub">today</span>
           </div>
           <div style={{ marginTop: 8 }}>
-            <Sparkline data={rh.account.history} color="#3fe0a6" />
+            <Sparkline data={rh.account.history} color="#6e8bff" />
           </div>
           <div className="nx-foot">
             <span>
