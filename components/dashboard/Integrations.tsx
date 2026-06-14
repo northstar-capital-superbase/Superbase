@@ -108,20 +108,20 @@ export function Integrations() {
         </div>
         <button
           onClick={runDiagnostics}
-          className="btn btn-secondary btn-xs"
+          className="btn btn-secondary btn-xs min-h-[36px]"
         >
           Run diagnostics
         </button>
       </div>
 
       {!tradingEnabled && (
-        <div className="mb-3 flex flex-wrap items-center gap-2 rounded-lg border border-status-warning/15 bg-status-warning/5 px-3 py-2 text-[11px]">
-          <span className="flex-1 text-slate-500">
+        <div className="mb-3 space-y-2 rounded-lg border border-status-warning/15 bg-status-warning/5 px-3 py-2.5 text-[11px] sm:flex sm:flex-row sm:items-center sm:gap-3 sm:space-y-0">
+          <span className="block flex-1 text-slate-500">
             Connect Robinhood Agentic for autonomous trading — OAuth stores a local MCP token.
           </span>
           <a
             href="/api/trading/oauth/start"
-            className="flex-shrink-0 rounded-md border border-accent/30 bg-accent/10 px-2.5 py-1 font-medium text-accent transition hover:bg-accent/15"
+            className="mt-2 inline-flex min-h-[36px] items-center rounded-md border border-accent/30 bg-accent/10 px-3 py-1.5 font-medium text-accent transition hover:bg-accent/15 sm:mt-0 sm:flex-shrink-0"
           >
             Connect Robinhood
           </a>

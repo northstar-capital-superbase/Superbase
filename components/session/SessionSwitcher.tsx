@@ -26,7 +26,7 @@ export function SessionSwitcher({
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-lg border border-white/5 bg-base-750/60 px-3 py-1.5 text-[13px] text-slate-200 transition hover:border-accent/40"
+        className="flex min-h-[36px] items-center gap-2 rounded-lg border border-white/5 bg-base-750/60 px-3 py-1.5 text-[13px] text-slate-200 transition hover:border-accent/40 active:bg-white/[0.06]"
       >
         <span className="h-1.5 w-1.5 rounded-full bg-accent" />
         <span className="max-w-[160px] truncate font-medium">
@@ -38,7 +38,7 @@ export function SessionSwitcher({
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="panel absolute right-0 z-20 mt-1.5 w-72 p-2">
+          <div className="panel absolute right-0 z-20 mt-1.5 w-[min(288px,85vw)] p-2">
             <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
               Labs
             </div>

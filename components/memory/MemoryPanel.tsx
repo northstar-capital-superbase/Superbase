@@ -23,23 +23,23 @@ export function MemoryPanel({
             {entries.length} {entries.length === 1 ? "entry" : "entries"}
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1">
           <button
             onClick={onExplore}
-            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
+            className="rounded-md border border-white/5 px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
           >
             Explore
           </button>
           <button
             onClick={onExport}
             title="Download this lab's memory as Markdown"
-            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
+            className="rounded-md border border-white/5 px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
           >
             Export
           </button>
           <button
             onClick={onClear}
-            className="rounded-md border border-white/5 px-2 py-1 text-[11px] text-slate-400 transition hover:border-white/10 hover:text-slate-200"
+            className="rounded-md border border-white/5 px-2.5 py-1.5 text-[11px] text-slate-400 transition hover:border-white/10 hover:text-slate-200"
           >
             Clear
           </button>

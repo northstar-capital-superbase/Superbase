@@ -179,20 +179,75 @@ body {
   overflow: hidden;
 }
 
+/* Desktop sidebar — hidden on mobile, shown at md+ */
 .app-nav {
   width: var(--ns-nav-width);
   flex-shrink: 0;
-  display: flex;
+  display: none; /* hidden below md */
   flex-direction: column;
   border-right: 1px solid var(--ns-border);
   background: rgba(7, 8, 15, 0.85);
   backdrop-filter: blur(20px);
 }
+@media (min-width: 768px) {
+  .app-nav { display: flex; }
+}
 
+/* Content area — full width on mobile, sidebar-offset on md+ */
 .app-content {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
+  /* Reserve space for fixed mobile top bar */
+  padding-top: 49px;
+}
+@media (min-width: 768px) {
+  .app-content { padding-top: 0; }
+}
+
+/* Fixed mobile top bar */
+.app-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  height: 49px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--ns-border);
+  background: rgba(5, 6, 12, 0.92);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+}
+@media (min-width: 768px) {
+  .app-topbar { display: none; }
+}
+
+/* Mobile nav drawer overlay */
+.app-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  background: rgba(5, 6, 12, 0.7);
+  backdrop-filter: blur(4px);
+}
+
+.app-drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 51;
+  width: min(280px, 85vw);
+  display: flex;
+  flex-direction: column;
+  background: rgba(10, 12, 22, 0.98);
+  border-right: 1px solid var(--ns-border);
+  backdrop-filter: blur(20px);
+  animation: slideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Showcase (Marketing site) ─────────────────────────────────────────────── */

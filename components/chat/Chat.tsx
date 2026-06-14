@@ -74,13 +74,13 @@ export function Chat({
               }
             }}
             rows={1}
-            placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
-            className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
+            placeholder="Give the lab a task…"
+            className="max-h-32 flex-1 resize-none bg-transparent px-2 py-2 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
           />
           <button
             onClick={submit}
             disabled={busy || !input.trim()}
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-base-900 transition enabled:hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex min-h-[36px] min-w-[52px] items-center justify-center rounded-lg bg-accent px-3 text-sm font-medium text-base-900 transition enabled:hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
           >
             Run
           </button>

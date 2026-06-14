@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { Integrations } from "./Integrations";
@@ -18,6 +19,7 @@ import {
   type RuntimeInfo,
   type TradingInfo,
 } from "@/components/shared";
+import clsx from "clsx";
 
 // Rebuild a chat transcript from persisted memory: user messages become user
 // turns, the orchestrator's synthesis (its agent_output) becomes the assistant
@@ -238,12 +240,92 @@ export function Dashboard() {
     URL.revokeObjectURL(url);
   }, [activeId, sessions]);
 
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+
   return (
     <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar runtime={runtime} trading={trading} />
+      {/* Sidebar — hidden on mobile, shown md+ */}
+      <div className="hidden md:block">
+        <Sidebar runtime={runtime} trading={trading} />
+      </div>
 
-      <main className="flex min-w-0 flex-1 flex-col gap-4 p-4">
-        <header className="flex items-end justify-between gap-3">
+      {/* Mobile nav drawer */}
+      {mobileNavOpen && (
+        <>
+          <div
+            className="fixed inset-0 z-50 bg-base-950/70 backdrop-blur-sm md:hidden"
+            onClick={() => setMobileNavOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="fixed bottom-0 left-0 right-0 z-[51] animate-fadeUp rounded-t-2xl border-t border-white/[0.06] bg-base-900/98 p-4 md:hidden">
+            <div className="mb-3 flex items-center justify-between">
+              <span className="label-mono">Navigation</span>
+              <button
+                onClick={() => setMobileNavOpen(false)}
+                className="h-8 w-8 flex items-center justify-center rounded-lg text-slate-500 hover:text-slate-300"
+                aria-label="Close navigation"
+              >
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                  <path d="M2 2l10 10M12 2L2 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { href: "/dashboard", label: "Dashboard" },
+                { href: "/trading", label: "Trading" },
+                { href: "/labs", label: "Labs" },
+                { href: "/agents", label: "Agents" },
+                { href: "/memory", label: "Memory" },
+                { href: "/", label: "Home" },
+              ].map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileNavOpen(false)}
+                  className={clsx(
+                    "flex min-h-[44px] items-center justify-center rounded-lg border px-2 py-2 text-[12px] font-medium transition-colors",
+                    item.href === "/labs"
+                      ? "border-accent/20 bg-accent/10 text-accent"
+                      : "border-white/[0.06] bg-white/[0.02] text-slate-400 hover:text-slate-200",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+
+      <main className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-3 md:gap-4 md:p-4">
+        {/* Mobile top bar */}
+        <div className="flex items-center gap-2 md:hidden">
+          <button
+            onClick={() => setMobileNavOpen(true)}
+            aria-label="Open navigation"
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg border border-white/[0.06] text-slate-400 transition-colors hover:bg-white/[0.04] hover:text-slate-200 active:bg-white/[0.06]"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+            </svg>
+          </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-[15px] font-semibold text-white">Northstar Labs</h1>
+            <p className="text-[10px] text-slate-600">
+              {sessions.length} {sessions.length === 1 ? "lab" : "labs"}
+            </p>
+          </div>
+          <SessionSwitcher
+            sessions={sessions}
+            activeId={activeId}
+            onSwitch={setActive}
+            onCreate={create}
+            onRemove={removeSession}
+          />
+        </div>
+
+        <header className="hidden items-end justify-between gap-3 md:flex">
           <div>
             <h1 className="text-lg font-semibold text-white">
               Agent Operating System
@@ -266,7 +348,7 @@ export function Dashboard() {
 
         <AgentRoster agents={agents} statuses={statuses} />
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-3 md:gap-4 lg:grid-cols-[1fr_320px]">
           <Chat
             turns={turns}
             busy={busy}

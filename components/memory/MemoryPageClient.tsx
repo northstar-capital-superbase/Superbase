@@ -1,10 +1,9 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MemoryExplorer } from "./MemoryExplorer";
 import { AGENT_META, type MemoryEntry } from "@/components/shared";
 import { useSessions } from "@/components/session/useSessions";
-import { useEffect } from "react";
 import clsx from "clsx";
 
 const KIND_COLORS: Record<string, string> = {
@@ -33,9 +32,7 @@ export function MemoryPageClient() {
     }
   }, [activeId]);
 
-  useEffect(() => {
-    void loadMemory();
-  }, [loadMemory]);
+  useEffect(() => { void loadMemory(); }, [loadMemory]);
 
   const clearMemory = useCallback(async () => {
     await fetch(`/api/memory?sessionId=${activeId}`, { method: "DELETE" });
@@ -46,10 +43,10 @@ export function MemoryPageClient() {
     const res = await fetch(`/api/memory?sessionId=${activeId}&limit=500`);
     if (!res.ok) return;
     const data = await res.json();
-    const entries: MemoryEntry[] = data.entries ?? [];
+    const all: MemoryEntry[] = data.entries ?? [];
     const name = sessions.find((s) => s.id === activeId)?.name ?? activeId;
     const header = `# Northstar Memory — ${name}\n\n_Lab \`${activeId}\` · exported ${new Date().toLocaleString()}_\n`;
-    const body = entries
+    const body = all
       .map(
         (e) =>
           `\n## ${e.author} · ${e.kind} · ${new Date(e.createdAt).toLocaleString()}\n\n${e.content}`,
@@ -81,27 +78,29 @@ export function MemoryPageClient() {
   );
 
   return (
-    <div className="min-h-full px-6 py-8">
+    <div className="min-h-full px-4 py-6 md:px-6 md:py-8">
       {/* Header */}
-      <div className="mb-8">
-        <div className="label-mono mb-2">Institutional Context</div>
-        <div className="flex items-start justify-between gap-4">
+      <div className="mb-6 md:mb-8">
+        <div className="label-mono mb-1.5 md:mb-2">Institutional Context</div>
+        {/* Title row: stacks on mobile, side-by-side on sm+ */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-heading-xl font-semibold tracking-tight text-slate-100">
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100 md:text-heading-xl">
               Memory
             </h1>
-            <p className="mt-1 text-body-md text-slate-500">
-              Every insight, plan, and decision agents have produced — searchable and persistent.
+            <p className="mt-1 text-body-sm text-slate-500 md:text-body-md">
+              Every insight, plan, and decision agents have produced.
             </p>
           </div>
-          <div className="flex items-center gap-2 pt-1">
-            <button onClick={() => setExplorerOpen(true)} className="btn btn-secondary btn-sm">
+          {/* Action buttons — horizontal on all sizes, wrap if needed */}
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setExplorerOpen(true)} className="btn btn-secondary btn-sm flex-1 sm:flex-none">
               Search
             </button>
-            <button onClick={exportMemory} className="btn btn-secondary btn-sm">
+            <button onClick={exportMemory} className="btn btn-secondary btn-sm flex-1 sm:flex-none">
               Export
             </button>
-            <button onClick={clearMemory} className="btn btn-danger btn-sm">
+            <button onClick={clearMemory} className="btn btn-danger btn-sm flex-1 sm:flex-none">
               Clear
             </button>
           </div>
@@ -109,16 +108,18 @@ export function MemoryPageClient() {
       </div>
 
       {/* Stats row */}
-      <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <div className="panel p-4">
-          <div className="label-mono mb-1">Total Entries</div>
-          <div className="tabular-nums text-2xl font-semibold text-slate-100">{entries.length}</div>
+      <div className="mb-5 grid grid-cols-2 gap-3 md:mb-6 md:gap-4 sm:grid-cols-4">
+        <div className="panel p-3 md:p-4">
+          <div className="label-mono mb-1">Total</div>
+          <div className="tabular-nums text-xl font-semibold text-slate-100 md:text-2xl">
+            {entries.length}
+          </div>
         </div>
-        {Object.entries(kindCounts).map(([kind, count]) => (
-          <div key={kind} className="panel p-4">
-            <div className="label-mono mb-1">{kind.replace("_", " ")}</div>
+        {Object.entries(kindCounts).slice(0, 3).map(([kind, count]) => (
+          <div key={kind} className="panel p-3 md:p-4">
+            <div className="label-mono mb-1 truncate">{kind.replace("_", " ")}</div>
             <div
-              className="tabular-nums text-2xl font-semibold"
+              className="tabular-nums text-xl font-semibold md:text-2xl"
               style={{ color: KIND_COLORS[kind] ?? "#8892b0" }}
             >
               {count}
@@ -129,18 +130,16 @@ export function MemoryPageClient() {
 
       {/* Session selector */}
       {sessions.length > 1 && (
-        <div className="mb-4 flex items-center gap-2">
-          <span className="label-mono">Lab:</span>
-          <div className="flex gap-1.5">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="label-mono flex-shrink-0">Lab:</span>
+          <div className="flex flex-wrap gap-1.5">
             {sessions.map((s) => (
               <button
                 key={s.id}
                 onClick={() => setActive(s.id)}
                 className={clsx(
-                  "rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors",
-                  activeId === s.id
-                    ? "bg-accent/10 text-accent"
-                    : "text-slate-500 hover:text-slate-300",
+                  "min-h-[36px] rounded-lg px-3 py-1.5 text-[12px] font-medium transition-colors",
+                  activeId === s.id ? "bg-accent/10 text-accent" : "text-slate-500 hover:text-slate-300",
                 )}
               >
                 {s.name}
@@ -154,7 +153,7 @@ export function MemoryPageClient() {
       {Object.keys(authorCounts).length > 0 && (
         <div className="panel mb-4 p-4">
           <div className="label-mono mb-3">Agent Contributions</div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
             {Object.entries(authorCounts).map(([author, count]) => {
               const meta = AGENT_META[author as keyof typeof AGENT_META];
               const color = meta?.color ?? "#64748b";
@@ -201,11 +200,8 @@ export function MemoryPageClient() {
             const color = meta?.color ?? "#64748b";
             const kindColor = KIND_COLORS[entry.kind] ?? "#5a6080";
             return (
-              <div
-                key={entry.id}
-                className="panel-tight animate-fadeUp px-4 py-3"
-              >
-                <div className="mb-2 flex items-center gap-2">
+              <div key={entry.id} className="panel-tight animate-fadeUp px-3 py-3 md:px-4">
+                <div className="mb-2 flex flex-wrap items-center gap-2">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
                   <span className="text-[11px] font-medium" style={{ color }}>
                     {meta?.label ?? entry.author}

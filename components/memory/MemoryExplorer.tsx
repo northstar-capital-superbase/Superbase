@@ -71,22 +71,22 @@ export function MemoryExplorer({
       onClick={onClose}
     >
       <div
-        className="panel flex h-[80vh] w-full max-w-3xl flex-col"
+        className="panel flex h-[88vh] w-full max-w-3xl flex-col md:h-[80vh]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
           <div>
             <div className="text-sm font-semibold text-white">Memory Explorer</div>
             <div className="text-[11px] text-slate-500">
-              {loading ? "loading…" : `${entries.length} entries`} · session{" "}
-              <span className="font-mono">{sessionId}</span>
+              {loading ? "loading…" : `${entries.length} entries`}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="rounded-md border border-white/5 px-2 py-1 text-[12px] text-slate-400 transition hover:text-slate-200"
+            aria-label="Close explorer"
+            className="flex min-h-[36px] min-w-[36px] items-center justify-center rounded-lg border border-white/5 px-2.5 py-1 text-[12px] text-slate-400 transition hover:border-white/10 hover:text-slate-200"
           >
-            Close ✕
+            ✕
           </button>
         </div>
 

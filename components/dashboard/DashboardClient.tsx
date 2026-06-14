@@ -18,7 +18,6 @@ interface TradingStatus {
   maxOrderUsd?: number;
 }
 
-// Mock performance sparkline data
 const SPARK_DATA = [82, 79, 85, 81, 88, 86, 91, 89, 94, 92, 97, 96, 99, 101, 98, 103, 102, 107];
 
 function sparkPath(data: number[], width = 200, height = 48): string {
@@ -70,7 +69,6 @@ const AGENT_ACTIVITY = [
 
 const SIGNALS = [
   {
-    type: "opportunity",
     title: "Sector Rotation Signal",
     body: "Tech-to-Energy rotation detected. Historical accuracy 73% in similar macro regimes.",
     tag: "MEDIUM CONVICTION",
@@ -79,7 +77,6 @@ const SIGNALS = [
     border: "border-status-success/15",
   },
   {
-    type: "risk",
     title: "Concentration Risk",
     body: "NVDA position at 8.4% of portfolio — above 7% soft limit. Consider trimming.",
     tag: "ACTION NEEDED",
@@ -88,7 +85,6 @@ const SIGNALS = [
     border: "border-status-danger/15",
   },
   {
-    type: "info",
     title: "Earnings Season",
     body: "14 holdings report this week. Research agent queued for pre-earnings analysis.",
     tag: "INFORMATIONAL",
@@ -137,20 +133,20 @@ export function DashboardClient() {
   const tradingLive = trading?.enabled ?? false;
 
   return (
-    <div className="min-h-full px-6 py-8">
+    <div className="min-h-full px-4 py-6 md:px-6 md:py-8">
       {/* ── Page Header ── */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between gap-4">
+      <div className="mb-6 md:mb-8">
+        <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <div className="label-mono mb-2">{dateStr}</div>
-            <h1 className="text-heading-xl font-semibold tracking-tight text-slate-100">
+            <div className="label-mono mb-1.5 md:mb-2">{dateStr}</div>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-100 md:text-heading-xl">
               {greeting()}
             </h1>
-            <p className="mt-1 text-body-md text-slate-500">
-              Your autonomous finance operating system — briefing ready.
+            <p className="mt-1 text-body-sm text-slate-500 md:text-body-md">
+              Your autonomous finance operating system.
             </p>
           </div>
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-2">
             <span className={clsx("status-dot-lg", isLive ? "status-live" : "status-idle")} />
             <span className="font-mono text-[11px] text-slate-500">
               {isLive ? `${provider} · live` : "mock mode"}
@@ -160,13 +156,13 @@ export function DashboardClient() {
       </div>
 
       {/* ── Row 1: Key Metrics ── */}
-      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+      <div className="mb-4 grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-3">
         {/* Portfolio value — main card */}
-        <div className="panel p-5 lg:col-span-2">
-          <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="panel p-4 md:p-5 lg:col-span-2">
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="label-mono mb-2">Portfolio Value</div>
-              <div className="tabular-nums text-[2.5rem] font-semibold leading-none tracking-tight text-slate-100">
+              <div className="label-mono mb-1.5">Portfolio Value</div>
+              <div className="tabular-nums text-[2rem] font-semibold leading-none tracking-tight text-slate-100 md:text-[2.5rem]">
                 $847,293
               </div>
               <div className="mt-2 flex items-center gap-2">
@@ -183,17 +179,14 @@ export function DashboardClient() {
 
           {/* Sparkline */}
           <div className="relative mt-2">
-            <svg viewBox={`0 0 200 48`} className="h-12 w-full" preserveAspectRatio="none">
+            <svg viewBox="0 0 200 48" className="h-10 w-full md:h-12" preserveAspectRatio="none">
               <defs>
                 <linearGradient id="spark-fill" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#6d8bff" stopOpacity="0.2" />
                   <stop offset="100%" stopColor="#6d8bff" stopOpacity="0" />
                 </linearGradient>
               </defs>
-              <path
-                d={`${sparkPath(SPARK_DATA)} L200,48 L0,48 Z`}
-                fill="url(#spark-fill)"
-              />
+              <path d={`${sparkPath(SPARK_DATA)} L200,48 L0,48 Z`} fill="url(#spark-fill)" />
               <path
                 d={sparkPath(SPARK_DATA)}
                 stroke="#6d8bff"
@@ -211,7 +204,7 @@ export function DashboardClient() {
 
           {/* Allocation bar */}
           <div className="mt-4 border-t border-white/[0.04] pt-4">
-            <div className="mb-2 label-mono">Allocation</div>
+            <div className="label-mono mb-2">Allocation</div>
             <div className="flex h-1.5 gap-0.5 overflow-hidden rounded-full">
               {ALLOCATION.map((a) => (
                 <div
@@ -221,7 +214,7 @@ export function DashboardClient() {
                 />
               ))}
             </div>
-            <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1">
+            <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 md:gap-x-4">
               {ALLOCATION.map((a) => (
                 <div key={a.label} className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-sm" style={{ backgroundColor: a.color }} />
@@ -234,7 +227,7 @@ export function DashboardClient() {
         </div>
 
         {/* System status */}
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 md:gap-4">
           {/* Agent system */}
           <div className="panel flex-1 p-4">
             <div className="label-mono mb-3">Agent System</div>
@@ -271,11 +264,11 @@ export function DashboardClient() {
             <div className="mt-3 border-t border-white/[0.04] pt-3">
               <a
                 href="/labs"
-                className="flex items-center gap-1.5 text-[11px] text-slate-600 transition-colors hover:text-accent"
+                className="flex min-h-[36px] items-center gap-1.5 text-[11px] text-slate-600 transition-colors hover:text-accent"
               >
                 Open Lab Console
                 <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-                  <path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M2 5h6M5 2l3 3-3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </a>
             </div>
@@ -285,11 +278,7 @@ export function DashboardClient() {
           <div className="panel p-4">
             <div className="label-mono mb-3">Connections</div>
             <div className="space-y-2">
-              <ConnectionRow
-                label="LLM"
-                value={provider}
-                live={isLive}
-              />
+              <ConnectionRow label="LLM" value={provider} live={isLive} />
               <ConnectionRow
                 label="Memory"
                 value={health?.memory === "supabase" ? "Supabase" : "In-process"}
@@ -306,10 +295,10 @@ export function DashboardClient() {
       </div>
 
       {/* ── Row 2: Activity + Signals ── */}
-      <div className="mb-4 grid grid-cols-1 gap-4 lg:grid-cols-[1fr_340px]">
+      <div className="mb-4 grid grid-cols-1 gap-3 md:gap-4 lg:grid-cols-[1fr_340px]">
         {/* Agent activity feed */}
-        <div className="panel p-5">
-          <div className="mb-4 flex items-center justify-between">
+        <div className="panel p-4 md:p-5">
+          <div className="mb-4 flex items-center justify-between gap-2">
             <div className="label-mono">Agent Activity</div>
             <a href="/labs" className="text-[11px] text-slate-600 hover:text-accent transition-colors">
               View all →
@@ -327,12 +316,15 @@ export function DashboardClient() {
                 >
                   {item.agent[0]}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.1em]" style={{ color: item.color }}>
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                    <span
+                      className="font-mono text-[10px] uppercase tracking-[0.1em]"
+                      style={{ color: item.color }}
+                    >
                       {item.agent}
                     </span>
-                    <span className="flex-shrink-0 font-mono text-[10px] text-slate-700">{item.time}</span>
+                    <span className="ml-auto font-mono text-[10px] text-slate-700">{item.time}</span>
                   </div>
                   <p className="mt-0.5 text-[12px] leading-relaxed text-slate-400">{item.action}</p>
                 </div>
@@ -342,24 +334,17 @@ export function DashboardClient() {
         </div>
 
         {/* Intelligence signals */}
-        <div className="panel p-5">
+        <div className="panel p-4 md:p-5">
           <div className="label-mono mb-4">Intelligence</div>
           <div className="space-y-3">
             {SIGNALS.map((s, i) => (
-              <div
-                key={i}
-                className={clsx(
-                  "rounded-lg border p-3",
-                  s.bg,
-                  s.border,
-                )}
-              >
-                <div className="mb-1 flex items-center justify-between gap-2">
+              <div key={i} className={clsx("rounded-lg border p-3", s.bg, s.border)}>
+                <div className="mb-1 flex flex-wrap items-start gap-2">
                   <span className="text-[12px] font-medium" style={{ color: s.color }}>
                     {s.title}
                   </span>
                   <span
-                    className="flex-shrink-0 rounded-sm px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em]"
+                    className="rounded-sm px-1.5 py-0.5 font-mono text-[8px] uppercase tracking-[0.12em]"
                     style={{ color: s.color, backgroundColor: `${s.color}15` }}
                   >
                     {s.tag}
@@ -373,9 +358,9 @@ export function DashboardClient() {
       </div>
 
       {/* ── Row 3: Quick Actions ── */}
-      <div className="panel p-5">
+      <div className="panel p-4 md:p-5">
         <div className="label-mono mb-4">Quick Actions</div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[
             { label: "Morning Briefing", desc: "Run the full crew", href: "/labs", color: "#6d8bff" },
             { label: "Portfolio Review", desc: "Analyze holdings", href: "/trading", color: "#34d399" },
@@ -385,25 +370,28 @@ export function DashboardClient() {
             <a
               key={action.label}
               href={action.href}
-              className="group rounded-lg border border-white/[0.04] bg-white/[0.02] p-3.5 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.04]"
+              className="group min-h-[72px] rounded-lg border border-white/[0.04] bg-white/[0.02] p-3 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.04] active:bg-white/[0.06]"
             >
               <div
-                className="mb-2 h-1 w-8 rounded-full opacity-60 transition-opacity group-hover:opacity-100"
+                className="mb-2 h-1 w-6 rounded-full opacity-60 transition-opacity group-hover:opacity-100"
                 style={{ backgroundColor: action.color }}
               />
-              <div className="text-[13px] font-medium text-slate-300">{action.label}</div>
-              <div className="mt-0.5 text-[11px] text-slate-600">{action.desc}</div>
+              <div className="text-[12px] font-medium text-slate-300 md:text-[13px]">
+                {action.label}
+              </div>
+              <div className="mt-0.5 text-[10px] text-slate-600 md:text-[11px]">{action.desc}</div>
             </a>
           ))}
         </div>
       </div>
 
-      {/* Footer note */}
+      {/* Mock mode notice */}
       {!isLive && (
-        <div className="mt-4 flex items-center gap-2 rounded-lg border border-status-warning/10 bg-status-warning/5 px-3 py-2">
-          <span className="status-warn" />
-          <span className="text-[11px] text-status-warning/80">
-            Running in mock mode — add <code className="font-mono text-[10px]">ANTHROPIC_API_KEY</code> for live agents and real data.
+        <div className="mt-4 flex items-start gap-2 rounded-lg border border-status-warning/10 bg-status-warning/5 px-3 py-2.5">
+          <span className="status-warn mt-1 flex-shrink-0" />
+          <span className="text-[11px] leading-relaxed text-status-warning/80">
+            Running in mock mode — add{" "}
+            <code className="font-mono text-[10px]">ANTHROPIC_API_KEY</code> for live agents and real data.
           </span>
         </div>
       )}
@@ -411,21 +399,13 @@ export function DashboardClient() {
   );
 }
 
-function ConnectionRow({
-  label,
-  value,
-  live,
-}: {
-  label: string;
-  value: string;
-  live: boolean;
-}) {
+function ConnectionRow({ label, value, live }: { label: string; value: string; live: boolean }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <span className="text-[12px] text-slate-600">{label}</span>
-      <div className="flex items-center gap-1.5">
-        <span className={clsx("h-1.5 w-1.5 rounded-full", live ? "bg-status-success" : "bg-slate-700")} />
-        <span className="font-mono text-[11px] text-slate-400">{value}</span>
+      <div className="flex min-w-0 items-center gap-1.5">
+        <span className={clsx("h-1.5 w-1.5 flex-shrink-0 rounded-full", live ? "bg-status-success" : "bg-slate-700")} />
+        <span className="truncate font-mono text-[11px] text-slate-400">{value}</span>
       </div>
     </div>
   );
