@@ -48,6 +48,7 @@ body {
     radial-gradient(900px 500px at 75% -5%, rgba(81, 104, 255, 0.07), transparent 55%),
     radial-gradient(700px 400px at -5% 95%, rgba(167, 139, 250, 0.05), transparent 50%);
   background-attachment: fixed;
+  overflow-x: hidden;
 }
 
 /* ── Scrollbars ─────────────────────────────────────────────────────────────── */
@@ -213,10 +214,12 @@ body {
   right: 0;
   z-index: 40;
   height: 49px;
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 16px;
+  gap: 12px;
   border-bottom: 1px solid var(--ns-border);
   background: rgba(5, 6, 12, 0.92);
   backdrop-filter: blur(16px) saturate(140%);

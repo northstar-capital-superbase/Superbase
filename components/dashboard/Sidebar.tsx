@@ -8,9 +8,12 @@ import type { RuntimeInfo, TradingInfo } from "@/components/shared";
 const NAV = [
   { href: "/dashboard", label: "Dashboard", short: "D" },
   { href: "/trading", label: "Trading", short: "T" },
+  { href: "/portfolio", label: "Portfolio", short: "P" },
   { href: "/labs", label: "Labs", short: "L" },
   { href: "/agents", label: "Agents", short: "A" },
+  { href: "/research", label: "Research", short: "R" },
   { href: "/memory", label: "Memory", short: "M" },
+  { href: "/settings", label: "Settings", short: "S" },
 ];
 
 export function Sidebar({

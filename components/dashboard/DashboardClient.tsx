@@ -363,8 +363,8 @@ export function DashboardClient() {
         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
           {[
             { label: "Morning Briefing", desc: "Run the full crew", href: "/labs", color: "#6d8bff" },
-            { label: "Portfolio Review", desc: "Analyze holdings", href: "/trading", color: "#34d399" },
-            { label: "Market Research", desc: "Scan opportunities", href: "/labs", color: "#a78bfa" },
+            { label: "Portfolio Review", desc: "Analyze holdings", href: "/portfolio", color: "#34d399" },
+            { label: "Market Research", desc: "Scan opportunities", href: "/research", color: "#a78bfa" },
             { label: "Risk Check", desc: "Behavioral analysis", href: "/labs", color: "#fbbf24" },
           ].map((action) => (
             <a

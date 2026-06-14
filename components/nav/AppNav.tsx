@@ -35,6 +35,25 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    href: "/portfolio",
+    label: "Portfolio",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M8 8L8 3M8 8L12 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    href: "/analytics",
+    label: "Analytics",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 13h2V7H1v6zM5 13h2V4H5v9zM9 13h2V6H9v7zM13 13h2V2h-2v11z" fill="currentColor" opacity="0.7" />
+      </svg>
+    ),
+  },
+  {
     href: "/labs",
     label: "Labs",
     icon: (
@@ -57,6 +76,16 @@ const NAV_ITEMS: NavItem[] = [
     ),
   },
   {
+    href: "/research",
+    label: "Research",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
+        <path d="M10 10l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     href: "/memory",
     label: "Memory",
     icon: (
@@ -69,6 +98,21 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 const BOTTOM_ITEMS: NavItem[] = [
+  {
+    href: "/settings",
+    label: "Settings",
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="8" cy="8" r="2.5" stroke="currentColor" strokeWidth="1.5" />
+        <path
+          d="M8 1v1.5M8 13.5V15M1 8h1.5M13.5 8H15M2.929 2.929l1.06 1.06M12.01 12.01l1.06 1.06M2.929 13.07l1.06-1.06M12.01 3.99l1.06-1.06"
+          stroke="currentColor"
+          strokeWidth="1.2"
+          strokeLinecap="round"
+        />
+      </svg>
+    ),
+  },
   {
     href: "/tour",
     label: "Docs",
@@ -133,7 +177,7 @@ function NavLink({
 
 function Brand() {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex min-w-0 items-center gap-2">
       <div className="grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg bg-accent/15 shadow-glow-accent">
         <NorthstarIcon />
       </div>
@@ -207,7 +251,7 @@ export function AppNav() {
         </button>
       </div>
 
-      {/* ── Mobile drawer ── */}
+      {/* Mobile drawer */}
       {drawerOpen && (
         <>
           <div
@@ -232,9 +276,9 @@ export function AppNav() {
         </>
       )}
 
-      {/* ── Desktop sidebar ── */}
+      {/* Desktop sidebar */}
       <nav className="app-nav">
-        <div className="flex items-center gap-2.5 border-b border-white/[0.04] px-4 py-4">
+        <div className="flex items-center gap-2 border-b border-white/[0.04] px-4 py-4">
           <Brand />
         </div>
         <NavLinks />

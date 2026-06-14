@@ -377,14 +377,18 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
               <span className="ns-mono-tag">APP</span>
               <Link href="/dashboard">Dashboard</Link>
               <Link href="/trading">Trading</Link>
+              <Link href="/portfolio">Portfolio</Link>
               <Link href="/labs">Labs</Link>
               <Link href="/agents">Agents</Link>
+              <Link href="/research">Research</Link>
+              <Link href="/analytics">Analytics</Link>
             </div>
             <div>
               <span className="ns-mono-tag">PRODUCT</span>
               <a href="#vision">OS</a>
               <a href="#platform">Platform</a>
               <a href="#art">System</a>
+              <Link href="/settings">Settings</Link>
             </div>
           </div>
           <div className="ns-footer-meta">

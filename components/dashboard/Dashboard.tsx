@@ -274,10 +274,13 @@ export function Dashboard() {
               {[
                 { href: "/dashboard", label: "Dashboard" },
                 { href: "/trading", label: "Trading" },
+                { href: "/portfolio", label: "Portfolio" },
                 { href: "/labs", label: "Labs" },
                 { href: "/agents", label: "Agents" },
+                { href: "/research", label: "Research" },
                 { href: "/memory", label: "Memory" },
-                { href: "/", label: "Home" },
+                { href: "/analytics", label: "Analytics" },
+                { href: "/settings", label: "Settings" },
               ].map((item) => (
                 <Link
                   key={item.href}

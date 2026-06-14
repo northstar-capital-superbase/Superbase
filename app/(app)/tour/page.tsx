@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Northstar Labs — UI Tour",
+  title: "Docs — Northstar OS",
   description: "A guided overview of the multi-agent lab interface.",
 };
 
 const AGENTS = [
   { name: "Orchestrator", role: "plans & synthesizes", color: "#6d8bff" },
   { name: "Research", role: "facts & context", color: "#34d399" },
-  { name: "Strategist", role: "sequences a plan", color: "#c084fc" },
+  { name: "Strategist", role: "sequences a plan", color: "#a78bfa" },
   { name: "Behavioral", role: "risks & human factors", color: "#fbbf24" },
 ];
 
@@ -33,10 +33,10 @@ const FLOW = [
 
 export default function TourPage() {
   return (
-    <main className="mx-auto max-w-4xl px-6 py-12">
+    <main className="mx-auto max-w-4xl px-4 py-6 md:px-6 md:py-12">
       {/* Hero */}
       <div className="flex items-center gap-3">
-        <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent/15 text-accent shadow-glow">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-accent/15 text-accent shadow-glow-accent">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z" fill="currentColor" />
           </svg>
