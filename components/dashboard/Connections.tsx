@@ -181,11 +181,13 @@ export function Connections() {
   }, [services]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.06] to-base-850/60 p-4 shadow-glow backdrop-blur-sm">
+    <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-b from-white/[0.07] via-base-850/50 to-base-900/60 p-5 shadow-glow backdrop-blur-md before:absolute before:inset-x-0 before:top-0 before:h-px before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent before:content-['']">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-sm font-semibold text-white">Connections</span>
+            <span className="bg-gradient-to-r from-white to-slate-400 bg-clip-text text-sm font-semibold text-transparent">
+              Connections
+            </span>
             <span className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-2 py-0.5 text-[10px] font-medium text-emerald-300">
               {counts.connected} connected
             </span>
@@ -249,7 +251,14 @@ function ServiceTile({ service }: { service: Service }) {
         ? "text-accent"
         : "text-slate-500";
   return (
-    <div className="rounded-xl border border-white/5 bg-base-850/50 p-3 transition hover:border-white/10">
+    <div
+      className={clsx(
+        "group relative overflow-hidden rounded-xl border border-white/[0.07] bg-gradient-to-b from-white/[0.035] to-transparent p-3.5 transition duration-300",
+        bucket === "connected"
+          ? "hover:border-emerald-400/30 hover:shadow-[0_0_44px_-22px_rgba(52,211,153,0.7)]"
+          : "hover:border-accent/40 hover:shadow-[0_0_44px_-22px_rgba(81,104,255,0.7)]",
+      )}
+    >
       <div className="flex items-start justify-between gap-2">
         <span className="text-[13px] font-semibold text-white">{service.name}</span>
         <span className={clsx("text-[10px] font-medium uppercase tracking-wide", accent)}>

@@ -246,7 +246,7 @@ export function Dashboard() {
         aria-hidden="true"
         style={{
           background:
-            "radial-gradient(1200px 560px at 50% -220px, rgba(214,224,255,0.16), transparent 62%), linear-gradient(180deg, rgba(120,140,210,0.08), transparent 28%)",
+            "radial-gradient(1300px 600px at 50% -240px, rgba(222,230,255,0.18), transparent 60%), radial-gradient(820px 520px at 86% -40px, rgba(110,139,255,0.10), transparent 56%), linear-gradient(180deg, rgba(124,144,214,0.07), transparent 26%)",
         }}
       />
       <div className="relative z-10 flex h-full w-full overflow-hidden">

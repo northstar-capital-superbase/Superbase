@@ -29,6 +29,8 @@ export function NorthstarShowcase() {
   return (
     <div className="nx">
       <div className="nx-aura" aria-hidden="true" />
+      <div className="nx-vignette" aria-hidden="true" />
+      <div className="nx-grain" aria-hidden="true" />
 
       <header className="nx-nav">
         <div className="nx-container nx-nav-inner">

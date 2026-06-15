@@ -95,7 +95,10 @@ export function ConfidenceGauge({ pct }: { pct: number }) {
         strokeLinecap="round"
         strokeDasharray={semi}
         strokeDashoffset={off}
-        style={{ transition: "stroke-dashoffset 1s cubic-bezier(.16,1,.3,1)" }}
+        style={{
+          transition: "stroke-dashoffset 1.1s cubic-bezier(.16,1,.3,1)",
+          filter: "drop-shadow(0 0 7px rgba(110,139,255,0.55))",
+        }}
       />
     </svg>
   );
