@@ -1687,3 +1687,316 @@
     background-position: 0 0;
   }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Home v2 — centered hero, live console, "how it works" stepper, art finale
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* Centered hero */
+.nx-hero.is-center {
+  padding: 92px 0 72px;
+  text-align: center;
+}
+.nx-hero.is-center .nx-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.nx-hero.is-center .nx-h1 {
+  max-width: 17ch;
+}
+.nx-hero.is-center .nx-lede {
+  margin-left: auto;
+  margin-right: auto;
+}
+.nx-hero.is-center .nx-hero-cta {
+  justify-content: center;
+}
+
+/* Live system console */
+.nx-console {
+  width: 100%;
+  max-width: 780px;
+  margin: 54px auto 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r);
+  overflow: hidden;
+  background: linear-gradient(180deg, #0a0d14, #07090d);
+  box-shadow: var(--shadow-lg), 0 0 100px -52px var(--glow),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  text-align: left;
+}
+.nx-console-bar {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.nx-console-dots {
+  display: flex;
+  gap: 6px;
+}
+.nx-console-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--line-2);
+}
+.nx-console-title {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  color: var(--text-3);
+  margin-left: 6px;
+}
+.nx-console-live {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  color: var(--green);
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.nx-console-body {
+  padding: 16px 18px 18px;
+  min-height: 250px;
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.9;
+}
+.nx-console-line {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  animation: nx-stagein 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nx-console-time {
+  color: var(--text-4);
+  flex: none;
+  width: 50px;
+}
+.nx-console-tag {
+  flex: none;
+  width: 104px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.nx-console-msg {
+  color: var(--text-2);
+  min-width: 0;
+}
+.nx-cursor {
+  display: inline-block;
+  width: 7px;
+  height: 14px;
+  background: var(--blue);
+  margin-left: 1px;
+  vertical-align: -2px;
+  animation: nx-blink 1s steps(1) infinite;
+}
+@keyframes nx-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* How it works — interactive stepper */
+.nx-hw {
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  gap: 32px;
+  align-items: start;
+}
+.nx-hw-steps {
+  display: flex;
+  flex-direction: column;
+}
+.nx-hw-step {
+  position: relative;
+  text-align: left;
+  background: transparent;
+  border: none;
+  color: inherit;
+  display: grid;
+  grid-template-columns: 40px 1fr;
+  gap: 16px;
+  padding: 15px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.nx-hw-step::before {
+  content: "";
+  position: absolute;
+  left: 31px;
+  top: 53px;
+  bottom: -7px;
+  width: 1px;
+  background: var(--line);
+}
+.nx-hw-step:last-child::before {
+  display: none;
+}
+.nx-hw-step:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.nx-hw-step.is-active {
+  background: rgba(110, 139, 255, 0.06);
+}
+.nx-hw-num {
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-family: var(--mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-3);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition: color 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s;
+  z-index: 1;
+}
+.nx-hw-step.is-active .nx-hw-num {
+  color: #fff;
+  background: var(--aurora);
+  border-color: transparent;
+  box-shadow: 0 0 26px -6px var(--glow);
+}
+.nx-hw-step-tag {
+  display: block;
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 5px;
+}
+.nx-hw-step-t {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.nx-hw-step-b {
+  font-size: 13px;
+  color: var(--text-2);
+  margin-top: 0;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.45s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s,
+    margin 0.35s;
+}
+.nx-hw-step.is-active .nx-hw-step-b {
+  max-height: 90px;
+  opacity: 1;
+  margin-top: 7px;
+}
+.nx-hw-stage {
+  position: sticky;
+  top: 92px;
+}
+.nx-hw-visual {
+  position: relative;
+  aspect-ratio: 16 / 11;
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: radial-gradient(120% 120% at 68% 10%, #0c1018, #06070b);
+  box-shadow: var(--shadow-card), 0 0 80px -42px var(--glow);
+}
+.nx-hw-visual > svg {
+  width: 100%;
+  height: 100%;
+  padding: 8%;
+  animation: nx-stagein 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.nx-hw-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+}
+.nx-hw-meta-t {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.nx-hw-meta-c {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--text-3);
+}
+.nx-hw-progress {
+  display: flex;
+  gap: 6px;
+  margin-top: 14px;
+}
+.nx-hw-progress i {
+  height: 3px;
+  flex: 1;
+  border-radius: 99px;
+  background: var(--line-2);
+  transition: background 0.3s;
+}
+.nx-hw-progress i.on {
+  background: var(--aurora);
+}
+
+/* AI-art finale gallery */
+.nx-gallery {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.nx-gallery figure {
+  margin: 0;
+}
+.nx-gallery .nx-art-frame {
+  cursor: default;
+}
+.nx-gallery .nx-art-frame:hover {
+  border-color: rgba(110, 139, 255, 0.4);
+  transform: translateY(-4px);
+  box-shadow: 0 30px 70px -36px var(--glow);
+}
+.nx-gallery .nx-art-frame:hover::after {
+  opacity: 1;
+}
+
+@media (max-width: 980px) {
+  .nx-hw {
+    grid-template-columns: 1fr;
+    gap: 22px;
+  }
+  .nx-hw-stage {
+    position: static;
+    order: -1;
+  }
+  .nx-gallery {
+    grid-template-columns: 1fr;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+@media (max-width: 680px) {
+  .nx-console-tag {
+    width: 78px;
+  }
+  .nx-console-body {
+    font-size: 11.5px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nx-cursor,
+  .nx-console-line,
+  .nx-hw-visual > svg {
+    animation: none;
+  }
+}
