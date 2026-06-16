@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { OsNav } from "@/components/os/OsNav";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
@@ -246,14 +247,17 @@ export function Dashboard() {
 
       <header className="lx-topbar">
         <div className="lx-topbar-inner">
-          <div className="lx-brand">
-            <span className="lx-brand-mark">
-              <StarIcon />
-            </span>
-            <div>
-              <div className="lx-brand-name">Northstar Labs</div>
-              <div className="lx-brand-sub">Multi-Agent OS</div>
+          <div className="lx-topbar-left">
+            <div className="lx-brand">
+              <span className="lx-brand-mark">
+                <StarIcon />
+              </span>
+              <div>
+                <div className="lx-brand-name">Northstar Labs</div>
+                <div className="lx-brand-sub">Multi-Agent OS</div>
+              </div>
             </div>
+            <OsNav active="lab" />
           </div>
           <div className="lx-topbar-right">
             <RuntimePills runtime={runtime} trading={trading} />

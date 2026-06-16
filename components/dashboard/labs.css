@@ -156,6 +156,37 @@
   align-items: center;
   gap: 10px;
 }
+.lx-topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+
+/* Primary nav (shared across OS surfaces) */
+.lx-nav {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.03);
+}
+.lx-nav-link {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+  padding: 6px 15px;
+  border-radius: 999px;
+  transition: color 0.2s, background 0.25s;
+}
+.lx-nav-link:hover {
+  color: var(--text-2);
+}
+.lx-nav-link.active {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.08);
+}
 
 /* runtime status pills */
 .lx-pills {
@@ -335,6 +366,26 @@
 .lx-btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+.lx-btn-sm {
+  padding: 6px 10px;
+  font-size: 11.5px;
+}
+.lx-btn-danger {
+  border-color: rgba(255, 122, 138, 0.3);
+  color: var(--red);
+  background: rgba(255, 122, 138, 0.08);
+}
+.lx-btn-danger:hover {
+  color: #ffd0d6;
+  border-color: rgba(255, 122, 138, 0.5);
+  background: rgba(255, 122, 138, 0.16);
+}
+.lx-btn-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 .lx-input {
   width: 100%;
