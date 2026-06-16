@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { listProfiles } from "@/lib/agents";
 import { getProvider } from "@/lib/llm";
 import { memoryBackend } from "@/lib/memory";
+import { getPrincipal, unauthorized } from "@/lib/auth";
 import {
   mcpEnabled,
   maxOrderUsd,
@@ -15,7 +16,10 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // GET /api/agents — agent roster + active runtime config for the dashboard.
-export async function GET() {
+export async function GET(req: Request) {
+  const principal = await getPrincipal(req);
+  if (!principal) return unauthorized();
+
   const provider = getProvider();
   const tradingEnabled = mcpEnabled();
   return NextResponse.json({

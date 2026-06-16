@@ -1,6 +1,7 @@
 import { streamCrew } from "@/lib/orchestration/crew";
-import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { rateLimit, validateTask } from "@/lib/guardrails";
 import { assertProductionReadyConfig } from "@/lib/config/env";
+import { getPrincipal, unauthorized, scopeSession, rateLimitKey } from "@/lib/auth";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -22,7 +23,10 @@ export async function POST(req: Request) {
     return json({ error: err instanceof Error ? err.message : String(err) }, 500);
   }
 
-  const limit = rateLimit(clientKey(req));
+  const principal = await getPrincipal(req);
+  if (!principal) return unauthorized();
+
+  const limit = rateLimit(rateLimitKey(principal));
   if (!limit.allowed) {
     return json(
       { error: `Rate limit exceeded (${limit.limit}/min). Try again shortly.` },
@@ -35,7 +39,7 @@ export async function POST(req: Request) {
   const valid = validateTask(body?.task ?? body?.message);
   if ("error" in valid) return json({ error: valid.error }, 400);
   const task = valid.task;
-  const sessionId = (body?.sessionId ?? "default").toString();
+  const sessionId = scopeSession(principal, (body?.sessionId ?? "default").toString());
   const specialists = Array.isArray(body?.specialists) ? body.specialists : undefined;
 
   const encoder = new TextEncoder();

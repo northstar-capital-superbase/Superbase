@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { runCrew } from "@/lib/orchestration/crew";
-import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { rateLimit, validateTask } from "@/lib/guardrails";
 import { assertProductionReadyConfig } from "@/lib/config/env";
+import { getPrincipal, unauthorized, scopeSession, rateLimitKey } from "@/lib/auth";
 
 export const runtime = "nodejs";
 
@@ -11,7 +12,10 @@ export async function POST(req: Request) {
     // Fail fast rather than silently serving mock output / volatile memory in prod.
     assertProductionReadyConfig();
 
-    const limit = rateLimit(clientKey(req));
+    const principal = await getPrincipal(req);
+    if (!principal) return unauthorized();
+
+    const limit = rateLimit(rateLimitKey(principal));
     if (!limit.allowed) {
       return NextResponse.json(
         { error: `Rate limit exceeded (${limit.limit}/min). Try again shortly.` },
@@ -24,7 +28,7 @@ export async function POST(req: Request) {
     if ("error" in valid) {
       return NextResponse.json({ error: valid.error }, { status: 400 });
     }
-    const sessionId = (body?.sessionId ?? "default").toString();
+    const sessionId = scopeSession(principal, (body?.sessionId ?? "default").toString());
     const specialists = Array.isArray(body?.specialists)
       ? body.specialists
       : undefined;
