@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
 import { runCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { assertProductionReadyConfig } from "@/lib/config/env";
 
 export const runtime = "nodejs";
 
 // POST /api/chat — runs the full multi-agent workflow for one user message.
 export async function POST(req: Request) {
   try {
+    // Fail fast rather than silently serving mock output / volatile memory in prod.
+    assertProductionReadyConfig();
+
     const limit = rateLimit(clientKey(req));
     if (!limit.allowed) {
       return NextResponse.json(

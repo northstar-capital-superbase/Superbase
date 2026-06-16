@@ -6,10 +6,18 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-A **local-first, experimental multi-agent AI lab**. Hand the orchestrator a
-task; it plans, delegates to three specialist agents that collaborate through a
-shared memory, and synthesizes their work into one answer — all in a dark,
-modern dashboard.
+An **AI-powered finance operating system by Northstar Capital** — multi-agent AI
+workflows, automation, and real data integrations on Supabase + Vercel, evolving
+from prototype toward a production-grade platform.
+
+At its core it is a **local-first, experimental multi-agent AI lab**. Hand the
+orchestrator a task; it plans, delegates to specialist agents that collaborate
+through a shared memory, and synthesizes their work into one answer — all in a
+dark, modern dashboard.
+
+> **Maturity:** this repo is graduating from showcase to product. See
+> [`docs/PRODUCTION_READINESS.md`](docs/PRODUCTION_READINESS.md) for the
+> assessment and 30-day roadmap, and the open issues for the tracked work.
 
 > Runs out of the box with **zero API keys** via a built-in mock provider, so
 > the full multi-agent workflow is demonstrable on first `npm run dev`. Add an

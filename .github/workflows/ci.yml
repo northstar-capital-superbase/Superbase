@@ -21,3 +21,18 @@ jobs:
       - run: npm run build
         env:
           NEXT_TELEMETRY_DISABLED: "1"
+
+  # Dependency vulnerability scan. Non-blocking for now because known CVEs are
+  # tracked in #21 (Next.js + transitive upgrades); flip continue-on-error to
+  # false once that lands so regressions hard-fail the pipeline.
+  audit:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm audit --audit-level=high

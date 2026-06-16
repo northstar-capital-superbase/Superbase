@@ -1,5 +1,6 @@
 import { streamCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { assertProductionReadyConfig } from "@/lib/config/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,6 +15,13 @@ const json = (body: unknown, status: number, headers?: Record<string, string>) =
 // as Server-Sent Events (`data: <json CrewEvent>\n\n`), so the dashboard can
 // light up agents and fill the memory tail in real time.
 export async function POST(req: Request) {
+  // Fail fast rather than silently serving mock output / volatile memory in prod.
+  try {
+    assertProductionReadyConfig();
+  } catch (err) {
+    return json({ error: err instanceof Error ? err.message : String(err) }, 500);
+  }
+
   const limit = rateLimit(clientKey(req));
   if (!limit.allowed) {
     return json(
