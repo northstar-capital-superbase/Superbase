@@ -611,6 +611,33 @@
   font-family: var(--sans);
 }
 
+/* minor runtime services */
+.lx-runtime {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 8px;
+}
+.lx-run {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.02);
+}
+.lx-run-label {
+  font-size: 12px;
+  color: var(--text-2);
+}
+.lx-run-value {
+  margin-left: auto;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-3);
+  text-align: right;
+}
+
 /* ── Agent roster ────────────────────────────────────────────────────────── */
 .lx-roster {
   display: grid;

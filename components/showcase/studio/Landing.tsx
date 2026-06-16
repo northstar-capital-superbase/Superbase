@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   StudyAgentMesh,
@@ -10,19 +11,21 @@ import {
   StudyRouting,
 } from "../art";
 import { Arrow } from "../icons";
-import type { StudioSection } from "../types";
 import { useReveal } from "../utils";
 
 function Reveal({
   children,
+  id,
   className = "",
 }: {
   children: ReactNode;
+  id?: string;
   className?: string;
 }) {
   const [ref, shown] = useReveal();
   return (
     <section
+      id={id}
       ref={ref}
       className={`nx-section nx-reveal ${shown ? "is-shown" : ""} ${className}`}
     >
@@ -159,11 +162,11 @@ function HowItWorks() {
   );
 }
 
-// ── The three surfaces ──────────────────────────────────────────────────────
-const SURFACES: { go: StudioSection; tag: string; name: string; body: string; cta: string }[] = [
-  { go: "overview", tag: "PLATFORM", name: "Northstar OS", body: "The hub where capital is allocated, tracked, and routed — your whole financial system in one view.", cta: "Open the OS" },
-  { go: "robinhood", tag: "TRADING", name: "Robinhood Agentic", body: "An agent that trades your account, shows its notes, and reads its own confidence before every order.", cta: "Open the desk" },
-  { go: "labs", tag: "RESEARCH", name: "Northstar Labs", body: "The multi-agent lab where new architectures, memory, and allocation logic are proven before they ship.", cta: "Enter the lab" },
+// ── What you get ────────────────────────────────────────────────────────────
+const SURFACES: { tag: string; name: string; body: string }[] = [
+  { tag: "ORCHESTRATION", name: "A coordinated crew", body: "An orchestrator plans and delegates to specialist agents that reason together through shared memory." },
+  { tag: "TRADING", name: "Robinhood Agentic", body: "Connect your account and an agent trades within your caps — showing its notes and confidence on every order." },
+  { tag: "OBSERVABILITY", name: "Fully traceable", body: "Every plan, message, and decision is logged and replayable — nothing the system does is a black box." },
 ];
 
 // ── AI-art finale ───────────────────────────────────────────────────────────
@@ -173,11 +176,7 @@ const ART = [
   { Comp: StudyNorthStar, label: "NORTH STAR", caption: "The long-term objective, held", coord: "OBJECTIVE · ∞" },
 ];
 
-export function Landing({
-  onNavigate,
-}: {
-  onNavigate: (s: StudioSection) => void;
-}) {
+export function Landing() {
   return (
     <div className="nx-stage">
       {/* Hero */}
@@ -196,20 +195,12 @@ export function Landing({
             accountable. Here&apos;s the whole machine, working.
           </p>
           <div className="nx-hero-cta">
-            <button
-              type="button"
-              className="nx-btn nx-btn-aurora nx-glowpulse"
-              onClick={() => onNavigate("robinhood")}
-            >
-              See the trading agent <Arrow />
-            </button>
-            <button
-              type="button"
-              className="nx-btn nx-btn-ghost"
-              onClick={() => onNavigate("overview")}
-            >
-              Enter the OS <Arrow />
-            </button>
+            <Link href="/labs" className="nx-btn nx-btn-aurora nx-glowpulse">
+              Launch the app <Arrow />
+            </Link>
+            <a href="#how" className="nx-btn nx-btn-ghost">
+              See how it works <Arrow />
+            </a>
           </div>
 
           <LiveConsole />
@@ -217,7 +208,7 @@ export function Landing({
       </section>
 
       {/* How it works */}
-      <Reveal>
+      <Reveal id="how">
         <div className="nx-head">
           <span className="nx-eyebrow">HOW IT WORKS</span>
           <h2 className="nx-h2">One objective, end to end.</h2>
@@ -229,14 +220,14 @@ export function Landing({
         <HowItWorks />
       </Reveal>
 
-      {/* The surfaces */}
+      {/* What you get */}
       <Reveal>
         <div className="nx-head">
-          <span className="nx-eyebrow">THE SURFACES</span>
-          <h2 className="nx-h2">Three ways into the same system.</h2>
+          <span className="nx-eyebrow">WHAT YOU GET</span>
+          <h2 className="nx-h2">A system, not a chatbot.</h2>
           <p className="nx-lede">
-            One architecture, three places to work it — a platform to run it, a
-            desk to trade it, and a lab to advance it.
+            One architecture: a crew that coordinates, a desk that executes, and
+            a trace that keeps it all accountable.
           </p>
         </div>
         <div className="nx-pillars">
@@ -248,13 +239,9 @@ export function Landing({
               </div>
               <h3 className="nx-pillar-name">{s.name}</h3>
               <p className="nx-pillar-body">{s.body}</p>
-              <button
-                type="button"
-                className="nx-pillar-link"
-                onClick={() => onNavigate(s.go)}
-              >
-                {s.cta} <Arrow />
-              </button>
+              <Link href="/labs" className="nx-pillar-link">
+                Open the lab <Arrow />
+              </Link>
             </article>
           ))}
         </div>
@@ -293,13 +280,9 @@ export function Landing({
         <div className="nx-cta-glow" aria-hidden="true" />
         <div className="nx-container nx-cta-inner">
           <h2 className="nx-h2">Give your capital a mind of its own.</h2>
-          <button
-            type="button"
-            className="nx-btn nx-btn-aurora nx-btn-lg nx-glowpulse"
-            onClick={() => onNavigate("robinhood")}
-          >
-            Enter Northstar <Arrow />
-          </button>
+          <Link href="/labs" className="nx-btn nx-btn-aurora nx-btn-lg nx-glowpulse">
+            Launch Northstar <Arrow />
+          </Link>
           <p className="nx-note">Northstar OS · currently in private development</p>
         </div>
       </section>

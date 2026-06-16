@@ -12,6 +12,7 @@ export interface RuntimeInfo {
   provider: string;
   model: string;
   memory: "supabase" | "in-memory";
+  configured?: boolean;
 }
 
 export interface TradingInfo {
@@ -90,7 +91,7 @@ const PRICING: Array<[string, number, number]> = [
 ];
 
 // Returns the estimated USD cost for a run, or null if the model isn't priced
-// (e.g. the mock provider) so the UI can omit it.
+// so the UI can omit it.
 export function estimateCostUSD(
   model: string,
   inputTokens: number,

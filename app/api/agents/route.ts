@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { listProfiles } from "@/lib/agents";
-import { getProvider } from "@/lib/llm";
+import { getProviderSafe } from "@/lib/llm";
 import { memoryBackend } from "@/lib/memory";
 import {
   mcpEnabled,
@@ -16,14 +16,15 @@ export const dynamic = "force-dynamic";
 
 // GET /api/agents — agent roster + active runtime config for the dashboard.
 export async function GET() {
-  const provider = getProvider();
+  const provider = getProviderSafe();
   const tradingEnabled = mcpEnabled();
   return NextResponse.json({
     agents: listProfiles(),
     runtime: {
-      provider: provider.name,
-      model: provider.model,
+      provider: provider?.name ?? "not configured",
+      model: provider?.model ?? "—",
       memory: memoryBackend(),
+      configured: provider !== null,
     },
     trading: {
       enabled: tradingEnabled,

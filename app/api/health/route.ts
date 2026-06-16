@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
-import { getProvider } from "@/lib/llm";
+import { getProviderSafe } from "@/lib/llm";
 import { getMemory, memoryBackend } from "@/lib/memory";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 // GET /api/health         → static readiness (provider/model/memory, no I/O)
 // GET /api/health?ping=1   → also fires one minimal live completion to confirm
@@ -17,13 +18,13 @@ export async function GET(req: Request) {
   const ping = searchParams.get("ping") === "1";
   const memoryCheck = searchParams.get("memory") === "1";
 
-  const provider = getProvider();
+  const provider = getProviderSafe();
   const backend = memoryBackend();
   const base = {
-    provider: provider.name,
-    model: provider.model,
+    provider: provider?.name ?? null,
+    model: provider?.model ?? null,
     memory: backend,
-    mock: provider.name === "mock",
+    configured: provider !== null,
   };
 
   if (memoryCheck) {
@@ -31,7 +32,18 @@ export async function GET(req: Request) {
   }
 
   if (!ping) {
-    return NextResponse.json({ ok: true, ...base });
+    return NextResponse.json({ ok: base.configured, ...base });
+  }
+
+  if (!provider) {
+    return NextResponse.json(
+      {
+        ok: false,
+        error: "No LLM provider configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY.",
+        ...base,
+      },
+      { status: 503 },
+    );
   }
 
   const started = Date.now();
@@ -43,7 +55,7 @@ export async function GET(req: Request) {
     });
     return NextResponse.json({
       ok: true,
-      live: provider.name !== "mock",
+      live: true,
       reply: res.text.slice(0, 80),
       ms: Date.now() - started,
       ...base,

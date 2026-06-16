@@ -11,8 +11,8 @@ describe("estimateCostUSD", () => {
     expect(estimateCostUSD("claude-sonnet-4-6", 1000, 500)).toBeCloseTo(0.0105, 6);
   });
 
-  it("returns null for unpriced / mock models", () => {
-    expect(estimateCostUSD("northstar-mock-1", 1000, 500)).toBeNull();
+  it("returns null for unpriced models", () => {
+    expect(estimateCostUSD("test-fake-1", 1000, 500)).toBeNull();
     expect(estimateCostUSD("some-unknown-model", 10, 10)).toBeNull();
   });
 

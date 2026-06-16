@@ -5,10 +5,10 @@ import clsx from "clsx";
 
 interface Health {
   ok: boolean;
-  provider: string;
-  model: string;
+  provider: string | null;
+  model: string | null;
   memory: "supabase" | "in-memory";
-  mock: boolean;
+  configured: boolean;
 }
 
 interface CheckResult {
@@ -131,7 +131,7 @@ export function Connections() {
   }, [runChecks]);
 
   const services = useMemo<Service[]>(() => {
-    const llmLive = health ? !health.mock : false;
+    const llmLive = health?.configured ?? false;
     const memLive = health?.memory === "supabase";
     const tradeLive = trading?.enabled ?? false;
 
@@ -139,13 +139,43 @@ export function Connections() {
       {
         key: "llm",
         name: "Language model",
-        detail: health ? `${health.provider}${health.model ? ` · ${health.model}` : ""}` : "…",
+        detail: llmLive
+          ? `${health?.provider}${health?.model ? ` · ${health.model}` : ""}`
+          : health
+            ? "not configured"
+            : "…",
         note: llmLive
           ? "Live model connected."
-          : "Running in mock mode — add ANTHROPIC_API_KEY (or OPENAI_API_KEY) to go live.",
-        bucket: llmLive ? "connected" : "ready",
+          : "Set ANTHROPIC_API_KEY or OPENAI_API_KEY to power the crew.",
+        bucket: llmLive ? "connected" : "needs",
         probe: llmProbe,
         okLabel: (r) => (r.live ? "reachable" : "ok"),
+      },
+      {
+        key: "supabase",
+        name: "Supabase",
+        detail: memLive ? "persistent · shared memory" : "not configured",
+        note: memLive
+          ? "Connected — agent memory persists across runs."
+          : "Set SUPABASE_URL + service-role key and apply schema.sql.",
+        bucket: memLive ? "connected" : "needs",
+        probe: memProbe,
+        okLabel: (r) => (r.persisted ? "persisted" : "ok"),
+      },
+      {
+        key: "trading",
+        name: "Robinhood Agentic",
+        detail: tradeLive ? `agentic · ${trading?.mode ?? "auto"}` : "not connected",
+        note: tradeLive
+          ? `MCP live · $${trading?.maxOrderUsd ?? 100} cap per order.`
+          : "OAuth opens Robinhood, then stores an MCP token.",
+        bucket: tradeLive ? "connected" : "ready",
+        probe: tradeProbe,
+        okLabel: (r) =>
+          typeof r.toolCount === "number"
+            ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""}`
+            : "reachable",
+        action: tradeLive ? undefined : { label: "Connect Robinhood", href: "/api/trading/oauth/start" },
       },
       {
         key: "github",
@@ -156,32 +186,6 @@ export function Connections() {
         probe: null,
         okLabel: () => "ok",
       },
-      {
-        key: "trading",
-        name: "Robinhood Agentic",
-        detail: tradeLive ? `agentic · ${trading?.mode ?? "auto"}` : "not configured",
-        note: tradeLive
-          ? `MCP live · $${trading?.maxOrderUsd ?? 100} cap per order.`
-          : "OAuth opens Robinhood, then stores a local MCP token.",
-        bucket: tradeLive ? "connected" : "ready",
-        probe: tradeProbe,
-        okLabel: (r) =>
-          typeof r.toolCount === "number"
-            ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""}`
-            : "reachable",
-        action: tradeLive ? undefined : { label: "Connect Robinhood", href: "/api/trading/oauth/start" },
-      },
-      {
-        key: "memory",
-        name: "Shared memory · Supabase",
-        detail: memLive ? "Supabase · persistent" : "in-memory · process-local",
-        note: memLive
-          ? "Supabase connected — memory persists across runs."
-          : "Set SUPABASE_URL + service-role key and apply schema.sql to persist.",
-        bucket: memLive ? "connected" : "needs",
-        probe: memProbe,
-        okLabel: (r) => (r.persisted ? "persisted" : "ok"),
-      },
     ];
   }, [health, trading, llmProbe, memProbe, tradeProbe]);
 
@@ -190,6 +194,33 @@ export function Connections() {
     for (const s of services) c[s.bucket] += 1;
     return c;
   }, [services]);
+
+  // Minor services — what's running and how it's doing.
+  const runtime = useMemo<{ label: string; value: string; state: "ok" | "warn" | "off" }[]>(() => {
+    const memLive = health?.memory === "supabase";
+    return [
+      {
+        label: "Crew API",
+        value: health ? (health.configured ? "operational" : "needs model") : "…",
+        state: health ? (health.configured ? "ok" : "warn") : "off",
+      },
+      {
+        label: "Streaming",
+        value: "SSE ready",
+        state: "ok",
+      },
+      {
+        label: "Memory store",
+        value: memLive ? "Supabase" : "in-memory",
+        state: memLive ? "ok" : "warn",
+      },
+      {
+        label: "Trading policy",
+        value: trading?.enabled ? `${trading.mode} · $${trading.maxOrderUsd}/order` : "advisory",
+        state: trading?.enabled ? "ok" : "off",
+      },
+    ];
+  }, [health, trading]);
 
   return (
     <div className="lx-card">
@@ -242,6 +273,35 @@ export function Connections() {
           </section>
         );
       })}
+
+      <section className="lx-bucket">
+        <div className="lx-bucket-head">
+          <span className="lx-dot" style={{ background: "var(--text-3)" }} />
+          <span className="lx-bucket-label">Runtime</span>
+          <span className="lx-bucket-hint">What&apos;s running &amp; how it&apos;s doing</span>
+        </div>
+        <div className="lx-runtime">
+          {runtime.map((r) => (
+            <div key={r.label} className="lx-run">
+              <span
+                className={clsx("lx-dot", r.state === "warn" && "lx-pulse")}
+                style={{
+                  background:
+                    r.state === "ok"
+                      ? "var(--green)"
+                      : r.state === "warn"
+                        ? "var(--gold)"
+                        : "var(--text-4)",
+                  boxShadow:
+                    r.state === "ok" ? "0 0 8px var(--green)" : "none",
+                }}
+              />
+              <span className="lx-run-label">{r.label}</span>
+              <span className="lx-run-value">{r.value}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

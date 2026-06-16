@@ -34,7 +34,7 @@ When you submit a task in the Chat console:
    - the **orchestrator** synthesizes the final answer.
    - Every step is written to shared memory and emitted as a `CrewEvent`.
 4. Each agent turn goes through **`lib/agents/base-agent.ts`**, which calls the
-   active **LLM provider** (`lib/llm` — Anthropic, OpenAI, or the offline mock).
+   active **LLM provider** (`lib/llm` — Anthropic or OpenAI).
 5. The dashboard updates agent statuses live, refreshes the memory tail, and on
    `done` renders the answer with its **run metrics** (latency, tokens, cost).
 
@@ -42,12 +42,12 @@ When you submit a task in the Chat console:
 
 | Concern | Interface | Implementations |
 |---|---|---|
-| LLM provider | `lib/llm/types.ts` `LLMProvider` | `anthropic.ts`, `openai.ts`, `mock.ts` |
+| LLM provider | `lib/llm/types.ts` `LLMProvider` | `anthropic.ts`, `openai.ts` |
 | Shared memory | `lib/memory/types.ts` `MemoryStore` | `supabase-store.ts`, `in-memory-store.ts` |
 | Agent | `lib/agents/base-agent.ts` `Agent` | data-driven from `profiles.ts` |
 
-Each is resolved from env at runtime (`lib/llm/index.ts`, `lib/memory/index.ts`)
-with a safe default (mock LLM, in-memory store) so the app always runs.
+Each is resolved from env at runtime (`lib/llm/index.ts`, `lib/memory/index.ts`).
+An LLM key is required; memory falls back to an in-process store.
 
 ## Adding things
 

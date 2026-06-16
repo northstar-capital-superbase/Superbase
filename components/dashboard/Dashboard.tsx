@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
@@ -272,13 +273,13 @@ export function Dashboard() {
           <div>
             <h1 className="lx-title">Agent Operating System</h1>
             <p className="lx-sub">
-              Local-first multi-agent lab · {sessions.length}{" "}
+              Multi-agent lab · {sessions.length}{" "}
               {sessions.length === 1 ? "lab" : "labs"}
             </p>
           </div>
-          <a href="/tour" className="lx-tour">
-            UI tour →
-          </a>
+          <Link href="/" className="lx-tour">
+            ← Home
+          </Link>
         </div>
 
         <Connections />
@@ -319,7 +320,7 @@ function RuntimePills({
   runtime: RuntimeInfo | null;
   trading: TradingInfo | null;
 }) {
-  const llmLive = runtime ? runtime.provider !== "mock" : false;
+  const llmLive = runtime?.configured ?? false;
   const memLive = runtime?.memory === "supabase";
   const traderLive = trading?.traderInCrew ?? false;
   return (
