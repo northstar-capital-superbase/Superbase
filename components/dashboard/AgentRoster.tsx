@@ -14,7 +14,7 @@ export function AgentRoster({
   statuses: Record<string, AgentStatus>;
 }) {
   return (
-    <div className="grid grid-cols-2 gap-3 xl:grid-cols-5">
+    <div className="lx-roster">
       {agents.map((a) => (
         <AgentCard key={a.id} agent={a} status={statuses[a.id] ?? "idle"} />
       ))}
@@ -31,34 +31,21 @@ function AgentCard({
 }) {
   return (
     <div
-      className={clsx(
-        "panel relative overflow-hidden p-4 transition-all duration-300",
-        status === "thinking" && "ring-1 ring-inset",
-      )}
-      style={
-        status === "thinking"
-          ? ({ ["--tw-ring-color" as any]: agent.color } as React.CSSProperties)
-          : undefined
-      }
+      className={clsx("lx-agent", status === "thinking" && "busy")}
+      style={{ ["--agent" as any]: agent.color } as React.CSSProperties}
     >
-      <div
-        className="absolute inset-x-0 top-0 h-0.5"
-        style={{ backgroundColor: agent.color, opacity: status === "idle" ? 0.25 : 1 }}
-      />
-      <div className="flex items-center justify-between">
+      <div className="lx-agent-top">
         <span
-          className="grid h-7 w-7 place-items-center rounded-lg text-[11px] font-bold"
+          className="lx-agent-badge"
           style={{ backgroundColor: `${agent.color}22`, color: agent.color }}
         >
           {agent.name[0]}
         </span>
         <StatusPill status={status} color={agent.color} />
       </div>
-      <div className="mt-3 text-sm font-semibold text-white">{agent.name}</div>
-      <div className="text-[11px] text-slate-500">{agent.role}</div>
-      <p className="mt-2 text-[11px] leading-relaxed text-slate-500">
-        {agent.description}
-      </p>
+      <div className="lx-agent-name">{agent.name}</div>
+      <div className="lx-agent-role">{agent.role}</div>
+      <p className="lx-agent-desc">{agent.description}</p>
     </div>
   );
 }
@@ -72,20 +59,25 @@ function StatusPill({
 }) {
   if (status === "thinking") {
     return (
-      <span
-        className="flex items-center gap-1.5 text-[10px] font-medium"
-        style={{ color }}
-      >
+      <span className="lx-agent-pill" style={{ color }}>
         <span
-          className="h-1.5 w-1.5 animate-pulseSoft rounded-full"
-          style={{ backgroundColor: color }}
+          className="lx-dot lx-pulse"
+          style={{ backgroundColor: color, boxShadow: `0 0 8px ${color}` }}
         />
         working
       </span>
     );
   }
   if (status === "done") {
-    return <span className="text-[10px] text-slate-500">done</span>;
+    return (
+      <span className="lx-agent-pill" style={{ color: "var(--text-3)" }}>
+        done
+      </span>
+    );
   }
-  return <span className="text-[10px] text-slate-600">idle</span>;
+  return (
+    <span className="lx-agent-pill" style={{ color: "var(--text-4)" }}>
+      idle
+    </span>
+  );
 }

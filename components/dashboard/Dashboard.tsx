@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Sidebar } from "./Sidebar";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
 import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
@@ -9,6 +8,7 @@ import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { Chat, type ChatTurn } from "@/components/chat/Chat";
 import { SessionSwitcher } from "@/components/session/SessionSwitcher";
 import { useSessions } from "@/components/session/useSessions";
+import "./labs.css";
 import {
   type AgentProfile,
   type CrewEvent,
@@ -239,30 +239,23 @@ export function Dashboard() {
   }, [activeId, sessions]);
 
   return (
-    <div className="relative flex h-screen w-full overflow-hidden">
-      {/* White-fades-into-dark premium backdrop */}
-      <div
-        className="pointer-events-none absolute inset-0 z-0"
-        aria-hidden="true"
-        style={{
-          background:
-            "radial-gradient(1300px 600px at 50% -240px, rgba(222,230,255,0.18), transparent 60%), radial-gradient(820px 520px at 86% -40px, rgba(110,139,255,0.10), transparent 56%), linear-gradient(180deg, rgba(124,144,214,0.07), transparent 26%)",
-        }}
-      />
-      <div className="relative z-10 flex h-full w-full overflow-hidden">
-        <Sidebar runtime={runtime} trading={trading} />
+    <div className="lx">
+      <div className="lx-bg" aria-hidden="true" />
+      <div className="lx-grain" aria-hidden="true" />
 
-        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
-          <header className="flex flex-wrap items-end justify-between gap-3">
-            <div className="min-w-0">
-              <h1 className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-base font-semibold text-transparent sm:text-lg">
-                Northstar Labs · Multi-Agent OS
-              </h1>
-              <p className="text-[12px] text-slate-500">
-                Local-first multi-agent lab · {sessions.length}{" "}
-                {sessions.length === 1 ? "lab" : "labs"}
-              </p>
+      <header className="lx-topbar">
+        <div className="lx-topbar-inner">
+          <div className="lx-brand">
+            <span className="lx-brand-mark">
+              <StarIcon />
+            </span>
+            <div>
+              <div className="lx-brand-name">Northstar Labs</div>
+              <div className="lx-brand-sub">Multi-Agent OS</div>
             </div>
+          </div>
+          <div className="lx-topbar-right">
+            <RuntimePills runtime={runtime} trading={trading} />
             <SessionSwitcher
               sessions={sessions}
               activeId={activeId}
@@ -270,30 +263,45 @@ export function Dashboard() {
               onCreate={create}
               onRemove={removeSession}
             />
-          </header>
-
-          <Connections />
-
-          <AgentRoster agents={agents} statuses={statuses} />
-
-          <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
-            <Chat
-              turns={turns}
-              busy={busy}
-              onSend={send}
-              tradingEnabled={trading?.traderInCrew ?? false}
-            />
-            <div className="hidden min-h-0 lg:block">
-              <MemoryPanel
-                entries={memory}
-                onClear={clearMemory}
-                onExplore={() => setExplorerOpen(true)}
-                onExport={exportLab}
-              />
-            </div>
           </div>
-        </main>
-      </div>
+        </div>
+      </header>
+
+      <main className="lx-main">
+        <div className="lx-head">
+          <div>
+            <h1 className="lx-title">Agent Operating System</h1>
+            <p className="lx-sub">
+              Local-first multi-agent lab · {sessions.length}{" "}
+              {sessions.length === 1 ? "lab" : "labs"}
+            </p>
+          </div>
+          <a href="/tour" className="lx-tour">
+            UI tour →
+          </a>
+        </div>
+
+        <Connections />
+
+        <AgentRoster agents={agents} statuses={statuses} />
+
+        <div className="lx-grid">
+          <Chat
+            turns={turns}
+            busy={busy}
+            onSend={send}
+            tradingEnabled={trading?.traderInCrew ?? false}
+          />
+          <div className="lx-mem-pane">
+            <MemoryPanel
+              entries={memory}
+              onClear={clearMemory}
+              onExplore={() => setExplorerOpen(true)}
+              onExport={exportLab}
+            />
+          </div>
+        </div>
+      </main>
 
       <MemoryExplorer
         sessionId={activeId}
@@ -301,5 +309,44 @@ export function Dashboard() {
         onClose={() => setExplorerOpen(false)}
       />
     </div>
+  );
+}
+
+function RuntimePills({
+  runtime,
+  trading,
+}: {
+  runtime: RuntimeInfo | null;
+  trading: TradingInfo | null;
+}) {
+  const llmLive = runtime ? runtime.provider !== "mock" : false;
+  const memLive = runtime?.memory === "supabase";
+  const traderLive = trading?.traderInCrew ?? false;
+  return (
+    <div className="lx-pills">
+      <span className="lx-pill" title={runtime?.model ?? "model"}>
+        <span className={`lx-dot ${llmLive ? "on" : "off"}`} />
+        <b>{runtime?.provider ?? "…"}</b>
+      </span>
+      <span className="lx-pill opt">
+        <span className={`lx-dot ${memLive ? "on" : "off"}`} />
+        {memLive ? "Supabase" : "In-memory"}
+      </span>
+      <span className="lx-pill opt">
+        <span className={`lx-dot ${traderLive ? "on" : "off"}`} />
+        Trader {traderLive ? "live" : "off"}
+      </span>
+    </div>
+  );
+}
+
+function StarIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"
+        fill="currentColor"
+      />
+    </svg>
   );
 }

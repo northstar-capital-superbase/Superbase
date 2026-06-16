@@ -23,51 +23,45 @@ export function SessionSwitcher({
   const active = sessions.find((s) => s.id === activeId);
 
   return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 rounded-lg border border-white/5 bg-base-750/60 px-3 py-1.5 text-[13px] text-slate-200 transition hover:border-accent/40"
-      >
-        <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-        <span className="max-w-[160px] truncate font-medium">
-          {active?.name ?? "Lab"}
-        </span>
-        <span className="text-slate-500">▾</span>
+    <div className="lx-switch">
+      <button className="lx-switch-btn" onClick={() => setOpen((o) => !o)}>
+        <span className="lx-dot on" />
+        <span className="lx-switch-name">{active?.name ?? "Lab"}</span>
+        <span style={{ color: "var(--text-3)" }}>▾</span>
       </button>
 
       {open && (
         <>
-          <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="panel absolute right-0 z-20 mt-1.5 w-72 p-2">
-            <div className="mb-1 px-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-600">
-              Labs
-            </div>
-            <div className="max-h-64 space-y-0.5 overflow-y-auto">
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 20 }}
+            onClick={() => setOpen(false)}
+          />
+          <div className="lx-menu">
+            <div className="lx-menu-label">Labs</div>
+            <div style={{ maxHeight: 256, overflowY: "auto" }}>
               {sessions.map((s) => (
                 <div
                   key={s.id}
                   className={clsx(
-                    "group flex items-center gap-2 rounded-lg px-2 py-1.5",
-                    s.id === activeId ? "bg-accent/15" : "hover:bg-white/5",
+                    "lx-menu-item",
+                    s.id === activeId && "is-active",
                   )}
                 >
                   <button
+                    className="name"
                     onClick={() => {
                       onSwitch(s.id);
                       setOpen(false);
                     }}
-                    className="min-w-0 flex-1 text-left"
                   >
-                    <div className="truncate text-[13px] text-slate-200">{s.name}</div>
-                    <div className="truncate font-mono text-[10px] text-slate-600">
-                      {s.id}
-                    </div>
+                    <span className="t">{s.name}</span>
+                    <span className="id lx-mono">{s.id}</span>
                   </button>
                   {sessions.length > 1 && (
                     <button
+                      className="lx-menu-del"
                       onClick={() => onRemove(s.id)}
                       title="Delete lab (and its memory)"
-                      className="opacity-0 transition group-hover:opacity-100 text-slate-500 hover:text-red-300"
                     >
                       ✕
                     </button>
@@ -77,24 +71,21 @@ export function SessionSwitcher({
             </div>
 
             <form
+              className="lx-menu-form"
               onSubmit={(e) => {
                 e.preventDefault();
                 onCreate(name);
                 setName("");
                 setOpen(false);
               }}
-              className="mt-2 flex items-center gap-1.5 border-t border-white/5 pt-2"
             >
               <input
+                className="lx-input"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="New lab name…"
-                className="min-w-0 flex-1 rounded-md border border-white/5 bg-base-750/60 px-2 py-1.5 text-[12px] text-slate-200 placeholder:text-slate-600 focus:border-accent/40 focus:outline-none"
               />
-              <button
-                type="submit"
-                className="rounded-md bg-accent px-2.5 py-1.5 text-[12px] font-medium text-base-900 transition hover:bg-accent-soft"
-              >
+              <button type="submit" className="lx-btn lx-btn-primary">
                 + Add
               </button>
             </form>
