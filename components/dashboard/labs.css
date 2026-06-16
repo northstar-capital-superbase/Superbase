@@ -244,9 +244,11 @@
   padding: 6px 2px 2px;
 }
 .lx-title {
-  font-size: clamp(24px, 3.4vw, 34px);
+  font-size: clamp(23px, 3.4vw, 34px);
   font-weight: 600;
   letter-spacing: -0.035em;
+  line-height: 1.14;
+  padding-bottom: 2px;
   margin: 0;
   background: linear-gradient(180deg, #ffffff, #c4cad8);
   -webkit-background-clip: text;
@@ -1043,11 +1045,26 @@
     padding-left: 16px;
     padding-right: 16px;
   }
+  /* Let the bar wrap instead of overlapping when space is tight */
+  .lx-topbar-inner {
+    height: auto;
+    min-height: 58px;
+    flex-wrap: wrap;
+    gap: 8px 10px;
+    padding-top: 9px;
+    padding-bottom: 9px;
+  }
+  .lx-topbar-left {
+    gap: 10px;
+  }
   .lx-brand-sub {
     display: none;
   }
   .lx-pills {
     display: none;
+  }
+  .lx-nav-link {
+    padding: 6px 12px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

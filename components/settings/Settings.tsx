@@ -23,7 +23,9 @@ import "./settings.css";
 
 const APP_VERSION = "0.3.0";
 
-const NAV = [
+type SectionId = "ai" | "memory" | "trading" | "integrations" | "appearance" | "system";
+
+const NAV: { id: SectionId; label: string }[] = [
   { id: "ai", label: "AI Configuration" },
   { id: "memory", label: "Memory" },
   { id: "trading", label: "Trading Controls" },
@@ -31,26 +33,6 @@ const NAV = [
   { id: "appearance", label: "Appearance" },
   { id: "system", label: "System" },
 ];
-
-// Highlights the section currently in view.
-function useScrollSpy(ids: string[]): string {
-  const [active, setActive] = useState(ids[0]);
-  useEffect(() => {
-    const obs = new IntersectionObserver(
-      (entries) => {
-        for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
-      },
-      { rootMargin: "-28% 0px -60% 0px", threshold: 0 },
-    );
-    ids.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) obs.observe(el);
-    });
-    return () => obs.disconnect();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ids.join(",")]);
-  return active;
-}
 
 const GearGlyph = (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -122,7 +104,7 @@ function SystemSettings() {
 
 export function Settings() {
   const { settings, update } = useSettings();
-  const active = useScrollSpy(NAV.map((n) => n.id));
+  const [active, setActive] = useState<SectionId>("ai");
   const live = settings.trading.mode === "live";
 
   return (
@@ -161,18 +143,21 @@ export function Settings() {
         <div className="lx-set-layout">
           <nav className="lx-set-nav" aria-label="Settings sections">
             {NAV.map((n) => (
-              <a
+              <button
                 key={n.id}
-                href={`#${n.id}`}
+                type="button"
                 className={clsx("lx-set-nav-link", active === n.id && "active")}
+                aria-current={active === n.id ? "page" : undefined}
+                onClick={() => setActive(n.id)}
               >
                 {n.label}
-              </a>
+              </button>
             ))}
           </nav>
 
-          <div className="lx-set-content">
+          <div className="lx-set-content" key={active}>
             {/* AI Configuration */}
+            {active === "ai" && (
             <SettingsSection
               id="ai"
               title="AI Configuration"
@@ -216,11 +201,13 @@ export function Settings() {
                 />
               </Row>
             </SettingsSection>
+            )}
 
             {/* Memory (live) */}
-            <MemorySettings />
+            {active === "memory" && <MemorySettings />}
 
             {/* Trading Controls */}
+            {active === "trading" && (
             <SettingsSection
               id="trading"
               title="Trading Controls"
@@ -274,11 +261,13 @@ export function Settings() {
                 />
               </Row>
             </SettingsSection>
+            )}
 
             {/* Integrations (live) */}
-            <IntegrationsSettings />
+            {active === "integrations" && <IntegrationsSettings />}
 
             {/* Appearance */}
+            {active === "appearance" && (
             <SettingsSection
               id="appearance"
               title="Appearance"
@@ -304,9 +293,10 @@ export function Settings() {
                 />
               </Row>
             </SettingsSection>
+            )}
 
             {/* System */}
-            <SystemSettings />
+            {active === "system" && <SystemSettings />}
           </div>
         </div>
       </main>
