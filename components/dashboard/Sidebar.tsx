@@ -13,7 +13,7 @@ export function Sidebar({
   const traderLive = trading?.traderInCrew ?? false;
 
   return (
-    <aside className="flex h-full w-64 shrink-0 flex-col gap-6 border-r border-white/5 bg-base-850/60 p-5">
+    <aside className="hidden h-full w-64 shrink-0 flex-col gap-6 border-r border-white/5 bg-base-850/60 p-5 lg:flex">
       <div className="flex items-center gap-3">
         <div className="grid h-9 w-9 place-items-center rounded-xl bg-accent/15 text-accent shadow-glow">
           <StarIcon />

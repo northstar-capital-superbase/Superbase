@@ -252,10 +252,10 @@ export function Dashboard() {
       <div className="relative z-10 flex h-full w-full overflow-hidden">
         <Sidebar runtime={runtime} trading={trading} />
 
-        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-4">
-          <header className="flex items-end justify-between gap-3">
-            <div>
-              <h1 className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-lg font-semibold text-transparent">
+        <main className="flex min-w-0 flex-1 flex-col gap-4 overflow-y-auto p-3 sm:p-4">
+          <header className="flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="bg-gradient-to-r from-white via-white to-slate-400 bg-clip-text text-base font-semibold text-transparent sm:text-lg">
                 Northstar Labs · Multi-Agent OS
               </h1>
               <p className="text-[12px] text-slate-500">
