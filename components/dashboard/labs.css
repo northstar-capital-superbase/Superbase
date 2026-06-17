@@ -120,6 +120,11 @@
   justify-content: space-between;
   gap: 14px;
 }
+/* Slim variant — no brand/nav, only status pills + session switcher */
+.lx-topbar-inner--slim {
+  justify-content: flex-end;
+  height: 52px;
+}
 .lx-brand {
   display: flex;
   align-items: center;
