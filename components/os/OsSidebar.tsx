@@ -452,12 +452,13 @@ function NavItemRow({
 function NorthstarIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      {/* 4-pointed compass star — elongated cardinal points, tight inner vertices */}
       <path
-        d="M12 2 L13.8 10.2 L22 12 L13.8 13.8 L12 22 L10.2 13.8 L2 12 L10.2 10.2 Z"
+        d="M12 1.5 L13.4 10.6 L22.5 12 L13.4 13.4 L12 22.5 L10.6 13.4 L1.5 12 L10.6 10.6 Z"
         fill="currentColor"
-        fillOpacity="0.92"
+        fillOpacity="0.88"
       />
-      <circle cx="12" cy="12" r="2" fill="rgba(255,255,255,0.18)" />
+      <circle cx="12" cy="12" r="1.6" fill="rgba(255,255,255,0.22)" />
     </svg>
   );
 }
