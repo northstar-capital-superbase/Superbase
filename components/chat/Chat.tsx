@@ -43,7 +43,7 @@ export function Chat({
       <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
         <span className="h-2 w-2 rounded-full bg-signal-research" />
         <span className="text-sm font-semibold text-white">Lab Console</span>
-        <span className="ml-auto text-[11px] text-slate-500">
+        <span className="ml-auto hidden text-[11px] text-slate-500 sm:inline">
           orchestrated multi-agent chat
         </span>
       </div>
@@ -74,7 +74,8 @@ export function Chat({
               }
             }}
             rows={1}
-            placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+            placeholder="Give the lab a task…"
+            title="Enter to send, Shift+Enter for newline"
             className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
           />
           <button

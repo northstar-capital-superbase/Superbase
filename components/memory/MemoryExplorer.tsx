@@ -79,7 +79,9 @@ export function MemoryExplorer({
             <div className="text-sm font-semibold text-white">Memory Explorer</div>
             <div className="text-[11px] text-slate-500">
               {loading ? "loading…" : `${entries.length} entries`} · session{" "}
-              <span className="font-mono">{sessionId}</span>
+              <span className="font-mono truncate" title={sessionId}>
+                {sessionId.slice(0, 12)}…
+              </span>
             </div>
           </div>
           <button

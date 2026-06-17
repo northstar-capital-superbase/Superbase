@@ -67,7 +67,7 @@ export function SessionSwitcher({
                     <button
                       onClick={() => onRemove(s.id)}
                       title="Delete lab (and its memory)"
-                      className="opacity-0 transition group-hover:opacity-100 text-slate-500 hover:text-red-300"
+                      className="text-slate-500 opacity-100 transition hover:text-red-300 sm:opacity-0 sm:group-hover:opacity-100"
                     >
                       ✕
                     </button>

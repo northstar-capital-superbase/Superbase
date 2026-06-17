@@ -139,9 +139,17 @@
 @media(max-width:920px){.ns-d-grid{grid-template-columns:repeat(2,1fr)}.ns-d-span-2,.ns-d-span-3{grid-column:span 2}.ns-d-tabs{display:none}}
 @media(max-width:680px){
   .ns-container,.ns-d-nav-inner{padding-left:18px;padding-right:18px}
-  .ns-nav-links{display:none}.ns-hero{padding:96px 0 64px}.ns-os-panel{margin-top:44px}.ns-os-screen{overflow-x:auto}.ns-flow-svg{min-width:680px}
-  .ns-section{padding:80px 0}.ns-head{margin-bottom:40px}.ns-platform-grid{grid-template-columns:1fr}
+  .ns-nav-links{display:none}.ns-nav-mobile-toggle{display:flex}.ns-hero{padding:88px 0 56px}.ns-os-panel{margin-top:36px}.ns-os-screen{overflow-x:auto;-webkit-overflow-scrolling:touch}.ns-flow-svg{min-width:680px}
+  .ns-section{padding:72px 0}.ns-head{margin-bottom:36px}.ns-platform-grid{grid-template-columns:1fr}
   .ns-hero-cta{flex-direction:column;align-items:stretch}.ns-footer-inner{flex-direction:column;gap:28px}.ns-footer-meta{text-align:left}.ns-art-rail{margin:0 -18px;padding-left:18px;padding-right:18px}
   .ns-d-grid{grid-template-columns:1fr}.ns-d-span-2,.ns-d-span-3{grid-column:span 1}.ns-d-head{flex-direction:column;align-items:flex-start}.ns-d-systag,.ns-d-sync{display:none}.ns-d-tl-detail{padding-left:0}
+  .ns-rev{left:12px;right:12px;transform:none;width:auto;max-width:calc(100% - 24px);flex-wrap:wrap;justify-content:center;padding-bottom:max(7px,env(safe-area-inset-bottom))}
+  .ns-rev-label{display:none}
 }
+.ns-nav-mobile-toggle{display:none;align-items:center;justify-content:center;width:40px;height:40px;border:1px solid var(--ns-line);border-radius:9px;background:rgba(255,255,255,.02);color:var(--ns-text-2)}
+.ns-nav-drawer{display:none;position:fixed;inset:0;z-index:40;background:rgba(6,7,10,.75);backdrop-filter:blur(8px)}
+.ns-nav-drawer.is-open{display:block}
+.ns-nav-drawer-panel{position:absolute;right:0;top:0;height:100%;width:min(280px,85vw);background:var(--ns-surface);border-left:1px solid var(--ns-line);padding:24px 20px;display:flex;flex-direction:column;gap:8px}
+.ns-nav-drawer-panel a{padding:12px 14px;border-radius:10px;font-size:15px;color:var(--ns-text-2);text-decoration:none}.ns-nav-drawer-panel a:hover{background:rgba(255,255,255,.04);color:var(--ns-text)}
+.ns-nav-drawer-cta{margin-top:16px;padding-top:16px!important;border-top:1px solid var(--ns-line);color:var(--ns-accent)!important}
 @media(prefers-reduced-motion:reduce){.ns-signal,.ns-stream,.ns-packet,.ns-pulse{animation:none}.ns-signal,.ns-stream{stroke-dasharray:none}.ns-packet{display:none}.ns-fade,.ns-reveal>*,.ns-view{transition:none;animation:none;opacity:1;transform:none}.ns-btn,.ns-card,.ns-d-tab{transition:none}}

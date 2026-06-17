@@ -62,6 +62,9 @@ export function NorthstarShowcase() {
         <Link href="/labs" className="ns-rev-link">
           Labs
         </Link>
+        <Link href="/dashboard" className="ns-rev-link">
+          Dashboard
+        </Link>
       </div>
     </div>
   );
