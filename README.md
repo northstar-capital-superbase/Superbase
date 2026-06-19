@@ -58,7 +58,7 @@ a run and runs compound across a session.
 ## Architecture
 
 Grouped by feature so each folder maps to one concern. See
-[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the full data-flow walkthrough.
+[`docs/NORTHSTAR.md`](docs/NORTHSTAR.md) — the master architecture (single source of truth).
 
 ```
 app/                       # Next.js App Router
