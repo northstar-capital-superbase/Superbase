@@ -117,7 +117,7 @@ export function Integrations() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Tile
           label="LLM provider"
           value={health ? health.provider : "…"}
@@ -166,15 +166,6 @@ export function Integrations() {
               ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""} available`
               : "reachable"
           }
-        />
-        <Tile
-          label="GitHub"
-          value="connected"
-          sub="northstar-capital-superbase/superbase"
-          state="ok"
-          note="commits pushed to branch"
-          probe={null}
-          okLabel={() => "ok"}
         />
       </div>
     </div>
