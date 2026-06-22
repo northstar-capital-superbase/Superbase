@@ -9,6 +9,7 @@ import { AgentCard } from "@/components/os/AgentCard";
 import { ActivityFeed, type ActivityItem } from "@/components/os/ActivityFeed";
 import { Timeline, type TimelineEvent } from "@/components/os/Timeline";
 import { Skeleton } from "@/components/os/Skeleton";
+import { useSessions } from "@/components/session/useSessions";
 import type { AgentProfile, MemoryEntry, TradingInfo } from "@/components/shared";
 
 interface Health {
@@ -20,6 +21,7 @@ interface Health {
 }
 
 export function MissionControl() {
+  const { activeId } = useSessions();
   const [health, setHealth] = useState<Health | null>(null);
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [trading, setTrading] = useState<TradingInfo | null>(null);
@@ -33,7 +35,7 @@ export function MissionControl() {
         const [h, a, m] = await Promise.all([
           fetch("/api/health").then((r) => r.json()),
           fetch("/api/agents").then((r) => r.json()),
-          fetch("/api/memory?sessionId=default&limit=20").then((r) => r.json()),
+          fetch(`/api/memory?sessionId=${activeId}&limit=20`).then((r) => r.json()),
         ]);
         if (cancelled) return;
         setHealth(h);
@@ -61,7 +63,7 @@ export function MissionControl() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeId]);
 
   const timeline: TimelineEvent[] = activity.slice(0, 6).map((a) => ({
     id: a.id,
