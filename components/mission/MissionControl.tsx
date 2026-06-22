@@ -159,13 +159,14 @@ export function MissionControl() {
       </div>
 
       <section className="os-card p-4">
-        <h2 className="text-sm font-semibold text-white">Research Feed</h2>
+        <h2 className="text-sm font-semibold text-white">Knowledge Base</h2>
         <p className="mt-1 text-[12px] text-slate-500">
-          Agent-generated insights appear here after crew runs. Open{" "}
-          <Link href="/research" className="text-accent hover:underline">
-            Research
-          </Link>{" "}
-          for the full intelligence terminal.
+          Agent outputs are persisted to shared memory after every crew run.
+          Browse the full timeline in{" "}
+          <Link href="/memory" className="text-accent hover:underline">
+            Memory
+          </Link>
+          .
         </p>
       </section>
     </div>
