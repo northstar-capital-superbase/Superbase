@@ -9,6 +9,7 @@ import { AgentCard } from "@/components/os/AgentCard";
 import { ActivityFeed, type ActivityItem } from "@/components/os/ActivityFeed";
 import { Timeline, type TimelineEvent } from "@/components/os/Timeline";
 import { Skeleton } from "@/components/os/Skeleton";
+import { useSessions } from "@/components/session/useSessions";
 import type { AgentProfile, MemoryEntry, TradingInfo } from "@/components/shared";
 
 interface Health {
@@ -20,6 +21,7 @@ interface Health {
 }
 
 export function MissionControl() {
+  const { activeId } = useSessions();
   const [health, setHealth] = useState<Health | null>(null);
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [trading, setTrading] = useState<TradingInfo | null>(null);
@@ -33,7 +35,7 @@ export function MissionControl() {
         const [h, a, m] = await Promise.all([
           fetch("/api/health").then((r) => r.json()),
           fetch("/api/agents").then((r) => r.json()),
-          fetch("/api/memory?sessionId=default&limit=20").then((r) => r.json()),
+          fetch(`/api/memory?sessionId=${activeId}&limit=20`).then((r) => r.json()),
         ]);
         if (cancelled) return;
         setHealth(h);
@@ -61,7 +63,7 @@ export function MissionControl() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [activeId]);
 
   const timeline: TimelineEvent[] = activity.slice(0, 6).map((a) => ({
     id: a.id,
@@ -93,13 +95,7 @@ export function MissionControl() {
           ))}
         </div>
       ) : (
-        <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <MetricCard
-            label="Portfolio"
-            value="—"
-            sub="Connect Robinhood MCP"
-            delta={{ text: "Agentic account", positive: undefined }}
-          />
+        <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <MetricCard
             label="LLM"
             value={health?.provider ?? "—"}
@@ -157,13 +153,14 @@ export function MissionControl() {
       </div>
 
       <section className="os-card p-4">
-        <h2 className="text-sm font-semibold text-white">Research Feed</h2>
+        <h2 className="text-sm font-semibold text-white">Knowledge Base</h2>
         <p className="mt-1 text-[12px] text-slate-500">
-          Agent-generated insights appear here after crew runs. Open{" "}
-          <Link href="/research" className="text-accent hover:underline">
-            Research
-          </Link>{" "}
-          for the full intelligence terminal.
+          Agent outputs are written to shared memory after every crew run. Browse
+          the full timeline in{" "}
+          <Link href="/memory" className="text-accent hover:underline">
+            Memory
+          </Link>
+          .
         </p>
       </section>
     </div>

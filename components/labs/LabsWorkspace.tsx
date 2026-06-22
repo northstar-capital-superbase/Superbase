@@ -31,28 +31,6 @@ function reconstructTurns(entries: MemoryEntry[]): ChatTurn[] {
   return turns;
 }
 
-const LAB_TOOLS = [
-  {
-    title: "Workflow Builder",
-    body: "Compose multi-agent pipelines visually.",
-    tag: "Coming soon",
-  },
-  {
-    title: "Prompt Studio",
-    body: "Save, version, and test crew prompts.",
-    tag: "Beta",
-  },
-  {
-    title: "Experiment Tracker",
-    body: "Log runs, models, and outcomes.",
-    tag: "Active",
-  },
-  {
-    title: "Model Bench",
-    body: "Compare outputs side-by-side.",
-    tag: "Planned",
-  },
-];
 
 export function LabsWorkspace() {
   const { sessions, activeId, create, remove, setActive } = useSessions();
@@ -261,20 +239,6 @@ export function LabsWorkspace() {
           />
         }
       />
-
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {LAB_TOOLS.map((tool) => (
-          <div key={tool.title} className="os-card p-4">
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-sm font-medium text-white">{tool.title}</span>
-              <StatusBadge tone="idle" dot={false}>
-                {tool.tag}
-              </StatusBadge>
-            </div>
-            <p className="mt-2 text-[12px] text-slate-500">{tool.body}</p>
-          </div>
-        ))}
-      </div>
 
       <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-500">
         <StatusBadge tone={runtime?.provider === "mock" ? "warn" : "ok"}>

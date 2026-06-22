@@ -1,9 +1,7 @@
 export type NavIcon =
-  | "home"
   | "dashboard"
   | "labs"
   | "agents"
-  | "research"
   | "trading"
   | "memory"
   | "integrations"
@@ -20,13 +18,6 @@ export interface OsNavItem {
 
 export const OS_NAV: OsNavItem[] = [
   {
-    href: "/",
-    label: "Home",
-    description: "Northstar OS marketing & vision",
-    icon: "home",
-    mobilePrimary: true,
-  },
-  {
     href: "/dashboard",
     label: "Dashboard",
     description: "Mission control — system overview",
@@ -36,7 +27,7 @@ export const OS_NAV: OsNavItem[] = [
   {
     href: "/labs",
     label: "Labs",
-    description: "Research & development center",
+    description: "Multi-agent workspace",
     icon: "labs",
     mobilePrimary: true,
   },
@@ -45,18 +36,6 @@ export const OS_NAV: OsNavItem[] = [
     label: "Agents",
     description: "Agent roster & capabilities",
     icon: "agents",
-  },
-  {
-    href: "/research",
-    label: "Research",
-    description: "Market intelligence terminal",
-    icon: "research",
-  },
-  {
-    href: "/trading",
-    label: "Trading",
-    description: "Portfolio & execution",
-    icon: "trading",
     mobilePrimary: true,
   },
   {
@@ -64,6 +43,13 @@ export const OS_NAV: OsNavItem[] = [
     label: "Memory",
     description: "Shared knowledge & timeline",
     icon: "memory",
+    mobilePrimary: true,
+  },
+  {
+    href: "/trading",
+    label: "Trading",
+    description: "Portfolio & execution",
+    icon: "trading",
   },
   {
     href: "/integrations",

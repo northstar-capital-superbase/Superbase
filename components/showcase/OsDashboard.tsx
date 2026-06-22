@@ -224,7 +224,7 @@ export function OsDashboard({
           </p>
         </div>
         <span className="ns-d-systag">
-          NORTHSTAR OS · BUILD 0.2 · ALL SYSTEMS NOMINAL
+          NORTHSTAR OS · DEVELOPER PREVIEW · DEMO DATA
         </span>
       </div>
 
@@ -241,7 +241,7 @@ export function OsDashboard({
                 Liabilities{" "}
                 <b style={{ color: "#EDEFF4" }}>−{usd(nw.liabilities)}</b>
               </span>
-              <span className="ns-d-foot-mono">UPDATED 2M AGO</span>
+              <span className="ns-d-foot-mono">DEMO DATA</span>
             </div>
           }
         >

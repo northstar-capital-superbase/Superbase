@@ -2,14 +2,6 @@ import type { ReactNode } from "react";
 import type { NavIcon } from "./nav";
 
 const paths: Record<NavIcon, ReactNode> = {
-  home: (
-    <path
-      d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill="none"
-    />
-  ),
   dashboard: (
     <>
       <rect x="3" y="3" width="8" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.5" fill="none" />
@@ -31,14 +23,6 @@ const paths: Record<NavIcon, ReactNode> = {
       <circle cx="12" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
       <path d="M5 20c0-3.3 3.1-5 7-5s7 1.7 7 5" stroke="currentColor" strokeWidth="1.5" fill="none" />
     </>
-  ),
-  research: (
-    <path
-      d="M6 4h9l5 5v11a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      fill="none"
-    />
   ),
   trading: (
     <path

@@ -218,7 +218,7 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
             className="ns-eyebrow ns-fade"
             style={{ transitionDelay: "120ms" }}
           >
-            NORTHSTAR CAPITAL · AUTONOMOUS FINANCE
+            NORTHSTAR OS · DEVELOPER PREVIEW
           </p>
           <h1
             id="hero-title"
@@ -260,7 +260,7 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
                 <StarGlyph color="#7d879c" size={12} /> NORTHSTAR OS
               </span>
               <span className="ns-os-status">
-                <i className="ns-live" /> CAPITAL ROUTING · LIVE
+                DEVELOPER PREVIEW
               </span>
             </div>
             <div className="ns-os-screen">
@@ -408,7 +408,7 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
             Enter Northstar <Arrow />
           </button>
           <p className="ns-final-note">
-            Northstar OS is currently in private development.
+            Northstar OS — Developer Preview. Experimental environment.
           </p>
         </div>
       </section>
@@ -432,7 +432,7 @@ export function HomePage({ onLaunch }: { onLaunch: () => void }) {
             </div>
           </div>
           <div className="ns-footer-meta">
-            <span>NORTHSTAR OS · BUILD 0.2</span>
+            <span>NORTHSTAR OS · DEVELOPER PREVIEW</span>
             <span>© {new Date().getFullYear()} Northstar Capital</span>
           </div>
         </div>
