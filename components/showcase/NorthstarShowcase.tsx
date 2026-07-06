@@ -1,68 +1,58 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { HomePage } from "./HomePage";
-import { Login } from "./Login";
-import { OsDashboard } from "./OsDashboard";
-import { MOCK, type MockUser, type ShowcaseView } from "./types";
+import { StarGlyph } from "./icons";
+import { Landing } from "./studio/Landing";
 import "./showcase.css";
+import "./studio.css";
 
 export function NorthstarShowcase() {
-  const [view, setView] = useState<ShowcaseView>("home");
-  const [user, setUser] = useState<MockUser | null>(null);
-
-  const go = (v: ShowcaseView) => {
-    if (v === "dashboard" && !user) setUser(MOCK.user);
-    setView(v);
-  };
-
   return (
-    <div className="ns-root">
-      <div className="ns-view" key={view}>
-        {view === "home" && <HomePage onLaunch={() => setView("login")} />}
-        {view === "login" && (
-          <Login
-            onLogin={(u) => {
-              setUser(u);
-              setView("dashboard");
-            }}
-            onBack={() => setView("home")}
-          />
-        )}
-        {view === "dashboard" && (
-          <OsDashboard
-            user={user || MOCK.user}
-            onLogout={() => {
-              setUser(null);
-              setView("home");
-            }}
-          />
-        )}
-      </div>
+    <div className="nx">
+      <div className="nx-aura" aria-hidden="true" />
+      <div className="nx-vignette" aria-hidden="true" />
+      <div className="nx-grain" aria-hidden="true" />
 
-      <div className="ns-rev" role="navigation" aria-label="Showcase navigation">
-        <span className="ns-rev-label">SHOWCASE</span>
-        {(
-          [
-            ["home", "Home"],
-            ["login", "Login"],
-            ["dashboard", "Dashboard"],
-          ] as const
-        ).map(([v, l]) => (
-          <button
-            key={v}
-            type="button"
-            className={`ns-rev-btn ${view === v ? "is-active" : ""}`}
-            onClick={() => go(v)}
-          >
-            {l}
-          </button>
-        ))}
-        <Link href="/labs" className="ns-rev-link">
-          Labs
-        </Link>
-      </div>
+      <header className="nx-nav">
+        <div className="nx-container nx-nav-inner">
+          <Link href="/" className="nx-brand" aria-label="Northstar home">
+            <span className="nx-brand-mark">
+              <StarGlyph size={16} />
+            </span>
+            Northstar
+            <span className="nx-brand-os">OS</span>
+          </Link>
+
+          <div className="nx-nav-right">
+            <span className="nx-sync">
+              <span className="nx-live" /> SYNCED
+            </span>
+            <Link href="/labs" className="nx-btn nx-btn-aurora nx-glowpulse">
+              Launch app
+            </Link>
+          </div>
+        </div>
+      </header>
+
+      <main>
+        <Landing />
+      </main>
+
+      <footer className="nx-footer">
+        <div className="nx-container nx-footer-inner">
+          <div className="nx-footer-brand">
+            <StarGlyph color="#7d879c" size={16} />
+            <span>Northstar Capital</span>
+          </div>
+          <Link href="/labs" className="nx-nav-link">
+            Open the lab
+          </Link>
+          <div className="nx-footer-meta">
+            NORTHSTAR OS · BUILD 0.3
+            <br />© {new Date().getFullYear()} Northstar Capital
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

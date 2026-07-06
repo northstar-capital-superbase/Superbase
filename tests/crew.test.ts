@@ -1,10 +1,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { runCrew, streamCrew, type CrewEvent } from "@/lib/orchestration/crew";
 import { setProvider } from "@/lib/llm";
-import { MockProvider } from "@/lib/llm/mock";
+import { FakeProvider } from "./fake-provider";
 
-// Force the offline mock provider for deterministic, network-free runs.
-beforeAll(() => setProvider(new MockProvider()));
+// Force a deterministic, network-free provider for tests.
+beforeAll(() => setProvider(new FakeProvider()));
 
 describe("runCrew", () => {
   it("produces a plan, 3 specialist results, and a synthesis", async () => {

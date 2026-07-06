@@ -6,7 +6,7 @@ A personal/internal deploy. Pick one path. Both need the same env vars.
 
 | Variable | Required? | Notes |
 |---|---|---|
-| `ANTHROPIC_API_KEY` | for live Claude | else runs in mock mode |
+| `ANTHROPIC_API_KEY` | **required** (or `OPENAI_API_KEY`) | powers the crew |
 | `ANTHROPIC_MODEL` | optional | default `claude-opus-4-8`; `claude-sonnet-4-6` is cheaper/faster |
 | `SUPABASE_URL` | for persistence | else in-memory (lost on restart) |
 | `SUPABASE_SERVICE_ROLE_KEY` | for persistence | server-side only; apply `supabase/schema.sql` first |
@@ -17,7 +17,8 @@ A personal/internal deploy. Pick one path. Both need the same env vars.
 | `TRADING_MAX_ORDER_USD` | optional | default `100` |
 | `TRADING_MAX_ORDERS_PER_RUN` | optional | default `3` |
 
-> The app auto-detects: no keys → mock LLM + in-memory store, so it always boots.
+> Requires an LLM key (`ANTHROPIC_API_KEY` or `OPENAI_API_KEY`); memory falls
+> back to in-process when Supabase isn't configured.
 > Local dev can also read `.robinhood-mcp-token` after in-app OAuth (see `docs/TRADING.md`).
 
 ---

@@ -26,7 +26,7 @@ export interface CompletionResult {
   usage?: TokenUsage;
 }
 
-export type ProviderName = "anthropic" | "openai" | "mock";
+export type ProviderName = "anthropic" | "openai";
 
 export interface LLMProvider {
   readonly name: ProviderName;

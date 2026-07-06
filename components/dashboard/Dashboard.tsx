@@ -1,14 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Sidebar } from "./Sidebar";
+import Link from "next/link";
 import { AgentRoster, type AgentStatus } from "./AgentRoster";
-import { Integrations } from "./Integrations";
+import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
 import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { Chat, type ChatTurn } from "@/components/chat/Chat";
 import { SessionSwitcher } from "@/components/session/SessionSwitcher";
 import { useSessions } from "@/components/session/useSessions";
+import "./labs.css";
 import {
   type AgentProfile,
   type CrewEvent,
@@ -239,20 +240,13 @@ export function Dashboard() {
   }, [activeId, sessions]);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden">
-      <Sidebar runtime={runtime} trading={trading} />
+    <div className="lx">
+      <div className="lx-bg" aria-hidden="true" />
+      <div className="lx-grain" aria-hidden="true" />
 
-      <main className="flex min-w-0 flex-1 flex-col gap-4 p-4">
-        <header className="flex items-end justify-between gap-3">
-          <div>
-            <h1 className="text-lg font-semibold text-white">
-              Agent Operating System
-            </h1>
-            <p className="text-[12px] text-slate-500">
-              Local-first multi-agent lab · {sessions.length}{" "}
-              {sessions.length === 1 ? "lab" : "labs"}
-            </p>
-          </div>
+      <header className="lx-topbar">
+        <div className="lx-topbar-inner lx-topbar-inner--slim">
+          <RuntimePills runtime={runtime} trading={trading} />
           <SessionSwitcher
             sessions={sessions}
             activeId={activeId}
@@ -260,20 +254,35 @@ export function Dashboard() {
             onCreate={create}
             onRemove={removeSession}
           />
-        </header>
+        </div>
+      </header>
 
-        <Integrations />
+      <main className="lx-main">
+        <div className="lx-head">
+          <div>
+            <h1 className="lx-title">Agent Operating System</h1>
+            <p className="lx-sub">
+              Multi-agent lab · {sessions.length}{" "}
+              {sessions.length === 1 ? "lab" : "labs"}
+            </p>
+          </div>
+          <Link href="/" className="lx-tour">
+            ← Home
+          </Link>
+        </div>
+
+        <Connections />
 
         <AgentRoster agents={agents} statuses={statuses} />
 
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
+        <div className="lx-grid">
           <Chat
             turns={turns}
             busy={busy}
             onSend={send}
             tradingEnabled={trading?.traderInCrew ?? false}
           />
-          <div className="hidden min-h-0 lg:block">
+          <div className="lx-mem-pane">
             <MemoryPanel
               entries={memory}
               onClear={clearMemory}
@@ -289,6 +298,34 @@ export function Dashboard() {
         open={explorerOpen}
         onClose={() => setExplorerOpen(false)}
       />
+    </div>
+  );
+}
+
+function RuntimePills({
+  runtime,
+  trading,
+}: {
+  runtime: RuntimeInfo | null;
+  trading: TradingInfo | null;
+}) {
+  const llmLive = runtime?.configured ?? false;
+  const memLive = runtime?.memory === "supabase";
+  const traderLive = trading?.traderInCrew ?? false;
+  return (
+    <div className="lx-pills">
+      <span className="lx-pill" title={runtime?.model ?? "model"}>
+        <span className={`lx-dot ${llmLive ? "on" : "off"}`} />
+        <b>{runtime?.provider ?? "…"}</b>
+      </span>
+      <span className="lx-pill opt">
+        <span className={`lx-dot ${memLive ? "on" : "off"}`} />
+        {memLive ? "Supabase" : "In-memory"}
+      </span>
+      <span className="lx-pill opt">
+        <span className={`lx-dot ${traderLive ? "on" : "off"}`} />
+        Trader {traderLive ? "live" : "off"}
+      </span>
     </div>
   );
 }

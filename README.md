@@ -11,19 +11,18 @@ task; it plans, delegates to three specialist agents that collaborate through a
 shared memory, and synthesizes their work into one answer — all in a dark,
 modern dashboard.
 
-> Runs out of the box with **zero API keys** via a built-in mock provider, so
-> the full multi-agent workflow is demonstrable on first `npm run dev`. Add an
-> Anthropic or OpenAI key for live model output.
+> Requires an LLM key: set **`ANTHROPIC_API_KEY`** (preferred) or
+> **`OPENAI_API_KEY`** before running the crew.
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local   # optional — leave empty for mock mode
-npm run dev                  # http://localhost:3000/labs
+cp .env.example .env.local   # set ANTHROPIC_API_KEY (or OPENAI_API_KEY)
+npm run dev                  # http://localhost:3000
 ```
 
-Open **`/labs`** for the multi-agent dashboard (marketing showcase lives at `/`).
+Open **`/`** for the landing page; **`/labs`** is the multi-agent app.
 
 That's it. Type a task in the Lab Console and watch the crew collaborate.
 
@@ -79,7 +78,7 @@ components/                # dark dashboard UI, grouped by feature
 
 lib/                       # framework-agnostic core
   agents/                  # agent profiles, base agent, registry
-  llm/                     # provider abstraction: Anthropic | OpenAI | mock
+  llm/                     # provider abstraction: Anthropic | OpenAI
   memory/                  # shared memory: Supabase | in-process
   orchestration/crew.ts    # the multi-agent workflow (streaming generator)
 
@@ -95,18 +94,20 @@ Dockerfile · vercel.json   # deploy targets
 - **Sessions** — multiple named labs, each with isolated, persisted memory
 - **Memory Explorer** — search/filter the shared memory by kind, author, text
 - **Run metrics** — per-agent latency, token usage, and estimated cost
-- **Integration cockpit** — live provider/memory status + one-click diagnostics
+- **Connections cockpit** — live status for the LLM, Supabase, Robinhood, and
+  GitHub, grouped into Connected / Ready to connect / Needs to be connected,
+  with on-demand health checks
 
 **Design principles:** modular (agents are declarative profiles; adding one is a
-single entry), provider-agnostic (swap Claude/OpenAI/mock via env), and
-local-first (no external service required to run).
+single entry) and provider-agnostic (swap Claude/OpenAI via env).
 
 ## Configuration
 
-All optional — see `.env.example`. The lab auto-detects:
+See `.env.example`. The lab auto-detects:
 
-- **LLM provider:** `ANTHROPIC_API_KEY` → Claude, else `OPENAI_API_KEY` → OpenAI,
-  else **mock**. Force with `LLM_PROVIDER`.
+- **LLM provider (required):** `ANTHROPIC_API_KEY` → Claude, else
+  `OPENAI_API_KEY` → OpenAI. Force with `LLM_PROVIDER`. Without a key the crew
+  endpoints return a clear "not configured" error.
 - **Shared memory:** Supabase if `SUPABASE_URL` + a key
   (`SUPABASE_SERVICE_ROLE_KEY`, preferred) are set — apply `supabase/schema.sql`
   first — otherwise in-process memory. Verify with `/api/health?memory=1`.
@@ -116,15 +117,15 @@ All optional — see `.env.example`. The lab auto-detects:
 
 ## Robinhood Agentic — go live
 
-1. **Connect (desktop):** open `/labs` → Integrations → **Connect Robinhood**
+1. **Connect (desktop):** open `/labs` → Connections → **Connect Robinhood**
    (`GET /api/trading/oauth/start`), or use Cursor → Tools & MCPs with
    `https://agent.robinhood.com/mcp/trading` (see repo `.mcp.json`). Fund your
    **Agentic account** when Robinhood prompts.
 2. Locally the token is saved to `.robinhood-mcp-token`; for deploy set
    `ROBINHOOD_MCP_TOKEN` on your host (e.g. Vercel → Environment Variables).
 3. Set `ANTHROPIC_API_KEY` (or `OPENAI_API_KEY`) — the Trader's tool loop needs a
-   live model; mock mode cannot drive MCP tools.
-4. Start with `TRADING_MODE=advisory`, probe with **Run diagnostics** on `/labs`,
+   live model to drive the MCP tools.
+4. Start with `TRADING_MODE=advisory`, probe with **Refresh checks** on `/labs`,
    then move to `auto` when tool names and caps look right.
 5. Open `/labs`, run a portfolio task, and confirm the Trader appears in the trace.
 

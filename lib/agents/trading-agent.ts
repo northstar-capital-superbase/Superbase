@@ -21,7 +21,7 @@ const TOOL_CALL_RE =
 // produces a response with no pending tool calls (or MAX_TOOL_ITERATIONS).
 //
 // When the token is absent the agent degrades gracefully to a plain completion
-// that describes what it would do — so the lab still works in mock mode.
+// that describes what it would do (advisory mode).
 export class TradingAgent {
   readonly profile = TRADING;
 

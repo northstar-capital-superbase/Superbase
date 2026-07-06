@@ -39,16 +39,20 @@ export function Chat({
   };
 
   return (
-    <div className="panel flex h-full flex-col">
-      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-3">
-        <span className="h-2 w-2 rounded-full bg-signal-research" />
-        <span className="text-sm font-semibold text-white">Lab Console</span>
-        <span className="ml-auto text-[11px] text-slate-500">
-          orchestrated multi-agent chat
-        </span>
+    <div className="lx-card lx-pane">
+      <div className="lx-card-head">
+        <div className="lx-card-title">
+          <span className="lx-dot on" />
+          Lab Console
+        </div>
+        <span className="lx-card-sub">orchestrated multi-agent chat</span>
       </div>
 
-      <div ref={scrollRef} className="flex-1 space-y-4 overflow-y-auto p-4">
+      <div
+        ref={scrollRef}
+        className="lx-scroll"
+        style={{ display: "flex", flexDirection: "column", gap: 14 }}
+      >
         {turns.length === 0 && (
           <EmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         )}
@@ -62,8 +66,8 @@ export function Chat({
         {busy && <Thinking />}
       </div>
 
-      <div className="border-t border-white/5 p-3">
-        <div className="flex items-end gap-2 rounded-xl border border-white/5 bg-base-750/60 p-2 focus-within:border-accent/40">
+      <div className="lx-console-foot">
+        <div className="lx-composer">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -75,12 +79,11 @@ export function Chat({
             }}
             rows={1}
             placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
-            className="max-h-32 flex-1 resize-none bg-transparent px-2 py-1.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none"
           />
           <button
+            className="lx-btn lx-btn-primary"
             onClick={submit}
             disabled={busy || !input.trim()}
-            className="rounded-lg bg-accent px-3.5 py-2 text-sm font-medium text-base-900 transition enabled:hover:bg-accent-soft disabled:cursor-not-allowed disabled:opacity-40"
           >
             Run
           </button>
@@ -92,10 +95,8 @@ export function Chat({
 
 function UserBubble({ text }: { text: string }) {
   return (
-    <div className="flex justify-end">
-      <div className="max-w-[80%] rounded-2xl rounded-br-sm bg-accent/15 px-3.5 py-2 text-sm text-slate-100">
-        {text}
-      </div>
+    <div className="lx-bubble-user">
+      <span>{text}</span>
     </div>
   );
 }
@@ -103,18 +104,17 @@ function UserBubble({ text }: { text: string }) {
 function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="animate-fadeUp space-y-2">
-      <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-white/5 bg-base-750/70 px-3.5 py-2.5">
-        <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-accent">
-          <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Orchestrator
+    <div className="lx-fadeup">
+      <div className="lx-bubble-ai">
+        <div className="lx-bubble-ai-head">
+          <span className="lx-dot" style={{ background: "var(--blue-bright)" }} />
+          Orchestrator
         </div>
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">
-          {text}
-        </p>
+        <p>{text}</p>
         {run && (
           <button
+            className="lx-trace-toggle"
             onClick={() => setOpen((o) => !o)}
-            className="mt-2 text-[11px] text-slate-500 transition hover:text-slate-300"
           >
             {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
             specialists)
@@ -135,23 +135,18 @@ function AgentTrace({ run }: { run: CrewRun }) {
   const cost = estimateCostUSD(run.synthesis.model, inTok, outTok);
 
   return (
-    <div className="ml-2 max-w-[85%] space-y-2 border-l border-white/5 pl-3">
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-0.5 text-[10px] text-slate-500">
-        <span>
-          <span className="text-slate-400">{run.synthesis.model}</span>
-        </span>
+    <div className="lx-trace">
+      <div className="lx-trace-meta lx-mono">
+        <span style={{ color: "var(--text-2)" }}>{run.synthesis.model}</span>
         <span>· {totalMs}ms total</span>
         {hasTokens && (
           <span>
-            · {inTok + outTok} tok{" "}
-            <span className="text-slate-600">
-              ({inTok} in / {outTok} out)
-            </span>
+            · {inTok + outTok} tok ({inTok} in / {outTok} out)
           </span>
         )}
         <span>· {run.specialistResults.length + 1} agent calls</span>
         {cost !== null && cost > 0 && (
-          <span className="text-slate-400">· ~${cost.toFixed(4)}</span>
+          <span style={{ color: "var(--text-2)" }}>· ~${cost.toFixed(4)}</span>
         )}
       </div>
       <TraceStep author="orchestrator" label="Plan" content={run.plan} />
@@ -180,22 +175,23 @@ function TraceStep({
 }) {
   const color = AGENT_META[author].color;
   return (
-    <div className="panel-tight p-2.5">
-      <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium" style={{ color }}>
-        <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
+    <div className="lx-trace-step">
+      <div className="lx-trace-step-h" style={{ color }}>
+        <span className="lx-dot" style={{ backgroundColor: color }} />
         {label}
       </div>
-      <p className="whitespace-pre-wrap text-[12px] leading-relaxed text-slate-400">
-        {content}
-      </p>
+      <p>{content}</p>
     </div>
   );
 }
 
 function Thinking() {
   return (
-    <div className="flex items-center gap-2 text-[12px] text-slate-500">
-      <span className="h-1.5 w-1.5 animate-pulseSoft rounded-full bg-accent" />
+    <div className="lx-thinking">
+      <span
+        className="lx-dot lx-pulse"
+        style={{ background: "var(--blue-bright)" }}
+      />
       crew is collaborating…
     </div>
   );
@@ -222,9 +218,9 @@ function EmptyState({
 }) {
   const samples = tradingEnabled ? TRADING_SAMPLES : SAMPLES;
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-4 text-center">
-      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-accent/15 text-accent shadow-glow">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+    <div className="lx-empty">
+      <div className="lx-empty-mark">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <path
             d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"
             fill="currentColor"
@@ -232,22 +228,16 @@ function EmptyState({
         </svg>
       </div>
       <div>
-        <div className="text-sm font-semibold text-white">
-          Northstar Labs is ready
-        </div>
-        <p className="mt-1 max-w-sm text-[12px] text-slate-500">
+        <h3>Northstar Labs is ready</h3>
+        <p>
           {tradingEnabled
             ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
             : "Hand the orchestrator a task. It plans, delegates to the research, strategist, and behavioral agents, then synthesizes their work."}
         </p>
       </div>
-      <div className="flex max-w-md flex-wrap justify-center gap-2">
+      <div className="lx-samples">
         {samples.map((s) => (
-          <button
-            key={s}
-            onClick={() => onPick(s)}
-            className="rounded-full border border-white/5 px-3 py-1.5 text-[11px] text-slate-400 transition hover:border-accent/40 hover:text-slate-200"
-          >
+          <button key={s} className="lx-sample" onClick={() => onPick(s)}>
             {s}
           </button>
         ))}

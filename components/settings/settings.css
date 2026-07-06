@@ -1,0 +1,505 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Northstar OS — Settings. Builds on the .lx design system (labs.css).
+   Mobile-first; reusable control primitives.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Layout: section rail + content. Single column on mobile. */
+.lx-set-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+/* Section rail — horizontal scroll chips on mobile, sticky column on desktop */
+.lx-set-nav {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+}
+.lx-set-nav::-webkit-scrollbar {
+  display: none;
+}
+.lx-set-nav-link {
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text-3);
+  padding: 9px 14px;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: var(--white-fade);
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.lx-set-nav-link:hover {
+  color: var(--text-2);
+  border-color: var(--line-2);
+}
+.lx-set-nav-link.active {
+  color: var(--text);
+  border-color: rgba(110, 139, 255, 0.4);
+  background: rgba(110, 139, 255, 0.12);
+}
+
+.lx-set-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .lx-set-layout {
+    grid-template-columns: 212px 1fr;
+  }
+  .lx-set-nav {
+    position: sticky;
+    top: 84px;
+    flex-direction: column;
+    gap: 3px;
+    overflow: visible;
+    padding-bottom: 0;
+  }
+  .lx-set-nav-link {
+    width: 100%;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .lx-set-nav-link:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+  .lx-set-nav-link.active {
+    border: none;
+    background: rgba(110, 139, 255, 0.12);
+  }
+}
+
+/* Section card */
+.lx-set-section {
+  scroll-margin-top: 84px;
+  animation: lx-fadeup 0.4s ease both;
+}
+.lx-set-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 14px;
+  flex-wrap: wrap;
+  padding: 18px 18px 16px;
+  border-bottom: 1px solid var(--line);
+}
+.lx-set-head-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+.lx-set-icon {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  flex: none;
+  color: var(--blue-bright);
+  border: 1px solid var(--line);
+  background: rgba(110, 139, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+.lx-set-title {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+  color: var(--text);
+}
+.lx-set-sub {
+  font-size: 12.5px;
+  color: var(--text-3);
+  margin: 3px 0 0;
+}
+.lx-set-actions {
+  flex: none;
+}
+.lx-set-body {
+  padding: 6px 18px 16px;
+}
+
+/* Setting row */
+.lx-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+.lx-row:last-child {
+  border-bottom: none;
+}
+.lx-row.stack {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 12px;
+}
+.lx-row-info {
+  min-width: 0;
+}
+.lx-row-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lx-row-desc {
+  font-size: 12px;
+  color: var(--text-3);
+  margin-top: 3px;
+  max-width: 52ch;
+}
+.lx-row-control {
+  flex: none;
+}
+.lx-row.stack .lx-row-control {
+  width: 100%;
+}
+
+/* Segmented control */
+.lx-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.22);
+}
+.lx-row.stack .lx-seg {
+  display: flex;
+  width: 100%;
+}
+.lx-seg-btn {
+  flex: 1 1 auto;
+  min-width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 9px 14px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--text-2);
+  transition: color 0.2s, background 0.25s, border-color 0.2s, box-shadow 0.25s;
+}
+.lx-seg-btn:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.03);
+}
+.lx-seg-btn.is-active {
+  color: var(--text);
+  background: linear-gradient(180deg, rgba(110, 139, 255, 0.22), rgba(110, 139, 255, 0.1));
+  border-color: rgba(110, 139, 255, 0.4);
+  box-shadow: 0 0 30px -14px var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.lx-seg-label {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.lx-seg-hint {
+  font-size: 10px;
+  color: var(--text-3);
+}
+.lx-seg-btn.is-active .lx-seg-hint {
+  color: var(--blue-bright);
+}
+
+/* Toggle */
+.lx-toggle {
+  position: relative;
+  width: 46px;
+  height: 27px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.3);
+  transition: background 0.25s, border-color 0.25s;
+}
+.lx-toggle.on {
+  background: var(--aurora);
+  border-color: transparent;
+  box-shadow: 0 0 22px -8px var(--glow);
+}
+.lx-toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #f3f5fa;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lx-toggle.on .lx-toggle-knob {
+  transform: translateX(19px);
+}
+
+/* Number field */
+.lx-num {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 11px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.lx-num:focus-within {
+  border-color: rgba(110, 139, 255, 0.5);
+}
+.lx-num-affix {
+  padding: 0 4px 0 12px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.lx-num-affix.suf {
+  padding: 0 12px 0 4px;
+}
+.lx-num-input {
+  width: 110px;
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  padding: 10px 12px 10px 4px;
+  outline: none;
+}
+.lx-num-input::-webkit-outer-spin-button,
+.lx-num-input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+/* Accent swatches */
+.lx-swatches {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.lx-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--sw);
+  border: 2px solid transparent;
+  box-shadow: 0 0 0 1px var(--line), 0 0 16px -6px var(--sw);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.lx-swatch:hover {
+  transform: scale(1.08);
+}
+.lx-swatch.on {
+  border-color: #fff;
+  box-shadow: 0 0 0 2px var(--sw), 0 0 22px -4px var(--sw);
+}
+
+/* Status badge */
+.lx-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
+/* Key/value grid */
+.lx-kv {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2px;
+}
+@media (min-width: 560px) {
+  .lx-kv {
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 24px;
+  }
+}
+.lx-kv-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.lx-kv-label {
+  font-size: 12.5px;
+  color: var(--text-3);
+}
+.lx-kv-value {
+  font-size: 13px;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* Live-trading warning */
+.lx-warn {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 13px 15px;
+  margin: 6px 0 4px;
+  border-radius: 13px;
+  border: 1px solid rgba(226, 177, 124, 0.34);
+  background: linear-gradient(180deg, rgba(226, 177, 124, 0.12), rgba(226, 177, 124, 0.04));
+  font-size: 12.5px;
+  color: #f3e2cc;
+  line-height: 1.5;
+}
+.lx-warn strong {
+  color: var(--gold);
+}
+.lx-warn-dot {
+  margin-top: 4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--gold);
+  box-shadow: 0 0 10px var(--gold);
+  animation: lx-pulse 1.6s ease-in-out infinite;
+}
+
+/* Integrations list */
+.lx-int-list {
+  display: flex;
+  flex-direction: column;
+}
+.lx-int {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
+.lx-int:last-child {
+  border-bottom: none;
+}
+.lx-int-main {
+  min-width: 0;
+}
+.lx-int-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lx-int-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+.lx-int-detail {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.lx-int-probe {
+  font-family: var(--mono);
+  font-size: 11px;
+  margin-top: 6px;
+}
+.lx-int-probe.ok {
+  color: var(--green);
+}
+.lx-int-probe.warn {
+  color: var(--red);
+}
+.lx-int-probe.off,
+.lx-int-probe.unknown,
+.lx-int-probe.checking {
+  color: var(--text-3);
+}
+.lx-int-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 7px;
+}
+.lx-int-time {
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text-4);
+}
+
+/* ── Mobile (≤640px): one section at a time, no overlap, full-width controls ── */
+@media (max-width: 640px) {
+  .lx-set-head {
+    padding: 16px 15px 14px;
+  }
+  .lx-set-body {
+    padding: 4px 15px 14px;
+  }
+  .lx-set-actions {
+    width: 100%;
+  }
+  .lx-set-actions .lx-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Every row stacks: label above, control full width — nothing overlaps */
+  .lx-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .lx-row-control {
+    width: 100%;
+  }
+  .lx-seg {
+    display: flex;
+    width: 100%;
+  }
+  .lx-seg-btn {
+    min-width: 72px;
+    padding: 9px 8px;
+  }
+
+  /* Key/value: label left, value right, both allowed to wrap */
+  .lx-kv-item {
+    gap: 10px;
+  }
+  .lx-kv-value {
+    text-align: right;
+    word-break: break-word;
+  }
+
+  /* Integrations: actions drop below, spread across the row */
+  .lx-int {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .lx-int-side {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .lx-swatch {
+    width: 34px;
+    height: 34px;
+  }
+}

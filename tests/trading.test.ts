@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from "vitest";
 import { setProvider } from "@/lib/llm";
-import { MockProvider } from "@/lib/llm/mock";
+import { FakeProvider } from "./fake-provider";
 import { setMcpClient, getMcpClient, mcpEnabled } from "@/lib/mcp";
 import type { IMcpClient, McpCallResult, McpProbeResult, McpTool } from "@/lib/mcp";
 import { TradingAgent } from "@/lib/agents/trading-agent";
@@ -53,7 +53,7 @@ class MockMcpClient implements IMcpClient {
 // ── Setup ───────────────────────────────────────────────────────────────────
 
 beforeAll(() => {
-  setProvider(new MockProvider());
+  setProvider(new FakeProvider());
 });
 
 afterAll(() => {
