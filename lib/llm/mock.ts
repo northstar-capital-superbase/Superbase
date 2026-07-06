@@ -60,8 +60,12 @@ function render(role: Role, task: string): string {
       // The orchestrator is called twice: once to plan, once to synthesize.
       // On synthesis, emit the machine-readable trust block the crew parses.
       if (/synthesi/i.test(task)) {
+        // The synthesis instruction embeds the original task in quotes — pull it
+        // out so the mock answer reads about the user's task, not the prompt.
+        const quoted = task.match(/for:\s*"([\s\S]*?)"\s*$/i)?.[1]?.trim();
+        const subject = quoted && quoted.length ? topic(quoted) : t;
         return [
-          `Recommendation for "${t}":`,
+          `Recommendation for "${subject}":`,
           "- Ship the smallest end-to-end slice first (Strategist), grounded in the",
           "  facts Research surfaced, with the failure modes Behavioral flagged in view.",
           "- Recommended next step: start Phase 1 today and revisit once it's stable.",
