@@ -23,5 +23,8 @@ export interface MemoryQuery {
 export interface MemoryStore {
   append(entry: Omit<MemoryEntry, "id" | "createdAt">): Promise<MemoryEntry>;
   recent(query: MemoryQuery): Promise<MemoryEntry[]>;
+  // Forget a single entry (granular right-to-be-forgotten). Returns true if an
+  // entry was removed. Scoped to the session so ids can't cross sessions.
+  remove(sessionId: string, id: string): Promise<boolean>;
   clear(sessionId: string): Promise<void>;
 }

@@ -31,10 +31,18 @@ export async function GET(req: Request) {
   return NextResponse.json({ entries, total: window.length, shown: entries.length });
 }
 
-// DELETE /api/memory?sessionId=... — wipe a session's shared memory.
+// DELETE /api/memory?sessionId=...            — wipe a session's shared memory
+// DELETE /api/memory?sessionId=...&id=<entry> — forget a single entry
 export async function DELETE(req: Request) {
   const { searchParams } = new URL(req.url);
   const sessionId = searchParams.get("sessionId") ?? "default";
+  const id = searchParams.get("id");
+
+  if (id) {
+    const removed = await getMemory().remove(sessionId, id);
+    return NextResponse.json({ ok: removed, removed });
+  }
+
   await getMemory().clear(sessionId);
   return NextResponse.json({ ok: true });
 }

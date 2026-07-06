@@ -44,6 +44,17 @@ export class SupabaseStore implements MemoryStore {
     return (data ?? []).map(rowToEntry).reverse();
   }
 
+  async remove(sessionId: string, id: string): Promise<boolean> {
+    const { data, error } = await this.client
+      .from(this.table)
+      .delete()
+      .eq("session_id", sessionId)
+      .eq("id", id)
+      .select("id");
+    if (error) throw new Error(`Supabase remove failed: ${error.message}`);
+    return (data?.length ?? 0) > 0;
+  }
+
   async clear(sessionId: string): Promise<void> {
     const { error } = await this.client
       .from(this.table)

@@ -36,6 +36,21 @@ describe("InMemoryStore", () => {
     expect(await store.recent({ sessionId: "s" })).toHaveLength(0);
   });
 
+  it("forgets a single entry, scoped to its session", async () => {
+    const store = new InMemoryStore();
+    const keep = await store.append({ sessionId: "s", kind: "fact", author: "user", content: "keep" });
+    const drop = await store.append({ sessionId: "s", kind: "fact", author: "user", content: "drop" });
+
+    // Wrong session id must not remove it.
+    expect(await store.remove("other", drop.id)).toBe(false);
+    // Correct session removes exactly one entry.
+    expect(await store.remove("s", drop.id)).toBe(true);
+    const left = await store.recent({ sessionId: "s" });
+    expect(left.map((e) => e.id)).toEqual([keep.id]);
+    // Removing again is a no-op.
+    expect(await store.remove("s", drop.id)).toBe(false);
+  });
+
   it("respects the limit (most recent)", async () => {
     const store = new InMemoryStore();
     for (let i = 0; i < 5; i++) {

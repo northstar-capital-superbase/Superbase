@@ -26,6 +26,14 @@ export class InMemoryStore implements MemoryStore {
       .slice(-limit);
   }
 
+  async remove(sessionId: string, id: string): Promise<boolean> {
+    const before = this.entries.length;
+    this.entries = this.entries.filter(
+      (e) => !(e.sessionId === sessionId && e.id === id),
+    );
+    return this.entries.length < before;
+  }
+
   async clear(sessionId: string): Promise<void> {
     this.entries = this.entries.filter((e) => e.sessionId !== sessionId);
   }
