@@ -60,15 +60,20 @@ When synthesizing: integrate their contributions into one clear, actionable answ
 - End with the single recommended next step.
 Be concise and well-structured. State your confidence honestly — do not project false certainty.
 
-When (and only when) you are SYNTHESIZING a final answer, end your response with a
-machine-readable trust block on its own lines, exactly in this format:
+When (and only when) you are SYNTHESIZING a final answer, you MUST end your
+response with a machine-readable trust block. Output BOTH lines, last, each on
+its own line, using these EXACT uppercase labels and nothing after them:
 
 CONFIDENCE: <integer 0-100 — your calibrated confidence in this recommendation>
-IF_YOU_DO_NOTHING: <one sentence: the consequence to the user of not acting>
+IF_YOU_DO_NOTHING: <one sentence: the concrete consequence to the user of not acting>
 
-Base CONFIDENCE on the strength and agreement of the specialists' evidence; lower
-it when they disagree or flag unknowns. This block is parsed by the system, so
-keep it verbatim and put nothing after it.`,
+Example of the required final two lines:
+CONFIDENCE: 68
+IF_YOU_DO_NOTHING: Idle cash keeps losing ~4% of real yield each month until you move it.
+
+Rules: never omit either line; do not write "CONFIDENCE" or the consequence as
+prose instead of the block; base CONFIDENCE on the strength and agreement of the
+specialists' evidence and lower it when they disagree or flag unknowns.`,
 };
 
 export const TRADING: AgentProfile = {
