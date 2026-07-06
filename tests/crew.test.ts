@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeAll } from "vitest";
-import { runCrew, streamCrew, type CrewEvent } from "@/lib/orchestration/crew";
+import {
+  parseSynthesisMeta,
+  runCrew,
+  streamCrew,
+  type CrewEvent,
+} from "@/lib/orchestration/crew";
 import { setProvider } from "@/lib/llm";
 import { MockProvider } from "@/lib/llm/mock";
 
@@ -18,6 +23,14 @@ describe("runCrew", () => {
     ]);
     expect(run.synthesis.agent).toBe("orchestrator");
     expect(run.backend).toBe("in-memory");
+
+    // Every recommendation carries confidence + consequence-of-inaction, and
+    // the machine-readable trust block is stripped from the prose.
+    expect(run.synthesis.confidence).toBeGreaterThanOrEqual(0);
+    expect(run.synthesis.confidence).toBeLessThanOrEqual(100);
+    expect(run.synthesis.consequenceOfInaction).toBeTruthy();
+    expect(run.synthesis.output).not.toMatch(/CONFIDENCE:/);
+    expect(run.synthesis.output).not.toMatch(/IF_YOU_DO_NOTHING:/);
 
     // Metrics threaded through every agent call.
     for (const r of run.specialistResults) {
@@ -48,5 +61,30 @@ describe("streamCrew", () => {
     expect(types.filter((t) => t === "agent_result")).toHaveLength(3);
     expect(doneRun?.specialistResults).toHaveLength(3);
     expect(types).not.toContain("error");
+  });
+});
+
+describe("parseSynthesisMeta", () => {
+  it("extracts confidence + consequence and strips the block", () => {
+    const raw = [
+      "Here is the recommendation.",
+      "Do the thing.",
+      "",
+      "CONFIDENCE: 81",
+      "IF_YOU_DO_NOTHING: Costs compound and the window closes.",
+    ].join("\n");
+    const { text, confidence, consequenceOfInaction } = parseSynthesisMeta(raw);
+    expect(confidence).toBe(81);
+    expect(consequenceOfInaction).toBe("Costs compound and the window closes.");
+    expect(text).toContain("Do the thing.");
+    expect(text).not.toMatch(/CONFIDENCE:|IF_YOU_DO_NOTHING:/);
+  });
+
+  it("clamps out-of-range confidence and tolerates a missing block", () => {
+    expect(parseSynthesisMeta("CONFIDENCE: 250\nIF_YOU_DO_NOTHING: x").confidence).toBe(100);
+    const none = parseSynthesisMeta("Just prose, no block.");
+    expect(none.confidence).toBeUndefined();
+    expect(none.consequenceOfInaction).toBeUndefined();
+    expect(none.text).toBe("Just prose, no block.");
   });
 });

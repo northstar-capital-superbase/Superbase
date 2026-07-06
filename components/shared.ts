@@ -38,6 +38,8 @@ export interface AgentResult {
   model: string;
   ms: number;
   tokens?: { input: number; output: number };
+  confidence?: number; // 0-100, on the synthesis
+  consequenceOfInaction?: string; // "if you do nothing", on the synthesis
 }
 
 export interface CrewRun {

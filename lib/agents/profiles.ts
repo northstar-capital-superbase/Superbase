@@ -58,7 +58,17 @@ When synthesizing: integrate their contributions into one clear, actionable answ
 - Lead with the direct answer/recommendation.
 - Then give the key supporting points, attributing insight to the relevant specialist where useful.
 - End with the single recommended next step.
-Be concise, confident, and well-structured.`,
+Be concise and well-structured. State your confidence honestly — do not project false certainty.
+
+When (and only when) you are SYNTHESIZING a final answer, end your response with a
+machine-readable trust block on its own lines, exactly in this format:
+
+CONFIDENCE: <integer 0-100 — your calibrated confidence in this recommendation>
+IF_YOU_DO_NOTHING: <one sentence: the consequence to the user of not acting>
+
+Base CONFIDENCE on the strength and agreement of the specialists' evidence; lower
+it when they disagree or flag unknowns. This block is parsed by the system, so
+keep it verbatim and put nothing after it.`,
 };
 
 export const TRADING: AgentProfile = {

@@ -87,17 +87,32 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
 
     // 3. Orchestrator synthesizes the final answer from all contributions.
     yield { type: "synthesis_start" };
-    const synthesis = await orchestrator.run({
+    const raw = await orchestrator.run({
       sessionId,
       task: `Synthesize the specialists' contributions into one clear answer for: "${task}"`,
       memory: await loadContext(),
     });
+    // Extract the trust block (confidence + consequence-of-inaction) and strip
+    // it from the prose the user reads. Every recommendation must carry both.
+    const { text, confidence, consequenceOfInaction } = parseSynthesisMeta(raw.output);
+    const synthesis: AgentResult = {
+      ...raw,
+      output: text,
+      confidence,
+      consequenceOfInaction,
+    };
     await memory.append({
       sessionId,
       kind: "agent_output",
       author: "orchestrator",
       content: synthesis.output,
-      metadata: { ms: synthesis.ms, model: synthesis.model, final: true },
+      metadata: {
+        ms: synthesis.ms,
+        model: synthesis.model,
+        final: true,
+        confidence,
+        consequenceOfInaction,
+      },
     });
     yield { type: "synthesis", result: synthesis };
 
@@ -115,6 +130,40 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
   } catch (err) {
     yield { type: "error", error: err instanceof Error ? err.message : String(err) };
   }
+}
+
+// Parse the orchestrator's trailing trust block:
+//   CONFIDENCE: <0-100>
+//   IF_YOU_DO_NOTHING: <sentence>
+// Returns the prose with the block removed, plus the parsed fields. Tolerant of
+// models that omit or reformat it (fields come back undefined), so the run
+// never fails on a malformed block.
+export function parseSynthesisMeta(output: string): {
+  text: string;
+  confidence?: number;
+  consequenceOfInaction?: string;
+} {
+  let confidence: number | undefined;
+  let consequenceOfInaction: string | undefined;
+
+  const confMatch = output.match(/CONFIDENCE:\s*(\d{1,3})/i);
+  if (confMatch) {
+    const n = Number(confMatch[1]);
+    if (Number.isFinite(n)) confidence = Math.max(0, Math.min(100, n));
+  }
+  const consMatch = output.match(/IF_YOU_DO_NOTHING:\s*(.+?)\s*$/is);
+  if (consMatch) {
+    consequenceOfInaction = consMatch[1].trim().split(/\n/)[0].trim() || undefined;
+  }
+
+  // Strip the trust block (and any leading "---" separator) from the prose.
+  const text = output
+    .replace(/\n?-{3,}\s*(?=[\s\S]*CONFIDENCE:)/i, "\n")
+    .replace(/CONFIDENCE:\s*\d{1,3}.*$/is, "")
+    .replace(/IF_YOU_DO_NOTHING:.*$/is, "")
+    .trimEnd();
+
+  return { text: text || output.trim(), confidence, consequenceOfInaction };
 }
 
 // Non-streaming convenience wrapper — drains the stream to the final result.

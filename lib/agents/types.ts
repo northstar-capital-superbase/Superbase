@@ -29,4 +29,9 @@ export interface AgentResult {
   model: string;
   ms: number;
   tokens?: { input: number; output: number };
+  // Populated on the orchestrator's synthesis: a calibrated confidence (0-100)
+  // and the consequence of inaction ("if you do nothing"). Every recommendation
+  // must surface both — see the manifesto's trust section.
+  confidence?: number;
+  consequenceOfInaction?: string;
 }

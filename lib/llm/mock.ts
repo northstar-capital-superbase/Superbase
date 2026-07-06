@@ -57,6 +57,19 @@ function render(role: Role, task: string): string {
   const t = topic(task);
   switch (role) {
     case "orchestrator":
+      // The orchestrator is called twice: once to plan, once to synthesize.
+      // On synthesis, emit the machine-readable trust block the crew parses.
+      if (/synthesi/i.test(task)) {
+        return [
+          `Recommendation for "${t}":`,
+          "- Ship the smallest end-to-end slice first (Strategist), grounded in the",
+          "  facts Research surfaced, with the failure modes Behavioral flagged in view.",
+          "- Recommended next step: start Phase 1 today and revisit once it's stable.",
+          "",
+          "CONFIDENCE: 72",
+          "IF_YOU_DO_NOTHING: The decision stalls and the cost of the unaddressed risk compounds.",
+        ].join("\n");
+      }
       return [
         `Plan for: "${t}"`,
         "",
