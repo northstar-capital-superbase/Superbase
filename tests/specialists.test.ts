@@ -13,20 +13,29 @@ describe("defaultSpecialists", () => {
     else process.env.ROBINHOOD_MCP_TOKEN = original;
   });
 
-  it("excludes trader when ROBINHOOD_MCP_TOKEN is unset", () => {
+  it("never auto-joins the trader, even when ROBINHOOD_MCP_TOKEN is set", () => {
+    // Authority is granted, not assumed: the trader participates only when the
+    // operator explicitly includes it (via resolveSpecialists).
     delete process.env.ROBINHOOD_MCP_TOKEN;
     expect(defaultSpecialists()).toEqual(BASE_SPECIALISTS);
-  });
-
-  it("includes trader when ROBINHOOD_MCP_TOKEN is set", () => {
     process.env.ROBINHOOD_MCP_TOKEN = "test-token";
-    expect(defaultSpecialists()).toEqual([...BASE_SPECIALISTS, "trader"]);
+    expect(defaultSpecialists()).toEqual(BASE_SPECIALISTS);
   });
 });
 
 describe("resolveSpecialists", () => {
   it("honours an explicit list", () => {
     expect(resolveSpecialists(["research"])).toEqual(["research"]);
+  });
+
+  it("includes the trader only when explicitly requested", () => {
+    process.env.ROBINHOOD_MCP_TOKEN = "test-token";
+    expect(resolveSpecialists(["research", "strategist", "behavioral", "trader"])).toEqual([
+      "research",
+      "strategist",
+      "behavioral",
+      "trader",
+    ]);
   });
 
   it("falls back to defaultSpecialists when empty", () => {

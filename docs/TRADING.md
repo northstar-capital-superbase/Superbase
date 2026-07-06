@@ -43,24 +43,34 @@ Without the token the Trader runs in **advisory mode** (analysis only, no live c
 
 ## Safety policy (enforced in code, not the prompt)
 
-`TRADING_MODE`:
-- `advisory` — read-only tools only; orders blocked.
-- `confirm` — read-only auto; orders blocked in the autonomous loop (place them explicitly via `/api/trading`).
-- `auto` *(default)* — orders allowed, subject to the hard caps:
+`TRADING_MODE` — **default `confirm`** (autonomy is opt-in, never assumed):
+- `advisory` — read-only tools only; orders blocked. This is also the **kill switch**.
+- `confirm` *(default)* — read-only auto; orders blocked in the autonomous loop (place them explicitly via `/api/trading`).
+- `auto` — orders allowed, subject to the hard caps below. Any order whose notional **can't be verified is blocked (fail-closed)**.
 
 | Env | Default | Effect |
 |---|---|---|
-| `TRADING_MAX_ORDER_USD` | `100` | reject any order over this notional |
+| `TRADING_MAX_ORDER_USD` | `100` | reject any order over this notional (and any order of unknown size) |
 | `TRADING_MAX_ORDERS_PER_RUN` | `3` | cap order placements per agent run |
 | `TRADING_MUTATING_TOOLS` / `TRADING_READONLY_TOOLS` | — | correct the read-vs-order tool classification once live tool names are known |
+
+**Runtime control:** `/labs` → Integrations exposes an operating-mode toggle and
+a **Pause automation** kill switch. It calls `POST /api/trading?action=mode`,
+sets a process-local override that **takes precedence over `TRADING_MODE`**, and
+requires a confirm dialog to enable `auto`. (The override is in-process; for
+multi-instance deploys, back it with a shared store.)
+
+The Trader also only joins a run when the operator opts in (`/labs` → **Include
+Trader**); it is never auto-added to every run.
 
 The gate is applied in **both** the agent loop and the `/api/trading` proxy
 (defense in depth). Every order decision (allowed or blocked) is **audited to
 shared memory** (author `trader`) and the server log, so it shows in the run
 trace and Memory Explorer.
 
-> Real money: start in `advisory`, confirm the live `tools/list` names, set the
-> caps you're comfortable with, then move to `auto`.
+> Real money: stay in `confirm` (or `advisory`), confirm the live `tools/list`
+> names, set the caps you're comfortable with, then deliberately switch to
+> `auto` — and remember the kill switch reverts instantly.
 
 ## Go live checklist
 

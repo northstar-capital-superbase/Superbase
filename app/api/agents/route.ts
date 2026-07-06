@@ -31,7 +31,9 @@ export async function GET() {
       mode: tradingMode(),
       maxOrderUsd: maxOrderUsd(),
       maxOrdersPerRun: maxOrdersPerRun(),
-      traderInCrew: tradingEnabled,
+      // The Trader is available when a token is set, but only joins a run when
+      // the operator opts in (client-controlled) — never auto-joined.
+      traderInCrew: false,
     },
   });
 }

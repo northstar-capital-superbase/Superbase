@@ -3,6 +3,9 @@ import {
   isMutatingTool,
   estimateNotionalUsd,
   evaluateToolCall,
+  tradingMode,
+  tradingModeSource,
+  setTradingModeOverride,
 } from "@/lib/mcp/trading-policy";
 
 // Snapshot/restore the policy env so tests are independent.
@@ -11,12 +14,14 @@ let saved: Record<string, string | undefined>;
 beforeEach(() => {
   saved = Object.fromEntries(KEYS.map((k) => [k, process.env[k]]));
   for (const k of KEYS) delete process.env[k];
+  setTradingModeOverride(null);
 });
 afterEach(() => {
   for (const k of KEYS) {
     if (saved[k] === undefined) delete process.env[k];
     else process.env[k] = saved[k];
   }
+  setTradingModeOverride(null);
 });
 
 describe("isMutatingTool", () => {
@@ -50,10 +55,45 @@ describe("estimateNotionalUsd", () => {
   });
 });
 
+describe("tradingMode", () => {
+  it("defaults to confirm (autonomy is opt-in)", () => {
+    expect(tradingMode()).toBe("confirm");
+    expect(tradingModeSource()).toBe("default");
+  });
+
+  it("reads a valid env value", () => {
+    process.env.TRADING_MODE = "auto";
+    expect(tradingMode()).toBe("auto");
+    expect(tradingModeSource()).toBe("env");
+  });
+
+  it("runtime override wins over env (kill switch)", () => {
+    process.env.TRADING_MODE = "auto";
+    setTradingModeOverride("advisory");
+    expect(tradingMode()).toBe("advisory");
+    expect(tradingModeSource()).toBe("override");
+  });
+});
+
 describe("evaluateToolCall", () => {
   it("always allows read-only tools", () => {
     process.env.TRADING_MODE = "advisory";
     expect(evaluateToolCall("get_portfolio", {}, 0).allow).toBe(true);
+  });
+
+  it("blocks orders by default (confirm mode)", () => {
+    // No TRADING_MODE set → default confirm → mutations blocked.
+    const d = evaluateToolCall("place_order", { quantity: 1, limit_price: 5 }, 0);
+    expect(d.allow).toBe(false);
+    expect(d.mutating).toBe(true);
+  });
+
+  it("auto mode fails closed when the order size can't be verified", () => {
+    process.env.TRADING_MODE = "auto";
+    // No parseable notional (symbol only) → blocked, not allowed.
+    const d = evaluateToolCall("place_order", { symbol: "AAPL", side: "buy" }, 0);
+    expect(d.allow).toBe(false);
+    expect(d.reason).toMatch(/could not be verified|fail-closed/);
   });
 
   it("advisory mode blocks orders", () => {

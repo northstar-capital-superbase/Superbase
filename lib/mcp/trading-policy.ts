@@ -8,6 +8,10 @@
 //              (a human must execute them explicitly via /api/trading)
 //   auto     — mutations allowed, subject to the hard caps below
 //
+// DEFAULT IS `confirm`: autonomy is opt-in, never assumed. The Trader may read
+// and advise on its own, but placing an order requires the operator to grant
+// `auto` deliberately (and can be revoked instantly via the kill switch).
+//
 // Hard caps (apply in auto mode):
 //   TRADING_MAX_ORDER_USD       max notional per order   (default 100)
 //   TRADING_MAX_ORDERS_PER_RUN  max mutating calls / run (default 3)
@@ -17,9 +21,37 @@
 
 export type TradingMode = "advisory" | "confirm" | "auto";
 
+const DEFAULT_MODE: TradingMode = "confirm";
+
+function normalizeMode(raw: string | undefined | null): TradingMode | null {
+  const m = (raw ?? "").toLowerCase();
+  return m === "advisory" || m === "confirm" || m === "auto" ? m : null;
+}
+
+// Process-local runtime override, set by the in-product mode toggle / kill
+// switch (POST /api/trading?action=mode). Takes precedence over the env var so
+// an operator can pause automation without a redeploy. In-process only (resets
+// on restart), matching the lab's local-first default — for multi-instance
+// deploys, back this with a shared store.
+let _override: TradingMode | null = null;
+
+export function setTradingModeOverride(mode: TradingMode | null): void {
+  _override = mode;
+}
+
+export function tradingModeOverride(): TradingMode | null {
+  return _override;
+}
+
+/** Where the effective mode comes from — for surfacing in the UI. */
+export function tradingModeSource(): "override" | "env" | "default" {
+  if (_override) return "override";
+  if (normalizeMode(process.env.TRADING_MODE)) return "env";
+  return "default";
+}
+
 export function tradingMode(): TradingMode {
-  const m = (process.env.TRADING_MODE || "auto").toLowerCase();
-  return m === "advisory" || m === "confirm" || m === "auto" ? m : "auto";
+  return _override ?? normalizeMode(process.env.TRADING_MODE) ?? DEFAULT_MODE;
 }
 
 export function maxOrderUsd(): number {
@@ -104,7 +136,17 @@ export function evaluateToolCall(
   }
   const notional = estimateNotionalUsd(args);
   const cap = maxOrderUsd();
-  if (notional != null && notional > cap) {
+  // Fail closed: if we can't verify the order size, we do NOT let it through.
+  // An order whose notional is unknown could exceed the cap, so block it and
+  // make the operator place it explicitly (via /api/trading) or clarify args.
+  if (notional == null) {
+    return {
+      allow: false,
+      mutating,
+      reason: `order size could not be verified against the $${cap} cap — blocked (fail-closed)`,
+    };
+  }
+  if (notional > cap) {
     return { allow: false, mutating, reason: `order ~$${notional.toFixed(2)} exceeds cap $${cap}` };
   }
   return { allow: true, mutating };

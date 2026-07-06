@@ -1,16 +1,30 @@
 import { NextResponse } from "next/server";
-import { getMcpClient, mcpEnabled, evaluateToolCall, maxOrderUsd, maxOrdersPerRun, tradingMode } from "@/lib/mcp";
+import {
+  getMcpClient,
+  mcpEnabled,
+  evaluateToolCall,
+  maxOrderUsd,
+  maxOrdersPerRun,
+  tradingMode,
+  tradingModeSource,
+  setTradingModeOverride,
+  type TradingMode,
+} from "@/lib/mcp";
 import { clientKey, rateLimit } from "@/lib/guardrails";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
-// GET /api/trading          → static status (token configured, yes/no)
-// GET /api/trading?probe=1  → fires a live MCP round-trip: initialize + tools/list
-// POST /api/trading/tools   → returns the cached tool list
-// POST /api/trading/call    → { tool, args } → proxies to Robinhood MCP tools/call
+// GET /api/trading            → status (token configured, effective mode, caps)
+// GET /api/trading?probe=1    → fires a live MCP round-trip: initialize + tools/list
+// POST /api/trading?action=tools → returns the cached tool list
+// POST /api/trading?action=call  → { tool, args } → proxies to Robinhood MCP tools/call
+// POST /api/trading?action=mode  → { mode } → set the runtime mode / kill switch
 //
 // This endpoint keeps the MCP token server-side (Next.js server component /
 // API-only) so it is never sent to the browser.
+
+const MODES: TradingMode[] = ["advisory", "confirm", "auto"];
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -21,6 +35,7 @@ export async function GET(req: Request) {
     enabled,
     endpoint: "https://agent.robinhood.com/mcp/trading",
     mode: tradingMode(),
+    modeSource: tradingModeSource(),
     maxOrderUsd: maxOrderUsd(),
     maxOrdersPerRun: maxOrdersPerRun(),
   };
@@ -68,9 +83,31 @@ export async function POST(req: Request) {
     );
   }
 
-  const client = getMcpClient()!;
   const { searchParams } = new URL(req.url);
   const action = searchParams.get("action");
+
+  // POST /api/trading?action=mode — set the runtime trading mode (kill switch).
+  // Setting "advisory" is the kill switch: it blocks every order mutation
+  // instantly, without a redeploy. Enabling "auto" is a deliberate act that the
+  // UI double-confirms; consider gating it behind step-up auth in production.
+  if (action === "mode") {
+    const body = (await req.json().catch(() => ({}))) as { mode?: unknown };
+    const mode = MODES.find((m) => m === body.mode);
+    if (!mode) {
+      return NextResponse.json(
+        { error: `Invalid mode. Use one of: ${MODES.join(", ")}` },
+        { status: 400 },
+      );
+    }
+    setTradingModeOverride(mode);
+    return NextResponse.json({
+      ok: true,
+      mode: tradingMode(),
+      modeSource: tradingModeSource(),
+    });
+  }
+
+  const client = getMcpClient()!;
 
   // POST /api/trading?action=tools — list available tools.
   if (action === "tools") {
