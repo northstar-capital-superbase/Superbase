@@ -27,6 +27,7 @@ const config: Config = {
           strategist: "#c084fc",
           research: "#34d399",
           behavioral: "#fbbf24",
+          trader: "#22d3ee",
         },
       },
       fontFamily: {

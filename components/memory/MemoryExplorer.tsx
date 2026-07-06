@@ -48,6 +48,22 @@ export function MemoryExplorer({
     }
   }, [sessionId, kind, author, q]);
 
+  const forget = useCallback(
+    async (id: string) => {
+      // Optimistic remove; the store deletes it server-side.
+      setEntries((es) => es.filter((e) => e.id !== id));
+      try {
+        await fetch(
+          `/api/memory?sessionId=${encodeURIComponent(sessionId)}&id=${encodeURIComponent(id)}`,
+          { method: "DELETE" },
+        );
+      } catch {
+        void load();
+      }
+    },
+    [sessionId, load],
+  );
+
   // Debounced reload whenever the modal is open or filters change.
   useEffect(() => {
     if (!open) return;
@@ -129,7 +145,7 @@ export function MemoryExplorer({
             const color = meta?.color ?? "#64748b";
             const isOpen = expanded === e.id;
             return (
-              <div key={e.id} className="panel-tight p-2.5">
+              <div key={e.id} className="panel-tight relative p-2.5 pr-7">
                 <button
                   className="flex w-full items-center gap-2 text-left"
                   onClick={() => setExpanded(isOpen ? null : e.id)}
@@ -144,6 +160,14 @@ export function MemoryExplorer({
                   <span className="ml-auto text-[10px] text-slate-600">
                     {new Date(e.createdAt).toLocaleTimeString()}
                   </span>
+                </button>
+                <button
+                  onClick={() => forget(e.id)}
+                  title="Forget this entry"
+                  aria-label="Forget this entry"
+                  className="absolute right-2 top-2 text-[11px] leading-none text-slate-600 transition hover:text-red-300"
+                >
+                  ✕
                 </button>
                 <p
                   className={clsx(

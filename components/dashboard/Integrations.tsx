@@ -25,15 +25,24 @@ interface CheckResult {
 
 type Probe = CheckResult | "loading" | null;
 
+type TradingModeName = "advisory" | "confirm" | "auto";
+
 interface TradingStatus {
   ok: boolean;
   enabled: boolean;
   endpoint: string;
-  mode?: string;
+  mode?: TradingModeName;
+  modeSource?: "override" | "env" | "default";
   maxOrderUsd?: number;
   maxOrdersPerRun?: number;
   error?: string;
 }
+
+const MODE_COPY: Record<TradingModeName, string> = {
+  advisory: "read-only — every order blocked",
+  confirm: "reads & advises — orders need explicit approval",
+  auto: "may place orders within the caps below",
+};
 
 // Live integration cockpit: shows the active LLM + memory backend and runs
 // real connectivity diagnostics (the same /api/health probes used in CI) so
@@ -109,9 +118,32 @@ export function Integrations() {
     void runDiagnostics();
   }, [runDiagnostics]);
 
+  const setMode = useCallback(
+    async (mode: TradingModeName) => {
+      if (mode === "auto") {
+        const ok = window.confirm(
+          "Enable AUTO mode?\n\nThe Trader will be allowed to place real orders on its own, within your per-order and per-run caps. You can pause this instantly with the kill switch.",
+        );
+        if (!ok) return;
+      }
+      try {
+        const res = await fetch("/api/trading?action=mode", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ mode }),
+        });
+        if (res.ok) await loadTradingStatus();
+      } catch {
+        /* ignore — status reload will reflect reality */
+      }
+    },
+    [loadTradingStatus],
+  );
+
   const llmHealthy = health && !health.mock;
   const memHealthy = health?.memory === "supabase";
   const tradingEnabled = tradingStatus?.enabled ?? false;
+  const mode = tradingStatus?.mode ?? "confirm";
 
   return (
     <div className="panel p-4">
@@ -209,6 +241,50 @@ export function Integrations() {
           okLabel={() => "ok"}
         />
       </div>
+
+      {tradingEnabled && (
+        <div className="mt-3 rounded-lg border border-white/5 bg-base-750/40 p-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                Operating mode
+              </span>
+              <span className="text-[11px] text-slate-500">
+                {MODE_COPY[mode]}
+                {tradingStatus?.modeSource === "override" && (
+                  <span className="ml-1 text-slate-600">· set here</span>
+                )}
+              </span>
+            </div>
+            <button
+              onClick={() => setMode("advisory")}
+              disabled={mode === "advisory"}
+              className="rounded-md border border-red-500/30 bg-red-500/10 px-2.5 py-1 text-[11px] font-medium text-red-200 transition enabled:hover:bg-red-500/20 disabled:cursor-not-allowed disabled:opacity-40"
+              title="Pause all automation instantly — blocks every order"
+            >
+              ⏻ Pause automation
+            </button>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {(["advisory", "confirm", "auto"] as TradingModeName[]).map((m) => (
+              <button
+                key={m}
+                onClick={() => setMode(m)}
+                className={clsx(
+                  "rounded-full border px-3 py-1 text-[11px] capitalize transition",
+                  mode === m
+                    ? m === "auto"
+                      ? "border-amber-400/50 bg-amber-400/15 text-amber-100"
+                      : "border-accent/50 bg-accent/15 text-slate-100"
+                    : "border-white/5 text-slate-400 hover:text-slate-200",
+                )}
+              >
+                {m}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

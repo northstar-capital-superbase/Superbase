@@ -8,11 +8,13 @@ export function MemoryPanel({
   onClear,
   onExplore,
   onExport,
+  onForget,
 }: {
   entries: MemoryEntry[];
   onClear: () => void;
   onExplore: () => void;
   onExport: () => void;
+  onForget: (id: string) => void;
 }) {
   return (
     <div className="panel flex h-full flex-col">
@@ -56,7 +58,7 @@ export function MemoryPanel({
           const meta = AGENT_META[e.author as keyof typeof AGENT_META];
           const color = meta?.color ?? "#64748b";
           return (
-            <div key={e.id} className="panel-tight animate-fadeUp p-2.5">
+            <div key={e.id} className="group panel-tight animate-fadeUp p-2.5">
               <div className="mb-1 flex items-center gap-2">
                 <span
                   className="h-1.5 w-1.5 rounded-full"
@@ -68,6 +70,14 @@ export function MemoryPanel({
                 <span className="ml-auto text-[10px] uppercase tracking-wide text-slate-600">
                   {e.kind}
                 </span>
+                <button
+                  onClick={() => onForget(e.id)}
+                  title="Forget this entry"
+                  aria-label="Forget this entry"
+                  className="text-[11px] leading-none text-slate-600 opacity-0 transition hover:text-red-300 focus:opacity-100 group-hover:opacity-100"
+                >
+                  ✕
+                </button>
               </div>
               <p className="line-clamp-4 whitespace-pre-wrap text-[11px] leading-relaxed text-slate-400">
                 {e.content}

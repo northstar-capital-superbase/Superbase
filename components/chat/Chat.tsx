@@ -100,17 +100,52 @@ function UserBubble({ text }: { text: string }) {
   );
 }
 
+function ConfidenceChip({ value }: { value?: number }) {
+  const known = typeof value === "number";
+  // Green when the OS is sure, amber mid, red low; grey when not stated.
+  const color = !known
+    ? "#64748b"
+    : value >= 75
+      ? "#34d399"
+      : value >= 50
+        ? "#fbbf24"
+        : "#f87171";
+  return (
+    <span
+      className="inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 font-mono text-[10px]"
+      style={{ borderColor: `${color}55`, color }}
+      title="The orchestrator's calibrated confidence in this recommendation"
+    >
+      <span className="h-1 w-1 rounded-full" style={{ backgroundColor: color }} />
+      {known ? `CONFIDENCE ${value}%` : "CONFIDENCE —"}
+    </span>
+  );
+}
+
 function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
   const [open, setOpen] = useState(false);
+  const confidence = run?.synthesis.confidence;
+  const consequence = run?.synthesis.consequenceOfInaction;
   return (
     <div className="animate-fadeUp space-y-2">
       <div className="max-w-[85%] rounded-2xl rounded-bl-sm border border-white/5 bg-base-750/70 px-3.5 py-2.5">
         <div className="mb-1 flex items-center gap-1.5 text-[11px] font-medium text-accent">
           <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Orchestrator
+          {run && <span className="ml-auto"><ConfidenceChip value={confidence} /></span>}
         </div>
         <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200">
           {text}
         </p>
+        {run && (
+          <div className="mt-2 flex gap-2 rounded-lg border border-white/5 bg-base-900/40 px-2.5 py-1.5">
+            <span className="mt-px font-mono text-[9px] uppercase tracking-[0.14em] text-slate-500">
+              If you do nothing
+            </span>
+            <span className="text-[11px] leading-relaxed text-slate-300">
+              {consequence ?? "Not stated by the orchestrator for this run."}
+            </span>
+          </div>
+        )}
         {run && (
           <button
             onClick={() => setOpen((o) => !o)}
@@ -237,7 +272,7 @@ function EmptyState({
         </div>
         <p className="mt-1 max-w-sm text-[12px] text-slate-500">
           {tradingEnabled
-            ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
+            ? "Trader is included in this run. It can read your account and advise; placing orders still requires the operating mode to permit it."
             : "Hand the orchestrator a task. It plans, delegates to the research, strategist, and behavioral agents, then synthesizes their work."}
         </p>
       </div>

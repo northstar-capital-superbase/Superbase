@@ -10,7 +10,7 @@ export function Sidebar({
   runtime: RuntimeInfo | null;
   trading: TradingInfo | null;
 }) {
-  const traderLive = trading?.traderInCrew ?? false;
+  const traderAvailable = trading?.enabled ?? false;
 
   return (
     <aside className="flex h-full w-64 shrink-0 flex-col gap-6 border-r border-white/5 bg-base-850/60 p-5">
@@ -41,9 +41,9 @@ export function Sidebar({
           <li className="flex items-center gap-2">
             <Dot color="#fbbf24" /> Behavioral checks
           </li>
-          {traderLive && (
+          {traderAvailable && (
             <li className="flex items-center gap-2">
-              <Dot color="#22d3ee" /> Trader executes (Robinhood MCP)
+              <Dot color="#22d3ee" /> Trader (opt-in per run · Robinhood MCP)
             </li>
           )}
           <li className="flex items-center gap-2">
@@ -75,8 +75,8 @@ export function Sidebar({
         <p className="px-1 text-[11px] leading-relaxed text-slate-600">
           {runtime?.provider === "mock"
             ? "Mock mode — add ANTHROPIC_API_KEY for live models."
-            : traderLive
-              ? `Trader joins every crew run · cap $${trading?.maxOrderUsd} / order`
+            : traderAvailable
+              ? `Trader opt-in · ${trading?.mode} · cap $${trading?.maxOrderUsd} / order`
               : "Live model connected."}
         </p>
         <a

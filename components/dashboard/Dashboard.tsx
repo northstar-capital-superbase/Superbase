@@ -47,6 +47,9 @@ export function Dashboard() {
   const [statuses, setStatuses] = useState<Record<string, AgentStatus>>({});
   const [busy, setBusy] = useState(false);
   const [explorerOpen, setExplorerOpen] = useState(false);
+  // Trader participation is opt-in per operator, never auto-joined (authority is
+  // granted, not assumed). Only available when a Robinhood token is configured.
+  const [traderEnabled, setTraderEnabled] = useState(false);
 
   const refreshMemory = useCallback(async () => {
     const res = await fetch(`/api/memory?sessionId=${activeId}`);
@@ -54,8 +57,16 @@ export function Dashboard() {
   }, [activeId]);
 
   const pipelineFlow = useMemo(
-    () => pipelineAgentIds(trading?.traderInCrew ?? false),
-    [trading?.traderInCrew],
+    () => pipelineAgentIds(traderEnabled),
+    [traderEnabled],
+  );
+
+  const specialistsFor = useCallback(
+    (): string[] | undefined =>
+      traderEnabled
+        ? ["research", "strategist", "behavioral", "trader"]
+        : undefined,
+    [traderEnabled],
   );
 
   // Agent roster + runtime: load once.
@@ -104,14 +115,14 @@ export function Dashboard() {
       const res = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: activeId, task }),
+        body: JSON.stringify({ sessionId: activeId, task, specialists: specialistsFor() }),
       });
       const data = (await res.json()) as CrewRun & { error?: string };
       setStatuses(Object.fromEntries(pipelineFlow.map((id) => [id, "done"])));
       if (!res.ok || data.error) pushAssistant(`⚠️ ${data.error ?? "Run failed."}`);
       else pushAssistant(data.synthesis.output, data);
     },
-    [pushAssistant, activeId, pipelineFlow],
+    [pushAssistant, activeId, pipelineFlow, specialistsFor],
   );
 
   // Stream a turn through the pipeline, driving real agent statuses from
@@ -129,7 +140,7 @@ export function Dashboard() {
         const res = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: activeId, task }),
+          body: JSON.stringify({ sessionId: activeId, task, specialists: specialistsFor() }),
         });
         // Rate-limited / bad input: show the reason, don't fall back (the
         // fallback endpoint would just hit the same limit).
@@ -199,13 +210,25 @@ export function Dashboard() {
         setTimeout(() => setStatuses({}), 1200);
       }
     },
-    [pushAssistant, refreshMemory, runFallback, activeId],
+    [pushAssistant, refreshMemory, runFallback, activeId, specialistsFor],
   );
 
   const clearMemory = useCallback(async () => {
     await fetch(`/api/memory?sessionId=${activeId}`, { method: "DELETE" });
     setMemory([]);
   }, [activeId]);
+
+  // Forget a single memory entry (granular right-to-be-forgotten).
+  const forgetMemory = useCallback(
+    async (id: string) => {
+      setMemory((m) => m.filter((e) => e.id !== id));
+      await fetch(
+        `/api/memory?sessionId=${encodeURIComponent(activeId)}&id=${encodeURIComponent(id)}`,
+        { method: "DELETE" },
+      ).catch(() => refreshMemory());
+    },
+    [activeId, refreshMemory],
+  );
 
   // Delete a lab: wipe its server-side memory, then drop it from the list.
   const removeSession = useCallback(
@@ -253,13 +276,29 @@ export function Dashboard() {
               {sessions.length === 1 ? "lab" : "labs"}
             </p>
           </div>
-          <SessionSwitcher
-            sessions={sessions}
-            activeId={activeId}
-            onSwitch={setActive}
-            onCreate={create}
-            onRemove={removeSession}
-          />
+          <div className="flex items-center gap-3">
+            {trading?.enabled && (
+              <label
+                className="flex cursor-pointer items-center gap-2 rounded-lg border border-white/5 bg-base-750/60 px-3 py-1.5 text-[12px] text-slate-300"
+                title="Include the Trader specialist in runs. It can read and advise; placing orders still requires the operating mode to permit it."
+              >
+                <input
+                  type="checkbox"
+                  checked={traderEnabled}
+                  onChange={(e) => setTraderEnabled(e.target.checked)}
+                  className="accent-signal-trader"
+                />
+                Include Trader
+              </label>
+            )}
+            <SessionSwitcher
+              sessions={sessions}
+              activeId={activeId}
+              onSwitch={setActive}
+              onCreate={create}
+              onRemove={removeSession}
+            />
+          </div>
         </header>
 
         <Integrations />
@@ -279,6 +318,7 @@ export function Dashboard() {
               onClear={clearMemory}
               onExplore={() => setExplorerOpen(true)}
               onExport={exportLab}
+              onForget={forgetMemory}
             />
           </div>
         </div>
