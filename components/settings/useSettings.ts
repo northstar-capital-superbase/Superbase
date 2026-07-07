@@ -52,13 +52,15 @@ export function useSettings() {
   );
 
   // Apply accent + theme to the document so the choice is reflected live.
+  // Writes the OS-surface tokens (--os-*) only — the marketing homepage owns
+  // the separate --ns-* namespace and must stay visually unchanged.
   useEffect(() => {
     if (!ready) return;
     const root = document.documentElement;
     const accent = ACCENTS.find((a) => a.key === settings.appearance.accent);
     if (accent) {
-      root.style.setProperty("--ns-accent", accent.color);
-      root.style.setProperty("--ns-accent-bright", accent.bright);
+      root.style.setProperty("--os-accent", accent.color);
+      root.style.setProperty("--os-accent-bright", accent.bright);
     }
     const t = settings.appearance.theme;
     const resolved =

@@ -4,6 +4,54 @@
 
 :root {
   color-scheme: dark;
+
+  /* ────────────────────────────────────────────────────────────────────────
+     Northstar OS shared design tokens (--os-*).
+     Consumed by the app surfaces (/labs, /settings, /connections, sidebar)
+     and the components/ui primitives. The marketing showcase (homepage)
+     owns the separate --ns-* namespace in showcase.css and is intentionally
+     NOT driven by these tokens, so the homepage is unaffected.
+     ──────────────────────────────────────────────────────────────────────── */
+
+  /* Surfaces */
+  --os-bg: #08090d;
+  --os-surface: #0e1016;
+  --os-surface-2: #13161f;
+  --os-surface-3: #191d2a;
+  --os-line: rgba(255, 255, 255, 0.08);
+  --os-line-2: rgba(255, 255, 255, 0.15);
+
+  /* Text scale (AA on --os-surface for 2/3; 4 is decorative-only) */
+  --os-text: #f2f4f9;
+  --os-text-2: #b4bac7;
+  --os-text-3: #8a90a0;
+  --os-text-4: #6b7284;
+
+  /* Accent + status. --os-accent tracks the user's accent choice
+     (useSettings writes inline overrides on <html>). */
+  --os-accent: #6e8bff;
+  --os-accent-bright: #8aa6ff;
+  --os-green: #5bd6a8;
+  --os-amber: #e2b17c;
+  --os-red: #ff7a8a;
+
+  /* Radii */
+  --os-r-lg: 16px;
+  --os-r: 12px;
+  --os-r-sm: 9px;
+
+  /* Shadows — soft and layered, no glow walls */
+  --os-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -24px rgba(0, 0, 0, 0.8);
+  --os-shadow-2: 0 24px 64px -32px rgba(0, 0, 0, 0.85);
+
+  /* Motion */
+  --os-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --os-dur: 150ms;
+  --os-dur-slow: 220ms;
+
+  /* Type */
+  --os-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --os-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
 }
 
 html,
@@ -36,11 +84,3 @@ body {
   background: #323855;
 }
 
-@layer components {
-  .panel {
-    @apply rounded-2xl border border-white/5 bg-base-800/70 backdrop-blur-sm;
-  }
-  .panel-tight {
-    @apply rounded-xl border border-white/5 bg-base-750/60;
-  }
-}

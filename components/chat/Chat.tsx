@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
+import { Button, EmptyState } from "@/components/ui";
 
 export interface ChatTurn {
   id: string;
@@ -54,7 +55,7 @@ export function Chat({
         style={{ display: "flex", flexDirection: "column", gap: 14 }}
       >
         {turns.length === 0 && (
-          <EmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
+          <ConsoleEmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         )}
         {turns.map((t) =>
           t.role === "user" ? (
@@ -79,14 +80,16 @@ export function Chat({
             }}
             rows={1}
             placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+            aria-label="Task for the crew"
           />
-          <button
-            className="lx-btn lx-btn-primary"
+          <Button
+            variant="primary"
             onClick={submit}
             disabled={busy || !input.trim()}
+            loading={busy}
           >
             Run
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -115,7 +118,9 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
           <button
             className="lx-trace-toggle"
             onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
           >
+            <Caret open={open} />
             {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
             specialists)
           </button>
@@ -123,6 +128,28 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
       </div>
       {run && open && <AgentTrace run={run} />}
     </div>
+  );
+}
+
+function Caret({ open }: { open: boolean }) {
+  return (
+    <svg
+      width="9"
+      height="9"
+      viewBox="0 0 10 10"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      style={{
+        transform: open ? "rotate(180deg)" : undefined,
+        transition: "transform 150ms ease",
+      }}
+    >
+      <path d="M2 3.5 5 6.5 8 3.5" />
+    </svg>
   );
 }
 
@@ -187,7 +214,7 @@ function TraceStep({
 
 function Thinking() {
   return (
-    <div className="lx-thinking">
+    <div className="lx-thinking" role="status" aria-live="polite">
       <span
         className="lx-dot lx-pulse"
         style={{ background: "var(--blue-bright)" }}
@@ -209,7 +236,7 @@ const TRADING_SAMPLES = [
   "Summarize portfolio drift vs my 55/25/20 allocation",
 ];
 
-function EmptyState({
+function ConsoleEmptyState({
   onPick,
   tradingEnabled,
 }: {
@@ -218,23 +245,22 @@ function EmptyState({
 }) {
   const samples = tradingEnabled ? TRADING_SAMPLES : SAMPLES;
   return (
-    <div className="lx-empty">
-      <div className="lx-empty-mark">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+    <EmptyState
+      icon={
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
           <path
             d="M12 2l2.2 6.6L21 11l-6.8 2.4L12 22l-2.2-8.6L3 11l6.8-2.4L12 2z"
             fill="currentColor"
           />
         </svg>
-      </div>
-      <div>
-        <h3>Northstar Labs is ready</h3>
-        <p>
-          {tradingEnabled
-            ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
-            : "Hand the orchestrator a task. It plans, delegates to the research, strategist, and behavioral agents, then synthesizes their work."}
-        </p>
-      </div>
+      }
+      title="Northstar Labs is ready"
+      description={
+        tradingEnabled
+          ? "Robinhood MCP is connected — the Trader joins every crew run. Ask for portfolio analysis or execution within your policy caps."
+          : "Hand the orchestrator a task. It plans, delegates to the Research, Strategist, and Behavioral agents, then synthesizes their work."
+      }
+    >
       <div className="lx-samples">
         {samples.map((s) => (
           <button key={s} className="lx-sample" onClick={() => onPick(s)}>
@@ -242,6 +268,6 @@ function EmptyState({
           </button>
         ))}
       </div>
-    </div>
+    </EmptyState>
   );
 }

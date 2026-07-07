@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
+import { Button, OwnerNote, Spinner, StatusPill, type StatusTone } from "@/components/ui";
 
 interface Health {
   ok: boolean;
@@ -43,6 +44,8 @@ interface Service {
   probe: Probe;
   okLabel: (r: CheckResult) => string;
   action?: { label: string; href: string };
+  /** Manual owner setup rendered as a visible NEEDS_OWNER_INPUT note. */
+  ownerNote?: string;
 }
 
 const BUCKETS: {
@@ -65,8 +68,8 @@ const BUCKETS: {
   },
   {
     id: "needs",
-    label: "Needs to be connected",
-    hint: "Requires configuration",
+    label: "Needs configuration",
+    hint: "Requires owner setup",
     tone: "grey",
   },
 ];
@@ -77,8 +80,23 @@ const TONE_COLOR: Record<"green" | "blue" | "grey", string> = {
   grey: "var(--text-3)",
 };
 
+// Maps a service's bucket + probe result to a single obvious status pill:
+// connected / needs action / not configured / checking / error.
+function serviceStatus(s: Service): { tone: StatusTone; label: string } {
+  if (s.probe === "loading") return { tone: "pending", label: "checking" };
+  // "error" is reserved for services that claim to be live but fail their
+  // probe. An unconfigured service failing its check is the expected state —
+  // the red probe message below the tile already carries the detail.
+  if (s.probe && !s.probe.ok && s.bucket === "connected") {
+    return { tone: "danger", label: "error" };
+  }
+  if (s.bucket === "connected") return { tone: "ok", label: "connected" };
+  if (s.bucket === "ready") return { tone: "info", label: "needs action" };
+  return { tone: "muted", label: "not configured" };
+}
+
 // Connections cockpit: groups every integration into Connected / Ready to
-// connect / Needs to be connected, and re-runs the real /api/health and
+// connect / Needs configuration, and re-runs the real /api/health and
 // /api/trading probes on demand so the whole stack is verifiable from here.
 export function Connections() {
   const [health, setHealth] = useState<Health | null>(null);
@@ -142,33 +160,39 @@ export function Connections() {
         detail: llmLive
           ? `${health?.provider}${health?.model ? ` · ${health.model}` : ""}`
           : health
-            ? "not configured"
+            ? "no provider key found"
             : "…",
         note: llmLive
-          ? "Live model connected."
-          : "Set ANTHROPIC_API_KEY or OPENAI_API_KEY to power the crew.",
+          ? "Live model connected — every crew run uses it."
+          : "The crew needs a model key before it can run.",
         bucket: llmLive ? "connected" : "needs",
         probe: llmProbe,
         okLabel: (r) => (r.live ? "reachable" : "ok"),
+        ownerNote: llmLive
+          ? undefined
+          : "Set ANTHROPIC_API_KEY or OPENAI_API_KEY in .env.local, then restart the dev server.",
       },
       {
         key: "supabase",
         name: "Supabase",
-        detail: memLive ? "persistent · shared memory" : "not configured",
+        detail: memLive ? "persistent · shared memory" : "in-memory fallback active",
         note: memLive
           ? "Connected — agent memory persists across runs."
-          : "Set SUPABASE_URL + service-role key and apply schema.sql.",
+          : "Memory works in-process but is wiped on restart.",
         bucket: memLive ? "connected" : "needs",
         probe: memProbe,
         okLabel: (r) => (r.persisted ? "persisted" : "ok"),
+        ownerNote: memLive
+          ? undefined
+          : "Set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY and apply supabase/schema.sql to persist agent memory.",
       },
       {
         key: "trading",
         name: "Robinhood Agentic",
-        detail: tradeLive ? `agentic · ${trading?.mode ?? "auto"}` : "not connected",
+        detail: tradeLive ? `agentic · ${trading?.mode ?? "auto"}` : "MCP token not stored",
         note: tradeLive
           ? `MCP live · $${trading?.maxOrderUsd ?? 100} cap per order.`
-          : "OAuth opens Robinhood, then stores an MCP token.",
+          : "OAuth opens Robinhood, then stores an MCP token so the Trader can join crew runs.",
         bucket: tradeLive ? "connected" : "ready",
         probe: tradeProbe,
         okLabel: (r) =>
@@ -176,15 +200,22 @@ export function Connections() {
             ? `${r.toolCount} tool${r.toolCount !== 1 ? "s" : ""}`
             : "reachable",
         action: tradeLive ? undefined : { label: "Connect Robinhood", href: "/api/trading/oauth/start" },
+        ownerNote: tradeLive
+          ? undefined
+          : "Complete the Robinhood OAuth flow (Connect Robinhood) or set ROBINHOOD_MCP_TOKEN.",
       },
       {
         key: "github",
+        // The GitHub tile has no in-app probe — repo linkage is asserted, not
+        // verified here, so we surface an explicit owner check instead of
+        // faking a live status.
         name: "GitHub",
         detail: "northstar-capital-superbase/superbase",
         note: "Repository connected — commits push to your branch.",
         bucket: "connected",
         probe: null,
         okLabel: () => "ok",
+        ownerNote: "Verify this connection in the live environment — there is no in-app check for GitHub.",
       },
     ];
   }, [health, trading, llmProbe, memProbe, tradeProbe]);
@@ -226,26 +257,26 @@ export function Connections() {
     <div className="lx-card">
       <div className="lx-card-head">
         <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 9, flexWrap: "wrap" }}>
+          <div className="lx-card-head-meta">
             <span className="lx-card-title">Connections</span>
             <div className="lx-conn-stats">
-              <span className="lx-stat green">{counts.connected} connected</span>
-              <span className="lx-stat blue">{counts.ready} ready</span>
+              <StatusPill tone="ok">{counts.connected} connected</StatusPill>
+              <StatusPill tone="info">{counts.ready} ready</StatusPill>
               {counts.needs > 0 && (
-                <span className="lx-stat grey">{counts.needs} pending</span>
+                <StatusPill tone="muted">{counts.needs} pending</StatusPill>
               )}
             </div>
           </div>
-          <p className="lx-card-sub" style={{ marginTop: 5 }}>
+          <p className="lx-card-sub lx-card-sub--gap">
             {checkedAt
               ? `Last checked ${checkedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
               : "Connection status & live checks"}
           </p>
         </div>
-        <button className="lx-btn" onClick={runChecks} disabled={checking}>
-          <RefreshIcon spin={checking} />
+        <Button onClick={runChecks} loading={checking}>
+          {!checking && <RefreshIcon />}
           {checking ? "Checking…" : "Refresh checks"}
-        </button>
+        </Button>
       </div>
 
       {BUCKETS.map((b) => {
@@ -307,18 +338,18 @@ export function Connections() {
 }
 
 function ServiceTile({ service }: { service: Service }) {
-  const { bucket, probe } = service;
-  const tone =
-    bucket === "connected" ? "green" : bucket === "ready" ? "blue" : "grey";
-  const stateLabel =
-    bucket === "connected" ? "● live" : bucket === "ready" ? "○ ready" : "○ off";
+  const { probe } = service;
+  const status = serviceStatus(service);
   return (
-    <div className={clsx("lx-tile", tone)}>
+    <div
+      className={clsx(
+        "lx-tile",
+        service.bucket === "connected" ? "green" : service.bucket === "ready" ? "blue" : "grey",
+      )}
+    >
       <div className="lx-tile-top">
         <span className="lx-tile-name">{service.name}</span>
-        <span className="lx-tile-state" style={{ color: TONE_COLOR[tone] }}>
-          {stateLabel}
-        </span>
+        <StatusPill tone={status.tone}>{status.label}</StatusPill>
       </div>
       <div className="lx-tile-detail" title={service.detail}>
         {service.detail}
@@ -333,11 +364,8 @@ function ServiceTile({ service }: { service: Service }) {
 
       {probe === "loading" && (
         <div className="lx-probe run">
-          <span
-            className="lx-dot lx-pulse"
-            style={{ background: "var(--blue-bright)" }}
-          />
-          checking…
+          <Spinner size={12} />
+          running live check…
         </div>
       )}
       {probe && probe !== "loading" && (
@@ -352,11 +380,13 @@ function ServiceTile({ service }: { service: Service }) {
           )}
         </div>
       )}
+
+      {service.ownerNote && <OwnerNote>{service.ownerNote}</OwnerNote>}
     </div>
   );
 }
 
-function RefreshIcon({ spin }: { spin?: boolean }) {
+function RefreshIcon() {
   return (
     <svg
       width="13"
@@ -367,7 +397,6 @@ function RefreshIcon({ spin }: { spin?: boolean }) {
       strokeWidth="1.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      className={spin ? "animate-spin" : undefined}
     >
       <path d="M13.5 8a5.5 5.5 0 1 1-1.6-3.9 M13.5 2v3h-3" />
     </svg>
