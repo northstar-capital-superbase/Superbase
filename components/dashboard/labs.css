@@ -940,6 +940,10 @@
   .lx-topbar-inner:not(.lx-topbar-inner--slim) {
     padding-left: 62px;
   }
+  /* Chat-first mobile console replaces the desktop dashboard at phone widths */
+  .lx-desktop {
+    display: none;
+  }
 }
 @media (max-width: 600px) {
   .lx-topbar-inner,
