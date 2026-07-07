@@ -349,11 +349,11 @@ function SidebarContent({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.18, ease: EASE_OUT }}
+              transition={{ duration: 0.1, ease: EASE_OUT }}
             >
               <RuntimeRows runtime={runtime} />
 
-              <div className="sb-divider" style={{ marginTop: 10 }} />
+              <div className="sb-divider sb-divider--footer" />
 
               <TradingSummary runtime={runtime} onNavigate={mobile ? onMobileClose : undefined} />
             </motion.div>

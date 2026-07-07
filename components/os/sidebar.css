@@ -168,6 +168,9 @@
   margin: 2px 0;
   flex-shrink: 0;
 }
+.sb-divider--footer {
+  margin-top: 12px;
+}
 
 /* ── Scrollable nav ─────────────────────────────────────────────────────── */
 
@@ -383,6 +386,10 @@
 
 .sb-status-panel {
   padding: 12px 16px 10px;
+  /* Pin the footer to the expanded width so collapsing clips it cleanly
+     instead of re-wrapping the text into a squeezed column mid-animation. */
+  width: 280px;
+  min-width: 280px;
 }
 
 .sb-status-agents {
@@ -602,6 +609,12 @@
 
   .sb--mobile .sb-collapse-btn {
     display: none;
+  }
+
+  /* The drawer can be narrower than the desktop rail — let the footer flex */
+  .sb--mobile .sb-status-panel {
+    width: auto;
+    min-width: 0;
   }
 }
 

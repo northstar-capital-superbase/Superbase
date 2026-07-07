@@ -84,7 +84,12 @@ const TONE_COLOR: Record<"green" | "blue" | "grey", string> = {
 // connected / needs action / not configured / checking / error.
 function serviceStatus(s: Service): { tone: StatusTone; label: string } {
   if (s.probe === "loading") return { tone: "pending", label: "checking" };
-  if (s.probe && !s.probe.ok) return { tone: "danger", label: "error" };
+  // "error" is reserved for services that claim to be live but fail their
+  // probe. An unconfigured service failing its check is the expected state —
+  // the red probe message below the tile already carries the detail.
+  if (s.probe && !s.probe.ok && s.bucket === "connected") {
+    return { tone: "danger", label: "error" };
+  }
   if (s.bucket === "connected") return { tone: "ok", label: "connected" };
   if (s.bucket === "ready") return { tone: "info", label: "needs action" };
   return { tone: "muted", label: "not configured" };
@@ -262,7 +267,7 @@ export function Connections() {
               )}
             </div>
           </div>
-          <p className="lx-card-sub" style={{ marginTop: 4 }}>
+          <p className="lx-card-sub lx-card-sub--gap">
             {checkedAt
               ? `Last checked ${checkedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" })}`
               : "Connection status & live checks"}
