@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import {
   LayoutDashboard,
@@ -21,6 +21,7 @@ import {
   Shield,
   Settings,
   ChevronLeft,
+  ChevronDown,
   Menu,
   X,
 } from "lucide-react";
@@ -34,45 +35,113 @@ type NavItem = {
   badge?: string;
 };
 
-const PRIMARY_NAV: NavItem[] = [
-  { key: "command",   label: "Command Center", icon: LayoutDashboard, href: "/labs" },
-  { key: "portfolio", label: "Portfolio",       icon: BarChart3,       href: "/portfolio", badge: "soon" },
-  { key: "markets",   label: "Markets",         icon: TrendingUp,      href: "/markets",   badge: "soon" },
-  { key: "research",  label: "Research",        icon: Search,          href: "/research",  badge: "soon" },
-  { key: "agents",    label: "Agents",          icon: Bot,             href: "/agents",    badge: "soon" },
-  { key: "memory",    label: "Memory",          icon: Brain,           href: "/memory",    badge: "soon" },
-  { key: "workflows", label: "Workflows",       icon: Zap,             href: "/workflows", badge: "soon" },
-];
+type NavSectionDef = {
+  key: string;
+  label?: string;
+  items: NavItem[];
+};
 
-const LABS_NAV: NavItem[] = [
-  { key: "experiments", label: "Experiments",      icon: FlaskConical, href: "/labs" },
-  { key: "builder",     label: "Agent Builder",    icon: Wrench,       href: "/labs",        badge: "soon" },
-  { key: "mcp",         label: "MCP Integrations", icon: Globe,        href: "/connections" },
-  { key: "sandbox",     label: "Sandbox",          icon: Rocket,       href: "/labs",        badge: "soon" },
-];
-
-const SYSTEM_NAV: NavItem[] = [
-  { key: "connections", label: "Connections", icon: Link2,    href: "/connections" },
-  { key: "security",    label: "Security",    icon: Shield,   href: "/security",  badge: "soon" },
-  { key: "settings",    label: "Settings",    icon: Settings, href: "/settings" },
-];
-
-const AGENT_STATUSES = [
-  { label: "Research Agent",  status: "Active",     color: "#5bd6a8", pulse: true  },
-  { label: "Strategist Agent",status: "Active",     color: "#5bd6a8", pulse: true  },
-  { label: "Trader Agent",    status: "Monitoring", color: "#e2b17c", pulse: false },
-  { label: "Memory Sync",     status: "Online",     color: "#6e8bff", pulse: true  },
-  { label: "Broker",          status: "Connected",  color: "#5bd6a8", pulse: false },
+// Items with a "soon" badge are rendered as inert rows (no navigation) so the
+// roadmap stays visible without dead links to routes that don't exist yet.
+const SECTIONS: NavSectionDef[] = [
+  {
+    key: "workspace",
+    items: [
+      { key: "command",   label: "Command Center", icon: LayoutDashboard, href: "/labs" },
+      { key: "portfolio", label: "Portfolio",       icon: BarChart3,       href: "/portfolio", badge: "soon" },
+      { key: "markets",   label: "Markets",         icon: TrendingUp,      href: "/markets",   badge: "soon" },
+      { key: "research",  label: "Research",        icon: Search,          href: "/research",  badge: "soon" },
+      { key: "agents",    label: "Agents",          icon: Bot,             href: "/agents",    badge: "soon" },
+      { key: "memory",    label: "Memory",          icon: Brain,           href: "/memory",    badge: "soon" },
+      { key: "workflows", label: "Workflows",       icon: Zap,             href: "/workflows", badge: "soon" },
+    ],
+  },
+  {
+    key: "labs",
+    label: "Northstar Labs",
+    items: [
+      { key: "experiments", label: "Experiments",      icon: FlaskConical, href: "/labs" },
+      { key: "builder",     label: "Agent Builder",    icon: Wrench,       href: "/builder", badge: "soon" },
+      { key: "mcp",         label: "MCP Integrations", icon: Globe,        href: "/connections" },
+      { key: "sandbox",     label: "Sandbox",          icon: Rocket,       href: "/sandbox", badge: "soon" },
+    ],
+  },
+  {
+    key: "system",
+    label: "System",
+    items: [
+      { key: "connections", label: "Connections", icon: Link2,    href: "/connections" },
+      { key: "security",    label: "Security",    icon: Shield,   href: "/security", badge: "soon" },
+      { key: "settings",    label: "Settings",    icon: Settings, href: "/settings" },
+    ],
+  },
 ];
 
 // Shared easing curve (avoids type inference issues with string literals)
 const EASE_OUT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
-const EASE_IN:  [number, number, number, number] = [0.55, 0.06, 0.68, 0.19];
+
+interface RuntimeStatus {
+  loaded: boolean;
+  reachable: boolean;
+  provider: string | null;
+  model: string | null;
+  configured: boolean;
+  memory: "supabase" | "in-memory" | null;
+  tradingEnabled: boolean;
+  tradingMode: string | null;
+}
+
+const INITIAL_STATUS: RuntimeStatus = {
+  loaded: false,
+  reachable: false,
+  provider: null,
+  model: null,
+  configured: false,
+  memory: null,
+  tradingEnabled: false,
+  tradingMode: null,
+};
+
+// Live runtime status for the footer — real /api/health and /api/trading
+// reads, never hardcoded placeholder statuses.
+function useRuntimeStatus(): RuntimeStatus {
+  const [status, setStatus] = useState<RuntimeStatus>(INITIAL_STATUS);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [h, t] = await Promise.allSettled([
+        fetch("/api/health").then((r) => r.json()),
+        fetch("/api/trading").then((r) => r.json()),
+      ]);
+      if (cancelled) return;
+      const health = h.status === "fulfilled" ? h.value : null;
+      const trading = t.status === "fulfilled" ? t.value : null;
+      setStatus({
+        loaded: true,
+        reachable: health !== null,
+        provider: health?.provider ?? null,
+        model: health?.model ?? null,
+        configured: health?.configured ?? false,
+        memory: health?.memory ?? null,
+        tradingEnabled: trading?.enabled ?? false,
+        tradingMode: trading?.mode ?? null,
+      });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return status;
+}
 
 export function OsSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
+  const reduceMotion = useReducedMotion();
+  const runtime = useRuntimeStatus();
 
   // Sync --sb-width so the content area margin animates in lockstep
   useEffect(() => {
@@ -98,6 +167,7 @@ export function OsSidebar() {
   }, [mobileOpen]);
 
   const toggle = () => setCollapsed((c) => !c);
+  const dur = reduceMotion ? 0 : 0.22;
 
   return (
     <>
@@ -106,6 +176,8 @@ export function OsSidebar() {
         className="sb-mobile-trigger"
         onClick={() => setMobileOpen(true)}
         aria-label="Open navigation"
+        aria-haspopup="dialog"
+        aria-expanded={mobileOpen}
       >
         <Menu size={18} strokeWidth={1.8} />
       </button>
@@ -114,7 +186,7 @@ export function OsSidebar() {
       <motion.aside
         className={clsx("sb", { "sb--collapsed": collapsed })}
         animate={{ width: collapsed ? 64 : 280 }}
-        transition={{ duration: 0.22, ease: EASE_OUT }}
+        transition={{ duration: dur, ease: EASE_OUT }}
         aria-label="Primary navigation"
       >
         <SidebarContent
@@ -122,10 +194,11 @@ export function OsSidebar() {
           pathname={pathname}
           onToggle={toggle}
           onMobileClose={() => setMobileOpen(false)}
+          runtime={runtime}
         />
       </motion.aside>
 
-      {/* Mobile overlay + drawer */}
+      {/* Mobile overlay + floating bubble drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -134,22 +207,29 @@ export function OsSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.18 }}
+              transition={{ duration: reduceMotion ? 0 : 0.16 }}
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
               className="sb sb--mobile"
-              initial={{ x: -280 }}
-              animate={{ x: 0 }}
-              exit={{ x: -280 }}
-              transition={{ duration: 0.22, ease: EASE_OUT }}
+              initial={{ x: reduceMotion ? 0 : -340, opacity: reduceMotion ? 1 : 0.6 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: reduceMotion ? 0 : -340, opacity: reduceMotion ? 1 : 0.6 }}
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { type: "spring", stiffness: 420, damping: 38 }
+              }
               aria-label="Primary navigation"
+              role="dialog"
+              aria-modal="true"
             >
               <SidebarContent
                 collapsed={false}
                 pathname={pathname}
                 onToggle={() => setMobileOpen(false)}
                 onMobileClose={() => setMobileOpen(false)}
+                runtime={runtime}
                 mobile
               />
             </motion.aside>
@@ -167,14 +247,25 @@ function SidebarContent({
   pathname,
   onToggle,
   onMobileClose,
+  runtime,
   mobile = false,
 }: {
   collapsed: boolean;
   pathname: string;
   onToggle: () => void;
   onMobileClose: () => void;
+  runtime: RuntimeStatus;
   mobile?: boolean;
 }) {
+  // App-specific runtime line — derived from live health, never hardcoded.
+  const statusLine = !runtime.loaded
+    ? { tone: "off" as const, label: "Checking runtime…" }
+    : !runtime.reachable
+      ? { tone: "warn" as const, label: "Crew API unreachable" }
+      : runtime.configured
+        ? { tone: "on" as const, label: `${runtime.provider} crew online` }
+        : { tone: "warn" as const, label: "Crew idle — no model key" };
+
   return (
     <div className="sb-inner">
       {/* Brand */}
@@ -208,7 +299,7 @@ function SidebarContent({
         )}
       </div>
 
-      {/* System status indicator */}
+      {/* Live runtime line */}
       <AnimatePresence>
         {!collapsed && (
           <motion.div
@@ -217,48 +308,38 @@ function SidebarContent({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15, ease: EASE_IN }}
+            transition={{ duration: 0.15 }}
           >
-            <span className="sb-status-dot sb-status-dot--online" />
-            <span className="sb-status-label">All Systems Operational</span>
+            <span
+              className={clsx(
+                "sb-status-dot",
+                statusLine.tone === "on" && "sb-status-dot--online",
+                statusLine.tone === "warn" && "sb-status-dot--warn",
+              )}
+            />
+            <span className="sb-status-label">{statusLine.label}</span>
           </motion.div>
         )}
       </AnimatePresence>
 
       <div className="sb-divider" />
 
-      {/* Scrollable nav */}
+      {/* Scrollable nav with collapsible sections */}
       <nav className="sb-nav" aria-label="OS Navigation">
-        <NavSection
-          items={PRIMARY_NAV}
-          collapsed={collapsed}
-          pathname={pathname}
-          onClick={mobile ? onMobileClose : undefined}
-        />
-
-        <div className="sb-divider" />
-
-        <NavSection
-          label="Northstar Labs"
-          items={LABS_NAV}
-          collapsed={collapsed}
-          pathname={pathname}
-          onClick={mobile ? onMobileClose : undefined}
-          experimental
-        />
-
-        <div className="sb-divider" />
-
-        <NavSection
-          label="System"
-          items={SYSTEM_NAV}
-          collapsed={collapsed}
-          pathname={pathname}
-          onClick={mobile ? onMobileClose : undefined}
-        />
+        {SECTIONS.map((section, i) => (
+          <div key={section.key}>
+            {i > 0 && <div className="sb-divider" />}
+            <NavSection
+              section={section}
+              collapsed={collapsed}
+              pathname={pathname}
+              onClick={mobile ? onMobileClose : undefined}
+            />
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom mission-control status panel */}
+      {/* Bottom live-status panel */}
       <div className="sb-bottom">
         <AnimatePresence>
           {!collapsed && (
@@ -270,36 +351,11 @@ function SidebarContent({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.18, ease: EASE_OUT }}
             >
-              <div className="sb-status-agents">
-                {AGENT_STATUSES.map((a) => (
-                  <div key={a.label} className="sb-status-row">
-                    <span className="sb-status-name">{a.label}</span>
-                    <span
-                      className="sb-status-badge"
-                      style={{ "--dot-color": a.color } as React.CSSProperties}
-                    >
-                      <span
-                        className={clsx(
-                          "sb-status-pulse",
-                          a.pulse && "sb-status-pulse--blink",
-                        )}
-                      />
-                      {a.status}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <RuntimeRows runtime={runtime} />
 
               <div className="sb-divider" style={{ marginTop: 10 }} />
 
-              <div className="sb-portfolio">
-                <div className="sb-portfolio-label">Portfolio Value</div>
-                <div className="sb-portfolio-value">$124,502</div>
-                <div className="sb-portfolio-change">
-                  <span className="sb-portfolio-delta">+2.34%</span>
-                  <span className="sb-portfolio-period">today</span>
-                </div>
-              </div>
+              <TradingSummary runtime={runtime} onNavigate={mobile ? onMobileClose : undefined} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -337,55 +393,146 @@ function SidebarContent({
   );
 }
 
-// ── Nav section ───────────────────────────────────────────────────────────
+// ── Live footer rows ──────────────────────────────────────────────────────
+
+function RuntimeRows({ runtime }: { runtime: RuntimeStatus }) {
+  const rows = !runtime.loaded
+    ? [{ label: "Runtime", status: "checking…", color: "var(--sb-text-3)", pulse: true }]
+    : [
+        {
+          label: "Language model",
+          status: runtime.configured ? (runtime.provider ?? "live") : "no key",
+          color: runtime.configured ? "#5bd6a8" : "#e2b17c",
+          pulse: runtime.configured,
+        },
+        {
+          label: "Shared memory",
+          status: runtime.memory === "supabase" ? "Supabase" : "in-memory",
+          color: runtime.memory === "supabase" ? "#5bd6a8" : "#8a90a0",
+          pulse: false,
+        },
+        {
+          label: "Robinhood MCP",
+          status: runtime.tradingEnabled ? (runtime.tradingMode ?? "live") : "off",
+          color: runtime.tradingEnabled ? "#5bd6a8" : "#8a90a0",
+          pulse: runtime.tradingEnabled,
+        },
+      ];
+
+  return (
+    <div className="sb-status-agents">
+      {rows.map((r) => (
+        <div key={r.label} className="sb-status-row">
+          <span className="sb-status-name">{r.label}</span>
+          <span
+            className="sb-status-badge"
+            style={{ "--dot-color": r.color } as React.CSSProperties}
+          >
+            <span
+              className={clsx("sb-status-pulse", r.pulse && "sb-status-pulse--blink")}
+            />
+            {r.status}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Trading footer: real state only. When the Robinhood MCP is connected we show
+// the live policy; otherwise a connect prompt.
+// NEEDS_OWNER_INPUT: live portfolio value/NAV is not wired yet — once the
+// Robinhood MCP connection is active, this block can call get_portfolio via
+// POST /api/trading?action=call to show the real account value.
+function TradingSummary({
+  runtime,
+  onNavigate,
+}: {
+  runtime: RuntimeStatus;
+  onNavigate?: () => void;
+}) {
+  return (
+    <div className="sb-portfolio">
+      <div className="sb-portfolio-label">Trading</div>
+      {runtime.tradingEnabled ? (
+        <>
+          <div className="sb-portfolio-value">Robinhood MCP live</div>
+          <div className="sb-portfolio-note">
+            {runtime.tradingMode ?? "advisory"} mode · Trader joins crew runs
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="sb-portfolio-value">Not connected</div>
+          <div className="sb-portfolio-note">
+            Trader sits out of crew runs until Robinhood is linked.
+          </div>
+          <Link href="/connections" className="sb-portfolio-link" onClick={onNavigate}>
+            Connect Robinhood →
+          </Link>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Nav section (collapsible) ─────────────────────────────────────────────
 
 function NavSection({
-  label,
-  items,
+  section,
   collapsed,
   pathname,
   onClick,
-  experimental = false,
 }: {
-  label?: string;
-  items: NavItem[];
+  section: NavSectionDef;
   collapsed: boolean;
   pathname: string;
   onClick?: () => void;
-  experimental?: boolean;
 }) {
+  const [open, setOpen] = useState(true);
+  const showItems = collapsed || open;
+
   return (
     <div className="sb-nav-section">
-      <AnimatePresence>
-        {label && !collapsed && (
+      {section.label && !collapsed && (
+        <button
+          type="button"
+          className="sb-section-head"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+        >
+          {section.label}
+          <span className="sb-section-chevron" aria-hidden="true">
+            <ChevronDown size={12} strokeWidth={2.2} />
+          </span>
+        </button>
+      )}
+      <AnimatePresence initial={false}>
+        {showItems && (
           <motion.div
-            key={`label-${label}`}
-            className={clsx(
-              "sb-section-label",
-              experimental && "sb-section-label--exp",
-            )}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            key="items"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: EASE_OUT }}
+            style={{ overflow: "hidden" }}
           >
-            {label}
+            {section.items.map((item) => (
+              <NavItemRow
+                key={item.key}
+                item={item}
+                active={
+                  item.href === "/labs"
+                    ? pathname === "/labs"
+                    : pathname === item.href || pathname.startsWith(item.href + "/")
+                }
+                collapsed={collapsed}
+                onClick={onClick}
+              />
+            ))}
           </motion.div>
         )}
       </AnimatePresence>
-      {items.map((item) => (
-        <NavItemRow
-          key={item.key}
-          item={item}
-          active={
-            item.href === "/labs"
-              ? pathname === "/labs"
-              : pathname === item.href || pathname.startsWith(item.href + "/")
-          }
-          collapsed={collapsed}
-          onClick={onClick}
-        />
-      ))}
     </div>
   );
 }
@@ -404,14 +551,10 @@ function NavItemRow({
   onClick?: () => void;
 }) {
   const Icon = item.icon;
-  return (
-    <Link
-      href={item.href}
-      className={clsx("sb-nav-item", active && "sb-nav-item--active")}
-      aria-current={active ? "page" : undefined}
-      onClick={onClick}
-      title={collapsed ? item.label : undefined}
-    >
+  const soon = item.badge === "soon";
+
+  const inner = (
+    <>
       <span className="sb-nav-icon">
         <Icon size={17} strokeWidth={1.6} />
       </span>
@@ -443,6 +586,34 @@ function NavItemRow({
           </motion.span>
         )}
       </AnimatePresence>
+      {!collapsed && active && !soon && (
+        <span className="sb-nav-active-dot" aria-hidden="true" />
+      )}
+    </>
+  );
+
+  // Coming-soon entries render as inert rows (no href) so nothing 404s.
+  if (soon) {
+    return (
+      <span
+        className="sb-nav-item sb-nav-item--soon"
+        aria-disabled="true"
+        title={collapsed ? `${item.label} (soon)` : undefined}
+      >
+        {inner}
+      </span>
+    );
+  }
+
+  return (
+    <Link
+      href={item.href}
+      className={clsx("sb-nav-item", active && "sb-nav-item--active")}
+      aria-current={active ? "page" : undefined}
+      onClick={onClick}
+      title={collapsed ? item.label : undefined}
+    >
+      {inner}
     </Link>
   );
 }

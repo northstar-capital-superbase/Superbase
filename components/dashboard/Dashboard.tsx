@@ -9,6 +9,7 @@ import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { Chat, type ChatTurn } from "@/components/chat/Chat";
 import { SessionSwitcher } from "@/components/session/SessionSwitcher";
 import { useSessions } from "@/components/session/useSessions";
+import { Skeleton } from "@/components/ui";
 import "./labs.css";
 import {
   type AgentProfile,
@@ -273,7 +274,9 @@ export function Dashboard() {
 
         <Connections />
 
-        <AgentRoster agents={agents} statuses={statuses} />
+        {agents.length === 0 ? <RosterSkeleton /> : (
+          <AgentRoster agents={agents} statuses={statuses} />
+        )}
 
         <div className="lx-grid">
           <Chat
@@ -291,6 +294,20 @@ export function Dashboard() {
             />
           </div>
         </div>
+
+        {/* On narrow screens the memory rail is hidden — keep shared memory
+            reachable through the explorer instead of dropping the feature. */}
+        <button
+          type="button"
+          className="lx-mem-mobile"
+          onClick={() => setExplorerOpen(true)}
+        >
+          <MemoryGlyph />
+          Shared memory
+          <span className="lx-mem-mobile-count">
+            {memory.length} {memory.length === 1 ? "entry" : "entries"}
+          </span>
+        </button>
       </main>
 
       <MemoryExplorer
@@ -309,14 +326,24 @@ function RuntimePills({
   runtime: RuntimeInfo | null;
   trading: TradingInfo | null;
 }) {
-  const llmLive = runtime?.configured ?? false;
-  const memLive = runtime?.memory === "supabase";
+  // Waking up: show quiet placeholders instead of misleading "off" states.
+  if (!runtime) {
+    return (
+      <div className="lx-pills" aria-label="Checking runtime status">
+        <Skeleton width={92} height={27} style={{ borderRadius: 999 }} />
+        <Skeleton width={98} height={27} style={{ borderRadius: 999 }} className="opt" />
+        <Skeleton width={88} height={27} style={{ borderRadius: 999 }} className="opt" />
+      </div>
+    );
+  }
+  const llmLive = runtime.configured;
+  const memLive = runtime.memory === "supabase";
   const traderLive = trading?.traderInCrew ?? false;
   return (
     <div className="lx-pills">
-      <span className="lx-pill" title={runtime?.model ?? "model"}>
+      <span className="lx-pill" title={runtime.model ?? "model"}>
         <span className={`lx-dot ${llmLive ? "on" : "off"}`} />
-        <b>{runtime?.provider ?? "…"}</b>
+        <b>{runtime.provider ?? "no model"}</b>
       </span>
       <span className="lx-pill opt">
         <span className={`lx-dot ${memLive ? "on" : "off"}`} />
@@ -327,5 +354,42 @@ function RuntimePills({
         Trader {traderLive ? "live" : "off"}
       </span>
     </div>
+  );
+}
+
+// Placeholder cards while /api/agents wakes the roster.
+function RosterSkeleton() {
+  return (
+    <div className="lx-roster" aria-label="Waking the roster…" aria-busy="true">
+      {Array.from({ length: 5 }).map((_, i) => (
+        <div key={i} className="lx-agent" aria-hidden="true">
+          <div className="lx-agent-top">
+            <Skeleton width={28} height={28} style={{ borderRadius: 9 }} />
+            <Skeleton width={40} height={10} />
+          </div>
+          <Skeleton width="60%" height={13} style={{ marginTop: 14 }} />
+          <Skeleton width="45%" height={10} style={{ marginTop: 6 }} />
+          <Skeleton width="90%" height={10} style={{ marginTop: 10 }} />
+          <Skeleton width="75%" height={10} style={{ marginTop: 5 }} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function MemoryGlyph() {
+  return (
+    <svg
+      width="15"
+      height="15"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden="true"
+    >
+      <rect x="4" y="5" width="16" height="14" rx="2" />
+      <path d="M4 10h16M9 5v14" />
+    </svg>
   );
 }

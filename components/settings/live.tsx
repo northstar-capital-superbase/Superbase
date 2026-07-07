@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { Button, OwnerNote } from "@/components/ui";
 import {
   KeyValue,
   Row,
@@ -153,10 +154,10 @@ export function MemorySettings() {
       description="Shared agent memory backend and its live status."
       icon={MemGlyph}
       actions={
-        <button className="lx-btn" onClick={test} disabled={testing}>
-          <RefreshGlyph spin={testing} />
-          {testing ? "Testing…" : "Test connection"}
-        </button>
+        <Button onClick={test} loading={testing}>
+          {!testing && <RefreshGlyph />}
+          {testing ? "Checking Supabase…" : "Test connection"}
+        </Button>
       }
     >
       <KeyValue
@@ -172,12 +173,12 @@ export function MemorySettings() {
         description="Wipe the active lab's stored memory. Other labs are unaffected."
       >
         <div className="lx-btn-row">
-          <button className="lx-btn" onClick={test} disabled={testing}>
-            <RefreshGlyph spin={testing} /> Test
-          </button>
-          <button className="lx-btn lx-btn-danger" onClick={clear} disabled={clearing}>
+          <Button onClick={test} loading={testing}>
+            {!testing && <RefreshGlyph />} Test
+          </Button>
+          <Button variant="danger" onClick={clear} loading={clearing}>
             {clearing ? "Clearing…" : "Clear memory"}
-          </button>
+          </Button>
         </div>
       </Row>
     </SettingsSection>
@@ -186,6 +187,24 @@ export function MemorySettings() {
 
 // ── Integrations ─────────────────────────────────────────────────────────────
 type IntKey = "openai" | "anthropic" | "supabase" | "github";
+
+// Owner setup steps surfaced in the UI for services that need manual action.
+// Rendered via <OwnerNote> as visible NEEDS_OWNER_INPUT markers.
+function integrationOwnerNote(key: IntKey, label: string): string | null {
+  if (key === "github") {
+    // No in-app probe exists for GitHub — never present it as verified.
+    return "Verify this connection in the live environment — there is no in-app check for GitHub.";
+  }
+  // "Standby" means another provider holds the active slot — no action needed.
+  if (label !== "Not configured") return null;
+  if (key === "anthropic") {
+    return "Set ANTHROPIC_API_KEY in .env.local (or your deployment env) to activate Claude.";
+  }
+  if (key === "openai") {
+    return "Set OPENAI_API_KEY in .env.local (or your deployment env) to activate GPT models.";
+  }
+  return "Set SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY and apply supabase/schema.sql for persistent memory.";
+}
 interface ProbeResult {
   state: StatusState;
   msg?: string;
@@ -308,15 +327,20 @@ export function IntegrationsSettings() {
       description="Connection status for the services Northstar relies on."
       icon={PlugGlyph}
       actions={
-        <button className="lx-btn" onClick={() => INTEGRATIONS.forEach((i) => refreshOne(i.key))} disabled={busy !== null}>
-          <RefreshGlyph spin={busy === "all"} /> Refresh all
-        </button>
+        <Button
+          onClick={() => INTEGRATIONS.forEach((i) => refreshOne(i.key))}
+          disabled={busy !== null}
+          loading={busy === "all"}
+        >
+          {busy !== "all" && <RefreshGlyph />} Refresh all
+        </Button>
       }
     >
       <div className="lx-int-list">
         {INTEGRATIONS.map((it) => {
           const s = status[it.key];
           const probe = probes[it.key];
+          const ownerNote = integrationOwnerNote(it.key, s.label);
           return (
             <div key={it.key} className="lx-int">
               <div className="lx-int-main">
@@ -328,26 +352,28 @@ export function IntegrationsSettings() {
                 {probe?.msg && (
                   <div className={`lx-int-probe ${probe.state}`}>{probe.msg}</div>
                 )}
+                {ownerNote && <OwnerNote>{ownerNote}</OwnerNote>}
               </div>
               <div className="lx-int-side">
                 <span className="lx-int-time">checked {timeAgo(checkedAt[it.key])}</span>
                 <div className="lx-btn-row">
-                  <button
-                    className="lx-btn lx-btn-sm"
+                  <Button
+                    size="sm"
                     onClick={() => refreshOne(it.key)}
                     disabled={busy !== null}
+                    loading={busy === it.key}
                     aria-label={`Refresh ${it.name}`}
                   >
-                    <RefreshGlyph spin={busy === it.key} />
-                  </button>
-                  <button
-                    className="lx-btn lx-btn-sm"
+                    {busy !== it.key && <RefreshGlyph />}
+                  </Button>
+                  <Button
+                    size="sm"
                     onClick={() => testOne(it.key)}
                     disabled={busy !== null || !it.testable}
                     title={it.testable ? "Run a live check" : "No in-app check available"}
                   >
                     Test
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>

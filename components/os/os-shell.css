@@ -1,5 +1,5 @@
 /* ──────────────────────────────────────────────────────────────────────────
-   Northstar OS — Labs shell layout
+   Northstar OS — shell layout shared by /labs, /settings, /connections.
    Sidebar-aware flex shell. --sb-width is set dynamically by OsSidebar.
    ────────────────────────────────────────────────────────────────────────── */
 
@@ -12,11 +12,17 @@
   flex: 1;
   min-width: 0;
   margin-left: var(--sb-width, 280px);
-  transition: margin-left 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transition: margin-left 0.22s var(--os-ease, cubic-bezier(0.25, 0.46, 0.45, 0.94));
 }
 
 @media (max-width: 768px) {
   .lx-os-main {
     margin-left: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-os-main {
+    transition: none;
   }
 }

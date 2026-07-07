@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import clsx from "clsx";
-import { StarGlyph } from "@/components/showcase/icons";
 import { OsNav } from "@/components/os/OsNav";
+import { Alert } from "@/components/ui";
 import {
   AccentPicker,
   KeyValue,
@@ -115,15 +115,6 @@ export function Settings() {
       <header className="lx-topbar">
         <div className="lx-topbar-inner">
           <div className="lx-topbar-left">
-            <Link href="/" className="lx-brand" aria-label="Northstar home">
-              <span className="lx-brand-mark">
-                <StarGlyph size={18} />
-              </span>
-              <div>
-                <div className="lx-brand-name">Northstar OS</div>
-                <div className="lx-brand-sub">Settings</div>
-              </div>
-            </Link>
             <OsNav active="settings" />
           </div>
           <Link href="/" className="lx-tour">
@@ -164,7 +155,16 @@ export function Settings() {
               description="Choose the model, how hard it thinks, and how many agents collaborate."
               icon={GearGlyph}
             >
-              <Row title="Primary model" description="The model that leads every run." stack>
+              {/* NEEDS_OWNER_INPUT: this model preference is stored locally
+                  (localStorage) and is not wired to the backend — the runtime
+                  provider/model is selected server-side from ANTHROPIC_API_KEY /
+                  OPENAI_API_KEY / LLM_PROVIDER env vars. Wire this control to the
+                  crew API if you want it to switch live models. */}
+              <Row
+                title="Primary model"
+                description="The model that leads every run. Stored locally — the live provider is chosen by server env keys."
+                stack
+              >
                 <Segmented
                   ariaLabel="Primary model"
                   value={settings.ai.model}
@@ -207,6 +207,10 @@ export function Settings() {
             {active === "memory" && <MemorySettings />}
 
             {/* Trading Controls */}
+            {/* NEEDS_OWNER_INPUT: these guardrail preferences persist locally;
+                the enforced trading policy (mode, per-order cap) comes from
+                TRADING_MODE / TRADING_MAX_ORDER_USD server env vars — see
+                docs/TRADING.md to change the live limits. */}
             {active === "trading" && (
             <SettingsSection
               id="trading"
@@ -215,13 +219,10 @@ export function Settings() {
               icon={TradeGlyph}
             >
               {live && (
-                <div className="lx-warn" role="alert">
-                  <span className="lx-warn-dot" />
-                  <div>
-                    <strong>Live trading is enabled.</strong> Orders use real funds within the
-                    limits below. Confirm your caps before continuing.
-                  </div>
-                </div>
+                <Alert tone="warning" role="alert" className="lx-set-alert">
+                  <strong>Live trading is enabled.</strong> Orders use real funds within the
+                  limits below. Confirm your caps before continuing.
+                </Alert>
               )}
               <Row title="Trading mode" description="Disabled, simulated paper, or live capital." stack>
                 <Segmented

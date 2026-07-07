@@ -1,6 +1,7 @@
 "use client";
 
 import { AGENT_META, type MemoryEntry } from "@/components/shared";
+import { Button } from "@/components/ui";
 
 // Right rail: a live tail of the shared memory the agents read and write.
 export function MemoryPanel({
@@ -23,27 +24,29 @@ export function MemoryPanel({
             {entries.length} {entries.length === 1 ? "entry" : "entries"}
           </span>
         </div>
-        <div style={{ display: "flex", gap: 6 }}>
-          <button className="lx-btn" onClick={onExplore}>
+        <div className="lx-btn-row">
+          <Button size="sm" onClick={onExplore} aria-label="Open the memory explorer">
             Explore
-          </button>
-          <button
-            className="lx-btn"
+          </Button>
+          <Button
+            size="sm"
             onClick={onExport}
             title="Download this lab's memory as Markdown"
+            aria-label="Export this lab's memory as Markdown"
           >
             Export
-          </button>
-          <button className="lx-btn" onClick={onClear}>
+          </Button>
+          <Button size="sm" onClick={onClear} aria-label="Clear this lab's memory">
             Clear
-          </button>
+          </Button>
         </div>
       </div>
 
       <div className="lx-scroll">
         {entries.length === 0 && (
           <div className="lx-mem-empty">
-            Empty. Run the crew and every agent contribution lands here.
+            No shared memory yet. Agents write here as they work — run the crew
+            and every contribution lands in this tail.
           </div>
         )}
         <div className="lx-mem">
