@@ -17,8 +17,13 @@ export function MemoryContextChip({
         <rect x="4" y="5" width="16" height="14" rx="2" />
         <path d="M4 10h16M9 5v14" />
       </svg>
-      Context loaded <span className="mchip-dot">·</span> {count}{" "}
-      {count === 1 ? "memory" : "memories"}
+      Shared memory
+      {count > 0 && (
+        <>
+          {" "}
+          <span className="mchip-dot">·</span> {count}
+        </>
+      )}
     </button>
   );
 }

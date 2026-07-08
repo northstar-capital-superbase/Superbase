@@ -1,23 +1,20 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { AgentActivityPill } from "./AgentActivityPill";
-import { SystemActivitySheet } from "./SystemActivitySheet";
+import { useEffect, useRef } from "react";
 import { MemoryContextChip } from "./MemoryContextChip";
-import { SharedMemorySheet } from "./SharedMemorySheet";
-import { crewAgents, toMemoryRows } from "./mobileData";
 import { Composer } from "@/components/labs/Composer";
 import { MessageContent } from "@/components/labs/MessageContent";
 import { MessageAttachments } from "@/components/labs/MessageAttachments";
+import { AgentsPanel } from "@/components/labs/AgentsPanel";
 import type { ChatTurn, SendFn } from "@/components/chat/Chat";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import type { AgentProfile, MemoryEntry } from "@/components/shared";
 import "./mobile-console.css";
 
-// Chat-first mobile lab console. Agents and shared memory are not permanent
-// sections — they surface as bottom sheets on demand (System Activity via the
-// working pill, Shared Memory via the context chip). Desktop keeps its own
-// layout; this component is only shown at phone widths (see mobile-console.css).
+// Chat-first mobile lab console. The crew (Agents panel) is shown inline at the
+// top of the thread with live status, and Shared Memory opens the full Memory
+// Explorer via the context chip. Desktop keeps its own layout; this component is
+// only shown at phone widths (see mobile-console.css).
 export function MobileLabConsole({
   turns,
   busy,
@@ -28,6 +25,7 @@ export function MobileLabConsole({
   tradingEnabled = false,
   onNewChat,
   onOpenHistory,
+  onOpenMemory,
 }: {
   turns: ChatTurn[];
   busy: boolean;
@@ -38,15 +36,9 @@ export function MobileLabConsole({
   tradingEnabled?: boolean;
   onNewChat: () => void;
   onOpenHistory: () => void;
+  onOpenMemory: () => void;
 }) {
-  const [activityOpen, setActivityOpen] = useState(false);
-  const [memoryOpen, setMemoryOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
-
-  const crew = useMemo(
-    () => crewAgents(agents, tradingEnabled),
-    [agents, tradingEnabled],
-  );
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -55,7 +47,7 @@ export function MobileLabConsole({
     });
   }, [turns, busy]);
 
-  const memoryCount = toMemoryRows(memory).length;
+  const memoryCount = memory.length;
 
   return (
     <div className="mlc" aria-label="Lab Console">
@@ -90,6 +82,14 @@ export function MobileLabConsole({
       </header>
 
       <div className="mlc-scroll" ref={scrollRef}>
+        <AgentsPanel
+          agents={agents}
+          statuses={statuses}
+          busy={busy}
+          tradingEnabled={tradingEnabled}
+          variant="mobile"
+          collapsible
+        />
         {turns.length === 0 ? (
           <MobileEmptyState onPick={onSend} />
         ) : (
@@ -125,27 +125,11 @@ export function MobileLabConsole({
 
       <div className="mlc-foot">
         <div className="mlc-foot-rail">
-          <MemoryContextChip count={memoryCount} onOpen={() => setMemoryOpen(true)} />
-          {busy && (
-            <AgentActivityPill count={crew.length} onOpen={() => setActivityOpen(true)} />
-          )}
+          <MemoryContextChip count={memoryCount} onOpen={onOpenMemory} />
         </div>
 
         <Composer onSend={onSend} busy={busy} variant="mobile" />
       </div>
-
-      <SystemActivitySheet
-        open={activityOpen}
-        onClose={() => setActivityOpen(false)}
-        agents={crew}
-        statuses={statuses}
-        busy={busy}
-      />
-      <SharedMemorySheet
-        open={memoryOpen}
-        onClose={() => setMemoryOpen(false)}
-        memory={memory}
-      />
     </div>
   );
 }
