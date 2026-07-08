@@ -410,3 +410,14 @@
   background: var(--os-surface-3);
   border: 1px solid var(--os-line);
 }
+.md blockquote {
+  margin: 0 0 10px;
+  padding: 4px 0 4px 14px;
+  border-left: 3px solid color-mix(in srgb, var(--os-accent, #6e8bff) 55%, transparent);
+  color: var(--os-text-2);
+}
+.md hr {
+  border: none;
+  border-top: 1px solid var(--os-line);
+  margin: 14px 0;
+}

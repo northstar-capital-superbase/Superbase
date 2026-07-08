@@ -8,13 +8,16 @@ import "./chat-ui.css";
 type Block =
   | { type: "p"; text: string }
   | { type: "h"; level: number; text: string }
-  | { type: "list"; ordered: boolean; items: string[] };
+  | { type: "list"; ordered: boolean; items: string[] }
+  | { type: "quote"; text: string }
+  | { type: "hr" };
 
 function parseBlocks(input: string): Block[] {
   const lines = input.replace(/\r/g, "").split("\n");
   const blocks: Block[] = [];
   let para: string[] = [];
   let list: { ordered: boolean; items: string[] } | null = null;
+  let quote: string[] = [];
 
   const flushPara = () => {
     if (para.length) {
@@ -28,24 +31,43 @@ function parseBlocks(input: string): Block[] {
       list = null;
     }
   };
+  const flushQuote = () => {
+    if (quote.length) {
+      blocks.push({ type: "quote", text: quote.join(" ") });
+      quote = [];
+    }
+  };
+  const flushAll = () => {
+    flushPara();
+    flushList();
+    flushQuote();
+  };
 
   for (const raw of lines) {
     const line = raw.trim();
     if (!line) {
-      flushPara();
-      flushList();
+      flushAll();
       continue;
     }
     const heading = line.match(/^(#{1,3})\s+(.*)$/);
     const bullet = line.match(/^[-*•]\s+(.*)$/);
     const ordered = line.match(/^\d+[.)]\s+(.*)$/);
+    const quoted = line.match(/^>\s?(.*)$/);
+    const rule = /^(-{3,}|\*{3,}|_{3,})$/.test(line);
 
-    if (heading) {
+    if (rule) {
+      flushAll();
+      blocks.push({ type: "hr" });
+    } else if (heading) {
+      flushAll();
+      blocks.push({ type: "h", level: heading[1].length, text: heading[2] });
+    } else if (quoted) {
       flushPara();
       flushList();
-      blocks.push({ type: "h", level: heading[1].length, text: heading[2] });
+      quote.push(quoted[1]);
     } else if (bullet) {
       flushPara();
+      flushQuote();
       if (!list || list.ordered) {
         flushList();
         list = { ordered: false, items: [] };
@@ -53,6 +75,7 @@ function parseBlocks(input: string): Block[] {
       list.items.push(bullet[1]);
     } else if (ordered) {
       flushPara();
+      flushQuote();
       if (!list || !list.ordered) {
         flushList();
         list = { ordered: true, items: [] };
@@ -60,11 +83,11 @@ function parseBlocks(input: string): Block[] {
       list.items.push(ordered[1]);
     } else {
       flushList();
+      flushQuote();
       para.push(line);
     }
   }
-  flushPara();
-  flushList();
+  flushAll();
   return blocks;
 }
 
@@ -101,6 +124,12 @@ export function MessageContent({ text }: { text: string }) {
             <li key={j}>{renderInline(it)}</li>
           ));
           return b.ordered ? <ol key={i}>{items}</ol> : <ul key={i}>{items}</ul>;
+        }
+        if (b.type === "quote") {
+          return <blockquote key={i}>{renderInline(b.text)}</blockquote>;
+        }
+        if (b.type === "hr") {
+          return <hr key={i} />;
         }
         return <p key={i}>{renderInline(b.text)}</p>;
       })}
