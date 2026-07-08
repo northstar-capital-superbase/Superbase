@@ -2,13 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
-import { Button, EmptyState } from "@/components/ui";
+import { EmptyState } from "@/components/ui";
+import { Composer } from "@/components/labs/Composer";
+import { MessageContent } from "@/components/labs/MessageContent";
+import { MessageAttachments } from "@/components/labs/MessageAttachments";
+
+export interface Attachment {
+  id: string;
+  kind: "image" | "file";
+  name: string;
+  size: number;
+  dataUrl?: string; // present for images (client-side preview only)
+}
+
+export interface SendOptions {
+  attachments?: Attachment[];
+  webSearch?: boolean;
+}
+
+export type SendFn = (text: string, opts?: SendOptions) => void;
 
 export interface ChatTurn {
   id: string;
   role: "user" | "assistant";
   content: string;
   run?: CrewRun; // present on assistant turns
+  attachments?: Attachment[]; // present on user turns
+  webSearch?: boolean; // user asked with the web-search plugin on
 }
 
 export function Chat({
@@ -19,10 +39,9 @@ export function Chat({
 }: {
   turns: ChatTurn[];
   busy: boolean;
-  onSend: (text: string) => void;
+  onSend: SendFn;
   tradingEnabled?: boolean;
 }) {
-  const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -31,13 +50,6 @@ export function Chat({
       behavior: "smooth",
     });
   }, [turns, busy]);
-
-  const submit = () => {
-    const text = input.trim();
-    if (!text || busy) return;
-    onSend(text);
-    setInput("");
-  };
 
   return (
     <div className="lx-card lx-pane">
@@ -59,7 +71,7 @@ export function Chat({
         )}
         {turns.map((t) =>
           t.role === "user" ? (
-            <UserBubble key={t.id} text={t.content} />
+            <UserBubble key={t.id} turn={t} />
           ) : (
             <AssistantBubble key={t.id} text={t.content} run={t.run} />
           ),
@@ -68,38 +80,29 @@ export function Chat({
       </div>
 
       <div className="lx-console-foot">
-        <div className="lx-composer">
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            rows={1}
-            placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
-            aria-label="Task for the crew"
-          />
-          <Button
-            variant="primary"
-            onClick={submit}
-            disabled={busy || !input.trim()}
-            loading={busy}
-          >
-            Run
-          </Button>
-        </div>
+        <Composer
+          onSend={onSend}
+          busy={busy}
+          variant="desktop"
+          placeholder="Give the lab a task…  (Enter to send, Shift+Enter for newline)"
+        />
       </div>
     </div>
   );
 }
 
-function UserBubble({ text }: { text: string }) {
+function UserBubble({ turn }: { turn: ChatTurn }) {
   return (
     <div className="lx-bubble-user">
-      <span>{text}</span>
+      <div className="lx-bubble-user-inner">
+        {turn.attachments && <MessageAttachments items={turn.attachments} />}
+        {turn.content && <span className="lx-bubble-user-text">{turn.content}</span>}
+        {turn.webSearch && (
+          <span className="msg-plugin-tag">
+            <SearchGlyph /> Web search
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -107,13 +110,13 @@ function UserBubble({ text }: { text: string }) {
 function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="lx-fadeup">
-      <div className="lx-bubble-ai">
-        <div className="lx-bubble-ai-head">
-          <span className="lx-dot" style={{ background: "var(--blue-bright)" }} />
-          Orchestrator
-        </div>
-        <p>{text}</p>
+    <div className="lx-fadeup ai-turn">
+      <span className="ai-avatar" aria-hidden="true">
+        <StarMark />
+      </span>
+      <div className="ai-body">
+        <div className="ai-name">Northstar</div>
+        <MessageContent text={text} />
         {run && (
           <button
             className="lx-trace-toggle"
@@ -125,9 +128,30 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
             specialists)
           </button>
         )}
+        {run && open && <AgentTrace run={run} />}
       </div>
-      {run && open && <AgentTrace run={run} />}
     </div>
+  );
+}
+
+function StarMark() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 1.5 L13.4 10.6 L22.5 12 L13.4 13.4 L12 22.5 L10.6 13.4 L1.5 12 L10.6 10.6 Z"
+        fill="currentColor"
+        fillOpacity="0.9"
+      />
+    </svg>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.2-3.2" />
+    </svg>
   );
 }
 

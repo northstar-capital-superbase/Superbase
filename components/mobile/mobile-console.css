@@ -1,0 +1,412 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Mobile Layered Lab Console — chat-first phone experience.
+   Scoped under .mlc / .m* and consumes the shared --os-* tokens.
+   Hidden by default; only shown at phone widths (≤768px). Desktop keeps its
+   existing /labs layout untouched.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.mlc {
+  display: none;
+}
+
+.msheet-backdrop {
+  --mlc-accent: var(--os-accent, #6e8bff);
+  --mlc-accent-2: #a78bfa;
+}
+
+@media (max-width: 768px) {
+  /* Chat-first shell — fixed, full-viewport, calm and spacious */
+  .mlc {
+    --mlc-accent: var(--os-accent, #6e8bff);
+    --mlc-accent-2: #a78bfa;
+    --mlc-grad: linear-gradient(135deg, var(--mlc-accent), var(--mlc-accent-2));
+
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    background: var(--os-bg);
+    color: var(--os-text);
+    font-family: var(--os-sans);
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── Header ─────────────────────────────────────────────────────────── */
+  .mlc-head {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    height: 54px;
+    padding: 0 16px 0 64px; /* leave room for the sidebar hamburger (top-left) */
+    border-bottom: 1px solid var(--os-line);
+    background: rgba(8, 9, 13, 0.82);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+  .mlc-mark {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    color: var(--mlc-accent);
+    border: 1px solid color-mix(in srgb, var(--mlc-accent) 32%, transparent);
+    background: color-mix(in srgb, var(--mlc-accent) 12%, transparent);
+    flex: none;
+  }
+  .mlc-title {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .mlc-head-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .mlc-head-btn {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    border: none;
+    background: transparent;
+    color: var(--os-text-2);
+    cursor: pointer;
+    transition: background-color var(--os-dur) var(--os-ease), color var(--os-dur) var(--os-ease);
+  }
+  .mlc-head-btn:active {
+    background: var(--os-surface-3);
+    color: var(--os-text);
+  }
+
+  /* ── Conversation ───────────────────────────────────────────────────── */
+  .mlc-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .mlc-thread {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 18px 16px 8px;
+  }
+  .mlc-bubble--user {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .mlc-user-inner {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    max-width: 86%;
+  }
+  .mlc-user-text {
+    border-radius: 18px 18px 5px 18px;
+    background: color-mix(in srgb, var(--mlc-accent) 18%, transparent);
+    border: 1px solid color-mix(in srgb, var(--mlc-accent) 24%, transparent);
+    padding: 10px 14px;
+    font-size: 14.5px;
+    line-height: 1.5;
+    color: var(--os-text);
+    white-space: pre-wrap;
+  }
+  .mlc-bubble--ai {
+    max-width: 92%;
+  }
+
+  /* ── Empty state ────────────────────────────────────────────────────── */
+  .mlc-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    text-align: center;
+    gap: 12px;
+    padding: 26px 26px 40px;
+  }
+  .mlc-empty-mark {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    color: var(--mlc-accent);
+    border: 1px solid color-mix(in srgb, var(--mlc-accent) 30%, transparent);
+    background: color-mix(in srgb, var(--mlc-accent) 10%, transparent);
+  }
+  .mlc-empty-title {
+    margin: 4px 0 0;
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .mlc-empty-sub {
+    margin: 0;
+    max-width: 20rem;
+    font-size: 13.5px;
+    line-height: 1.6;
+    color: var(--os-text-3);
+  }
+  .mlc-empty-samples {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 22rem;
+    margin-top: 8px;
+  }
+  .mlc-empty-sample {
+    border-radius: 14px;
+    border: 1px solid var(--os-line);
+    background: var(--os-surface-2);
+    padding: 12px 14px;
+    font-size: 13px;
+    color: var(--os-text-2);
+    text-align: left;
+    transition: border-color var(--os-dur) var(--os-ease), background-color var(--os-dur) var(--os-ease);
+  }
+  .mlc-empty-sample:active {
+    border-color: var(--os-line-2);
+    background: var(--os-surface-3);
+  }
+
+  /* ── Footer: context rail + composer ────────────────────────────────── */
+  .mlc-foot {
+    flex: none;
+    padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--os-line);
+    background: rgba(8, 9, 13, 0.9);
+    backdrop-filter: blur(14px) saturate(150%);
+    -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+  .mlc-foot-rail {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 2px 2px 8px;
+  }
+
+  .mlc-composer {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    border-radius: 22px;
+    border: 1px solid var(--os-line);
+    background: rgba(0, 0, 0, 0.28);
+    padding: 6px 6px 6px 6px;
+    transition: border-color var(--os-dur) var(--os-ease), box-shadow var(--os-dur) var(--os-ease);
+  }
+  .mlc-composer:focus-within {
+    border-color: color-mix(in srgb, var(--mlc-accent) 55%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--mlc-accent) 12%, transparent);
+  }
+  .mlc-composer textarea {
+    flex: 1;
+    resize: none;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--os-text);
+    font-family: inherit;
+    font-size: 15px; /* ≥16px-ish to avoid iOS zoom while staying compact */
+    line-height: 1.4;
+    padding: 9px 4px;
+    max-height: 120px;
+  }
+  .mlc-composer textarea::placeholder {
+    color: var(--os-text-4);
+  }
+  .mlc-plus,
+  .mlc-send {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background-color var(--os-dur) var(--os-ease), color var(--os-dur) var(--os-ease),
+      transform var(--os-dur) var(--os-ease), opacity var(--os-dur) var(--os-ease);
+  }
+  .mlc-plus {
+    border: 1px solid var(--os-line);
+    background: transparent;
+    color: var(--os-text-2);
+  }
+  .mlc-plus:active {
+    background: var(--os-surface-3);
+    transform: scale(0.94);
+  }
+  .mlc-send {
+    border: none;
+    background: var(--os-surface-3);
+    color: var(--os-text-3);
+  }
+  .mlc-send.is-active {
+    background: var(--mlc-grad);
+    color: #fff;
+    box-shadow: 0 4px 16px -6px color-mix(in srgb, var(--mlc-accent) 80%, transparent);
+  }
+  .mlc-send:active {
+    transform: scale(0.94);
+  }
+  .mlc-send:disabled {
+    cursor: default;
+  }
+  .mlc-send-spinner {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    animation: mlc-spin 0.75s linear infinite;
+  }
+}
+
+/* ── Context chip ───────────────────────────────────────────────────────── */
+.mchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--os-line);
+  background: var(--os-surface-2);
+  color: var(--os-text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--os-dur) var(--os-ease), color var(--os-dur) var(--os-ease);
+}
+.mchip:active {
+  border-color: var(--os-line-2);
+  color: var(--os-text);
+}
+.mchip svg {
+  color: var(--mlc-accent, #6e8bff);
+}
+.mchip-dot {
+  color: var(--os-text-4);
+}
+
+/* ── Bottom sheet ───────────────────────────────────────────────────────── */
+.msheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(3, 4, 7, 0.6);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: mlc-fade 0.16s var(--os-ease);
+}
+.msheet {
+  width: 100%;
+  max-width: 640px;
+  max-height: 82vh;
+  display: flex;
+  flex-direction: column;
+  border-radius: 22px 22px 0 0;
+  border: 1px solid var(--os-line-2);
+  border-bottom: none;
+  background: var(--os-surface);
+  box-shadow: var(--os-shadow-2);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  animation: mlc-sheet-up 0.26s var(--os-ease);
+  transition: transform 0.2s var(--os-ease);
+}
+.msheet-grab {
+  display: flex;
+  justify-content: center;
+  padding: 10px 0 4px;
+  cursor: grab;
+  touch-action: none;
+}
+.msheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--os-line-2);
+}
+.msheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 18px 12px;
+  border-bottom: 1px solid var(--os-line);
+}
+.msheet-title {
+  margin: 0;
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--os-text);
+}
+.msheet-sub {
+  margin-top: 3px;
+  font-size: 11.5px;
+  color: var(--os-text-3);
+}
+.msheet-close {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  border: 1px solid var(--os-line);
+  background: var(--os-surface-2);
+  color: var(--os-text-2);
+  cursor: pointer;
+}
+.msheet-close:active {
+  color: var(--os-text);
+  background: var(--os-surface-3);
+}
+.msheet-body {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 14px 18px;
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────────── */
+@keyframes mlc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes mlc-fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes mlc-fadeup {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+@keyframes mlc-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mlc-send-spinner,
+  .msheet-backdrop,
+  .msheet {
+    animation: none;
+  }
+}

@@ -4,7 +4,15 @@ import type { MemoryStore } from "./types";
 
 export * from "./types";
 
-let cached: MemoryStore | null = null;
+// Cache the store on globalThis rather than a module-local. Next.js bundles each
+// route handler separately, so a plain module-level singleton is instantiated
+// once *per route* — meaning writes from /api/chat land in a different
+// InMemoryStore than the one /api/memory reads from, and shared memory always
+// looks empty. A globalThis cache is shared across every route bundle in the
+// same Node process, so the in-memory backend actually persists across requests.
+const globalForMemory = globalThis as unknown as {
+  __northstarMemory?: MemoryStore;
+};
 
 // Resolve Supabase config from server-runtime env. We deliberately prefer the
 // non-public names (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY) because the memory
@@ -23,11 +31,12 @@ function supabaseConfig(): { url?: string; key?: string } {
 
 // Uses Supabase when configured, otherwise falls back to the in-process store.
 export function getMemory(): MemoryStore {
-  if (cached) return cached;
+  if (globalForMemory.__northstarMemory) return globalForMemory.__northstarMemory;
 
   const { url, key } = supabaseConfig();
-  cached = url && key ? new SupabaseStore(url, key) : new InMemoryStore();
-  return cached;
+  globalForMemory.__northstarMemory =
+    url && key ? new SupabaseStore(url, key) : new InMemoryStore();
+  return globalForMemory.__northstarMemory;
 }
 
 export function memoryBackend(): "supabase" | "in-memory" {

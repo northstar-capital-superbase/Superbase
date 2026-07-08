@@ -329,6 +329,54 @@
   flex-shrink: 0;
 }
 
+/* ── Nested nav group (parent row + expand chevron + children) ───────────── */
+.sb-nav-row {
+  display: flex;
+  align-items: center;
+}
+.sb-nav-row .sb-nav-item {
+  flex: 1;
+  width: auto;
+  margin-right: 0;
+}
+.sb-nav-expand {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  margin-right: 8px;
+  border: none;
+  background: transparent;
+  color: var(--sb-text-3);
+  border-radius: 7px;
+  cursor: pointer;
+  transition:
+    color var(--os-dur) var(--os-ease),
+    background-color var(--os-dur) var(--os-ease);
+}
+.sb-nav-expand:hover {
+  color: var(--sb-text);
+  background: var(--sb-hover-bg);
+}
+.sb-nav-expand-chevron {
+  display: flex;
+  transition: transform var(--os-dur) var(--os-ease);
+}
+.sb-nav-expand-chevron.is-closed {
+  transform: rotate(-90deg);
+}
+
+/* Nested child items sit indented under their parent */
+.sb-nav-item--child {
+  padding-left: 34px;
+  font-size: 12.5px;
+}
+.sb-nav-item--child .sb-nav-icon {
+  width: 20px;
+  height: 20px;
+}
+
 /* ── Collapsed rail overrides ───────────────────────────────────────────── */
 
 .sb--collapsed .sb-brand {

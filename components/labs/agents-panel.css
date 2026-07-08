@@ -1,0 +1,136 @@
+/* Live agent roster shown on the Lab Console (desktop rail + mobile inline).
+   Concept-style rows: colored badge, name + role, live status pill. */
+
+.ap {
+  border: 1px solid var(--os-line, rgba(255, 255, 255, 0.08));
+  background: var(--os-surface-2, #12141b);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ap-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--os-line, rgba(255, 255, 255, 0.08));
+}
+.ap-headrow,
+.ap-toggle {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+}
+.ap-toggle {
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.ap-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-text, #e7e9ee);
+  letter-spacing: -0.01em;
+}
+.ap-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--os-text-2, #aab1c0);
+  background: var(--os-surface-3, rgba(255, 255, 255, 0.06));
+}
+.ap-working {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: var(--os-accent, #6e8bff);
+}
+.ap-working-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--os-accent, #6e8bff);
+  box-shadow: 0 0 8px var(--os-accent, #6e8bff);
+  animation: ap-pulse 1.1s ease-in-out infinite;
+}
+@keyframes ap-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.ap-list {
+  display: flex;
+  flex-direction: column;
+}
+.ap-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--os-line, rgba(255, 255, 255, 0.06));
+}
+.ap-row:last-child {
+  border-bottom: none;
+}
+.ap-badge {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  font-size: 13px;
+  font-weight: 700;
+}
+.ap-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.ap-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--os-text, #e7e9ee);
+}
+.ap-role {
+  font-size: 11.5px;
+  color: var(--os-text-3, #8b93a5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ap-state {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  font-weight: 550;
+  color: var(--os-text-4, #6b7280);
+}
+.ap-state-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.ap-state--done {
+  color: var(--os-text-3, #8b93a5);
+}
+.ap-state--queued {
+  color: var(--os-text-4, #6b7280);
+}
+
+/* ── Mobile inline variant ─────────────────────────────────────────────── */
+.ap--mobile {
+  margin: 14px 16px 4px;
+}

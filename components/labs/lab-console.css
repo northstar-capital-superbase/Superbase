@@ -1,0 +1,217 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Lab Console (AI chat) — desktop chat view + shared History sheet styling.
+   The chat-first phone layout lives in components/mobile/mobile-console.css;
+   this file only adds the desktop wrapper and history rows. Scoped to .lc-*.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.lc-desktop {
+  display: block;
+}
+
+.lc-topbar {
+  justify-content: space-between;
+}
+.lc-crumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  min-width: 0;
+}
+.lc-crumb-link {
+  color: var(--text-3);
+  transition: color var(--os-dur) var(--os-ease);
+}
+.lc-crumb-link:hover {
+  color: var(--text);
+}
+.lc-crumb-sep {
+  color: var(--text-4);
+}
+.lc-crumb-here {
+  color: var(--text);
+  font-weight: 600;
+}
+.lc-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lc-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--white-fade);
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 550;
+  transition: border-color var(--os-dur) var(--os-ease), color var(--os-dur) var(--os-ease),
+    background-color var(--os-dur) var(--os-ease);
+}
+.lc-btn:hover {
+  color: var(--text);
+  border-color: var(--line-2);
+}
+.lc-btn--primary {
+  border-color: color-mix(in srgb, var(--blue) 45%, transparent);
+  background: color-mix(in srgb, var(--blue) 12%, transparent);
+  color: var(--blue-bright);
+}
+.lc-btn--primary:hover {
+  background: color-mix(in srgb, var(--blue) 20%, transparent);
+  color: var(--blue-bright);
+}
+
+.lc-main {
+  padding-top: 22px;
+}
+.lc-layout {
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 22px;
+  align-items: start;
+}
+.lc-chatwrap {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.lc-chip-row {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Right rail: live agents + shared memory */
+.lc-rail {
+  position: sticky;
+  top: 84px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.lc-mem-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: var(--surface-2);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--os-dur) var(--os-ease),
+    background-color var(--os-dur) var(--os-ease);
+}
+.lc-mem-btn:hover {
+  border-color: color-mix(in srgb, var(--os-accent) 45%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 8%, var(--surface-2));
+}
+.lc-mem-btn > svg {
+  flex: none;
+  color: var(--os-accent-bright, var(--blue-bright));
+}
+.lc-mem-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.lc-mem-title {
+  font-size: 13px;
+  font-weight: 600;
+}
+.lc-mem-sub {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.lc-mem-arrow {
+  margin-left: auto;
+  color: var(--os-accent-bright, var(--blue-bright));
+}
+
+@media (max-width: 1040px) {
+  /* Rail drops below the chat on smaller desktops */
+  .lc-layout {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 900px;
+  }
+  .lc-rail {
+    position: static;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 768px) {
+  /* On phones the chat-first MobileLabConsole takes over */
+  .lc-desktop {
+    display: none;
+  }
+}
+
+/* ── History sheet rows (shared by mobile + desktop sheets) ──────────────── */
+.lc-newchat-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 12%, transparent);
+  color: var(--os-accent-bright);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color var(--os-dur) var(--os-ease);
+}
+.lc-newchat-row:active,
+.lc-newchat-row:hover {
+  background: color-mix(in srgb, var(--os-accent) 20%, transparent);
+}
+
+.lc-history-row {
+  gap: 4px;
+  padding-right: 6px;
+}
+.lc-history-row.is-active {
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
+}
+.lc-history-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  padding: 10px 4px 10px 12px;
+  background: none;
+  border: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.lc-history-del {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: none;
+  background: transparent;
+  color: var(--os-text-4);
+  cursor: pointer;
+  transition: color var(--os-dur) var(--os-ease), background-color var(--os-dur) var(--os-ease);
+}
+.lc-history-del:hover {
+  color: var(--os-red);
+  background: color-mix(in srgb, var(--os-red) 12%, transparent);
+}
