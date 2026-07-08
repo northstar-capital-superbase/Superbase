@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { ChatTurn } from "@/components/chat/Chat";
+import type { Attachment, ChatTurn, SendOptions } from "@/components/chat/Chat";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import {
   type AgentProfile,
@@ -147,26 +147,59 @@ export function useLabConsole() {
   );
 
   const send = useCallback(
-    async (task: string) => {
+    async (task: string, opts?: SendOptions) => {
+      const attachments: Attachment[] = opts?.attachments ?? [];
+      const webSearch = opts?.webSearch ?? false;
+
       // Record this chat in history on its first message.
       if (!registered.current) {
+        const title = deriveChatTitle(
+          task || attachments[0]?.name || "New chat",
+        );
         addChat({
           id: activeChatId,
-          title: deriveChatTitle(task),
+          title,
           createdAt: new Date().toISOString(),
         });
         registered.current = true;
       }
 
       setBusy(true);
-      setTurns((t) => [...t, { id: newId(), role: "user", content: task }]);
+      setTurns((t) => [
+        ...t,
+        {
+          id: newId(),
+          role: "user",
+          content: task,
+          attachments: attachments.length ? attachments : undefined,
+          webSearch: webSearch || undefined,
+        },
+      ]);
       setStatuses({ orchestrator: "thinking" });
+
+      // Enrich the task the crew receives with plugin/attachment context so the
+      // model can reference them. No API change — it's still a plain task string.
+      const context: string[] = [];
+      if (webSearch) {
+        context.push(
+          "[Plugin enabled: Web search — you may cite up-to-date web sources.]",
+        );
+      }
+      if (attachments.length) {
+        const list = attachments
+          .map((a) => `${a.kind === "image" ? "image" : "file"}: ${a.name}`)
+          .join(", ");
+        context.push(`[User attached ${attachments.length} item(s): ${list}]`);
+      }
+      const apiTask = context.length
+        ? `${task}\n\n${context.join("\n")}`.trim()
+        : task;
 
       try {
         const res = await fetch("/api/chat/stream", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ sessionId: activeChatId, task }),
+          body: JSON.stringify({ sessionId: activeChatId, task: apiTask }),
         });
         if (res.status === 429 || res.status === 400) {
           const d = await res.json().catch(() => ({}));
@@ -174,7 +207,7 @@ export function useLabConsole() {
           return;
         }
         if (!res.ok || !res.body) {
-          await runFallback(task);
+          await runFallback(apiTask);
           return;
         }
 
@@ -225,7 +258,7 @@ export function useLabConsole() {
           }
         }
 
-        if (!finished) await runFallback(task);
+        if (!finished) await runFallback(apiTask);
       } catch (err) {
         pushAssistant(`⚠️ ${err instanceof Error ? err.message : "Network error"}`);
       } finally {

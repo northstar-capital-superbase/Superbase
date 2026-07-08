@@ -6,7 +6,10 @@ import { SystemActivitySheet } from "./SystemActivitySheet";
 import { MemoryContextChip } from "./MemoryContextChip";
 import { SharedMemorySheet } from "./SharedMemorySheet";
 import { crewAgents, toMemoryRows } from "./mobileData";
-import type { ChatTurn } from "@/components/chat/Chat";
+import { Composer } from "@/components/labs/Composer";
+import { MessageContent } from "@/components/labs/MessageContent";
+import { MessageAttachments } from "@/components/labs/MessageAttachments";
+import type { ChatTurn, SendFn } from "@/components/chat/Chat";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import type { AgentProfile, MemoryEntry } from "@/components/shared";
 import "./mobile-console.css";
@@ -28,7 +31,7 @@ export function MobileLabConsole({
 }: {
   turns: ChatTurn[];
   busy: boolean;
-  onSend: (text: string) => void;
+  onSend: SendFn;
   statuses: Record<string, AgentStatus>;
   memory: MemoryEntry[];
   agents: AgentProfile[];
@@ -36,7 +39,6 @@ export function MobileLabConsole({
   onNewChat: () => void;
   onOpenHistory: () => void;
 }) {
-  const [input, setInput] = useState("");
   const [activityOpen, setActivityOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -53,14 +55,6 @@ export function MobileLabConsole({
     });
   }, [turns, busy]);
 
-  const submit = () => {
-    const text = input.trim();
-    if (!text || busy) return;
-    onSend(text);
-    setInput("");
-  };
-
-  const hasText = input.trim().length > 0;
   const memoryCount = toMemoryRows(memory).length;
 
   return (
@@ -103,12 +97,25 @@ export function MobileLabConsole({
             {turns.map((t) =>
               t.role === "user" ? (
                 <div className="mlc-bubble mlc-bubble--user" key={t.id}>
-                  <span>{t.content}</span>
+                  <div className="mlc-user-inner">
+                    {t.attachments && <MessageAttachments items={t.attachments} />}
+                    {t.content && <span className="mlc-user-text">{t.content}</span>}
+                    {t.webSearch && (
+                      <span className="msg-plugin-tag">
+                        <SearchGlyph /> Web search
+                      </span>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="mlc-bubble mlc-bubble--ai" key={t.id}>
-                  <div className="mlc-bubble-head">Northstar</div>
-                  <p>{t.content}</p>
+                <div className="mlc-bubble mlc-bubble--ai ai-turn" key={t.id}>
+                  <span className="ai-avatar" aria-hidden="true">
+                    <NorthstarMark />
+                  </span>
+                  <div className="ai-body">
+                    <div className="ai-name">Northstar</div>
+                    <MessageContent text={t.content} />
+                  </div>
                 </div>
               ),
             )}
@@ -124,46 +131,7 @@ export function MobileLabConsole({
           )}
         </div>
 
-        <div className="mlc-composer">
-          <button type="button" className="mlc-plus" aria-label="Add context" title="Add context">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-          </button>
-          <textarea
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                submit();
-              }
-            }}
-            rows={1}
-            placeholder="Message the lab…"
-            aria-label="Message the lab"
-          />
-          <button
-            type="button"
-            className={`mlc-send ${hasText || busy ? "is-active" : ""}`}
-            onClick={submit}
-            disabled={busy || !hasText}
-            aria-label={hasText ? "Send message" : "Voice input"}
-          >
-            {busy ? (
-              <span className="mlc-send-spinner" aria-hidden="true" />
-            ) : hasText ? (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M12 19V5M6 11l6-6 6 6" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <rect x="9" y="3" width="6" height="11" rx="3" />
-                <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
-              </svg>
-            )}
-          </button>
-        </div>
+        <Composer onSend={onSend} busy={busy} variant="mobile" />
       </div>
 
       <SystemActivitySheet
@@ -205,6 +173,15 @@ function MobileEmptyState({ onPick }: { onPick: (t: string) => void }) {
         ))}
       </div>
     </div>
+  );
+}
+
+function SearchGlyph() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.2-3.2" />
+    </svg>
   );
 }
 

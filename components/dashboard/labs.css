@@ -700,14 +700,21 @@
   display: flex;
   justify-content: flex-end;
 }
-.lx-bubble-user span {
+.lx-bubble-user-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
   max-width: 80%;
+}
+.lx-bubble-user-text {
   border-radius: 16px 16px 4px 16px;
   background: rgba(110, 139, 255, 0.15);
   border: 1px solid rgba(110, 139, 255, 0.2);
   padding: 9px 13px;
   font-size: 13.5px;
+  line-height: 1.55;
   color: var(--text);
+  white-space: pre-wrap;
 }
 .lx-bubble-ai {
   max-width: 86%;
@@ -1030,7 +1037,7 @@
   .lx-bubble-ai {
     max-width: 100%;
   }
-  .lx-bubble-user span {
+  .lx-bubble-user-inner {
     max-width: 92%;
   }
 }
