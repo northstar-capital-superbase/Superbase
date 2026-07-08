@@ -1,28 +1,51 @@
-import { AGENT_META, type AgentProfile, type MemoryEntry } from "@/components/shared";
+import {
+  AGENT_META,
+  pipelineAgentIds,
+  type AgentProfile,
+  type MemoryEntry,
+} from "@/components/shared";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 
-// ── Mobile "System Activity" agent skin ───────────────────────────────────
-// The mobile console presents a fixed, friendly crew of five agents. Each maps
-// onto a real pipeline agent id so its state is driven by the live crew run
-// (see Dashboard `statuses`). The Memory Agent has no backend id — it reflects
-// whether shared memory is actively being written during a run.
+// ── System Activity crew ───────────────────────────────────────────────────
+// The System Activity sheet shows the REAL Northstar agents (the same ones in
+// the Command Center roster), driven by the live crew run — never invented
+// names. Live AgentProfiles are used when available, falling back to the shared
+// AGENT_META so the real names/colors always render even before /api/agents
+// resolves.
 
 export type MobileAgentState = "thinking" | "queued" | "done" | "idle";
 
-export interface MobileAgent {
-  key: string;
+export interface CrewAgent {
+  id: AgentProfile["id"];
   name: string;
-  blurb: string;
-  source: AgentProfile["id"] | "memory";
+  role: string;
+  color: string;
 }
 
-export const MOBILE_AGENTS: MobileAgent[] = [
-  { key: "portfolio", name: "Portfolio Agent", blurb: "Coordinates the crew and plans the task", source: "orchestrator" },
-  { key: "research", name: "Market Researcher", blurb: "Gathers market data, news and signals", source: "research" },
-  { key: "risk", name: "Risk Manager", blurb: "Checks risk, guardrails and exposure", source: "behavioral" },
-  { key: "strategy", name: "Strategy Agent", blurb: "Shapes the recommended strategy", source: "strategist" },
-  { key: "memory", name: "Memory Agent", blurb: "Captures shared context to memory", source: "memory" },
-];
+// Real agent roles (mirrors lib/agents/profiles.ts) for the fallback path.
+const FALLBACK_ROLE: Record<AgentProfile["id"], string> = {
+  orchestrator: "Coordination & synthesis",
+  research: "Facts & context",
+  strategist: "Planning & sequencing",
+  behavioral: "Risk & human factors",
+  trader: "Portfolio & execution",
+};
+
+// The real crew for a run, in pipeline order.
+export function crewAgents(
+  agents: AgentProfile[],
+  tradingEnabled: boolean,
+): CrewAgent[] {
+  return pipelineAgentIds(tradingEnabled).map((id) => {
+    const live = agents.find((a) => a.id === id);
+    return {
+      id,
+      name: live?.name ?? AGENT_META[id].label,
+      role: live?.role ?? FALLBACK_ROLE[id],
+      color: live?.color ?? AGENT_META[id].color,
+    };
+  });
+}
 
 const STATE_LABEL: Record<MobileAgentState, string> = {
   thinking: "Thinking",
@@ -46,25 +69,16 @@ export function stateStatus(state: MobileAgentState): string {
   return STATE_STATUS[state];
 }
 
-// Derive a mobile agent's state from the live crew statuses + busy flag.
+// Derive an agent's state from the live crew statuses + busy flag.
 export function deriveAgentState(
-  agent: MobileAgent,
+  id: AgentProfile["id"],
   statuses: Record<string, AgentStatus>,
   busy: boolean,
 ): MobileAgentState {
-  if (agent.source === "memory") {
-    if (busy) return "thinking";
-    return Object.values(statuses).some((s) => s === "done") ? "done" : "idle";
-  }
-  const s = statuses[agent.source];
+  const s = statuses[id];
   if (s === "thinking") return "thinking";
   if (s === "done") return "done";
   return busy ? "queued" : "idle";
-}
-
-export function agentAccent(agent: MobileAgent): string {
-  if (agent.source === "memory") return "#c084fc";
-  return AGENT_META[agent.source].color;
 }
 
 // ── Shared Memory rows ─────────────────────────────────────────────────────

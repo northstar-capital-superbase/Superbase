@@ -1,14 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AgentActivityPill } from "./AgentActivityPill";
 import { SystemActivitySheet } from "./SystemActivitySheet";
 import { MemoryContextChip } from "./MemoryContextChip";
 import { SharedMemorySheet } from "./SharedMemorySheet";
-import { toMemoryRows } from "./mobileData";
+import { crewAgents, toMemoryRows } from "./mobileData";
 import type { ChatTurn } from "@/components/chat/Chat";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
-import type { MemoryEntry } from "@/components/shared";
+import type { AgentProfile, MemoryEntry } from "@/components/shared";
 import "./mobile-console.css";
 
 // Chat-first mobile lab console. Agents and shared memory are not permanent
@@ -21,6 +21,8 @@ export function MobileLabConsole({
   onSend,
   statuses,
   memory,
+  agents,
+  tradingEnabled = false,
   onNewChat,
   onOpenHistory,
 }: {
@@ -29,6 +31,8 @@ export function MobileLabConsole({
   onSend: (text: string) => void;
   statuses: Record<string, AgentStatus>;
   memory: MemoryEntry[];
+  agents: AgentProfile[];
+  tradingEnabled?: boolean;
   onNewChat: () => void;
   onOpenHistory: () => void;
 }) {
@@ -36,6 +40,11 @@ export function MobileLabConsole({
   const [activityOpen, setActivityOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  const crew = useMemo(
+    () => crewAgents(agents, tradingEnabled),
+    [agents, tradingEnabled],
+  );
 
   useEffect(() => {
     scrollRef.current?.scrollTo({
@@ -57,9 +66,6 @@ export function MobileLabConsole({
   return (
     <div className="mlc" aria-label="Lab Console">
       <header className="mlc-head">
-        <span className="mlc-mark" aria-hidden="true">
-          <NorthstarMark />
-        </span>
         <span className="mlc-title">Lab Console</span>
         <div className="mlc-head-actions">
           <button
@@ -113,7 +119,9 @@ export function MobileLabConsole({
       <div className="mlc-foot">
         <div className="mlc-foot-rail">
           <MemoryContextChip count={memoryCount} onOpen={() => setMemoryOpen(true)} />
-          {busy && <AgentActivityPill onOpen={() => setActivityOpen(true)} />}
+          {busy && (
+            <AgentActivityPill count={crew.length} onOpen={() => setActivityOpen(true)} />
+          )}
         </div>
 
         <div className="mlc-composer">
@@ -161,6 +169,7 @@ export function MobileLabConsole({
       <SystemActivitySheet
         open={activityOpen}
         onClose={() => setActivityOpen(false)}
+        agents={crew}
         statuses={statuses}
         busy={busy}
       />

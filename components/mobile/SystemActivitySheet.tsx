@@ -2,8 +2,7 @@
 
 import { BottomSheet } from "./BottomSheet";
 import {
-  MOBILE_AGENTS,
-  agentAccent,
+  type CrewAgent,
   deriveAgentState,
   stateLabel,
   stateStatus,
@@ -15,11 +14,13 @@ import "./mobile-console.css";
 export function SystemActivitySheet({
   open,
   onClose,
+  agents,
   statuses,
   busy,
 }: {
   open: boolean;
   onClose: () => void;
+  agents: CrewAgent[];
   statuses: Record<string, AgentStatus>;
   busy: boolean;
 }) {
@@ -28,17 +29,16 @@ export function SystemActivitySheet({
       open={open}
       onClose={onClose}
       title="System Activity"
-      subtitle={`${MOBILE_AGENTS.length} agents in this crew`}
+      subtitle={`${agents.length} agents in this crew`}
     >
       <div className="mrows">
-        {MOBILE_AGENTS.map((a) => {
-          const state = deriveAgentState(a, statuses, busy);
-          const accent = agentAccent(a);
+        {agents.map((a) => {
+          const state = deriveAgentState(a.id, statuses, busy);
           return (
-            <div className="mrow" key={a.key}>
+            <div className="mrow" key={a.id}>
               <span
                 className="mrow-badge"
-                style={{ backgroundColor: `${accent}22`, color: accent }}
+                style={{ backgroundColor: `${a.color}22`, color: a.color }}
                 aria-hidden="true"
               >
                 {a.name[0]}
@@ -47,7 +47,7 @@ export function SystemActivitySheet({
                 <span className="mrow-title">{a.name}</span>
                 <span className="mrow-detail">{stateStatus(state)}</span>
               </span>
-              <StatePill state={state} accent={accent} />
+              <StatePill state={state} accent={a.color} />
             </div>
           );
         })}

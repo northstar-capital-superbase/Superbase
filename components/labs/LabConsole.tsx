@@ -74,6 +74,8 @@ export function LabConsole() {
         onSend={lab.send}
         statuses={lab.statuses}
         memory={lab.memory}
+        agents={lab.agents}
+        tradingEnabled={tradingEnabled}
         onNewChat={lab.newChat}
         onOpenHistory={() => setHistoryOpen(true)}
       />
