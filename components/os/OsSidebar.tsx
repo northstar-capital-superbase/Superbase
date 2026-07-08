@@ -13,13 +13,13 @@ import {
   Bot,
   Brain,
   Zap,
-  FlaskConical,
   Wrench,
   Globe,
   Rocket,
   Link2,
   Shield,
   Settings,
+  MessageSquare,
   ChevronLeft,
   ChevronDown,
   Menu,
@@ -33,6 +33,7 @@ type NavItem = {
   icon: React.ElementType;
   href: string;
   badge?: string;
+  children?: NavItem[];
 };
 
 type NavSectionDef = {
@@ -47,7 +48,17 @@ const SECTIONS: NavSectionDef[] = [
   {
     key: "workspace",
     items: [
-      { key: "command",   label: "Command Center", icon: LayoutDashboard, href: "/labs" },
+      {
+        key: "command",
+        label: "Command Center",
+        icon: LayoutDashboard,
+        href: "/labs",
+        // The AI chat lives here as a nested Lab Console entry — the only
+        // sidebar item that opens the chat.
+        children: [
+          { key: "console", label: "Lab Console", icon: MessageSquare, href: "/labs/console" },
+        ],
+      },
       { key: "portfolio", label: "Portfolio",       icon: BarChart3,       href: "/portfolio", badge: "soon" },
       { key: "markets",   label: "Markets",         icon: TrendingUp,      href: "/markets",   badge: "soon" },
       { key: "research",  label: "Research",        icon: Search,          href: "/research",  badge: "soon" },
@@ -60,7 +71,6 @@ const SECTIONS: NavSectionDef[] = [
     key: "labs",
     label: "Northstar Labs",
     items: [
-      { key: "experiments", label: "Experiments",      icon: FlaskConical, href: "/labs" },
       { key: "builder",     label: "Agent Builder",    icon: Wrench,       href: "/builder", badge: "soon" },
       { key: "mcp",         label: "MCP Integrations", icon: Globe,        href: "/connections" },
       { key: "sandbox",     label: "Sandbox",          icon: Rocket,       href: "/sandbox", badge: "soon" },
@@ -517,17 +527,107 @@ function NavSection({
             transition={{ duration: 0.18, ease: EASE_OUT }}
             style={{ overflow: "hidden" }}
           >
-            {section.items.map((item) => (
+            {section.items.map((item) =>
+              item.children && item.children.length > 0 ? (
+                <NavGroup
+                  key={item.key}
+                  item={item}
+                  pathname={pathname}
+                  collapsed={collapsed}
+                  onClick={onClick}
+                />
+              ) : (
+                <NavItemRow
+                  key={item.key}
+                  item={item}
+                  active={isNavActive(item.href, pathname)}
+                  collapsed={collapsed}
+                  onClick={onClick}
+                />
+              ),
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// Exact match for /labs (Command Center), prefix match for everything else so
+// nested routes like /labs/console highlight their own entry, not Command Center.
+function isNavActive(href: string, pathname: string): boolean {
+  if (href === "/labs") return pathname === "/labs";
+  return pathname === href || pathname.startsWith(href + "/");
+}
+
+// ── Nav group (parent item with nested children) ──────────────────────────
+
+function NavGroup({
+  item,
+  pathname,
+  collapsed,
+  onClick,
+}: {
+  item: NavItem;
+  pathname: string;
+  collapsed: boolean;
+  onClick?: () => void;
+}) {
+  const children = item.children ?? [];
+  const parentActive = isNavActive(item.href, pathname);
+  const childActive = children.some((c) => isNavActive(c.href, pathname));
+  const [open, setOpen] = useState(parentActive || childActive);
+  const Icon = item.icon;
+
+  // Collapsed rail: no nesting UI — show only the parent icon row.
+  if (collapsed) {
+    return <NavItemRow item={item} active={parentActive} collapsed onClick={onClick} />;
+  }
+
+  return (
+    <div className="sb-nav-group">
+      <div className="sb-nav-row">
+        <Link
+          href={item.href}
+          className={clsx("sb-nav-item", parentActive && "sb-nav-item--active")}
+          aria-current={parentActive ? "page" : undefined}
+          onClick={onClick}
+        >
+          <span className="sb-nav-icon">
+            <Icon size={17} strokeWidth={1.6} />
+          </span>
+          <span className="sb-nav-label">{item.label}</span>
+        </Link>
+        <button
+          type="button"
+          className="sb-nav-expand"
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-label={open ? `Collapse ${item.label}` : `Expand ${item.label}`}
+        >
+          <span className={clsx("sb-nav-expand-chevron", !open && "is-closed")}>
+            <ChevronDown size={13} strokeWidth={2.2} />
+          </span>
+        </button>
+      </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            key="subitems"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.18, ease: EASE_OUT }}
+            style={{ overflow: "hidden" }}
+          >
+            {children.map((child) => (
               <NavItemRow
-                key={item.key}
-                item={item}
-                active={
-                  item.href === "/labs"
-                    ? pathname === "/labs"
-                    : pathname === item.href || pathname.startsWith(item.href + "/")
-                }
-                collapsed={collapsed}
+                key={child.key}
+                item={child}
+                active={isNavActive(child.href, pathname)}
+                collapsed={false}
                 onClick={onClick}
+                nested
               />
             ))}
           </motion.div>
@@ -544,11 +644,13 @@ function NavItemRow({
   active,
   collapsed,
   onClick,
+  nested = false,
 }: {
   item: NavItem;
   active: boolean;
   collapsed: boolean;
   onClick?: () => void;
+  nested?: boolean;
 }) {
   const Icon = item.icon;
   const soon = item.badge === "soon";
@@ -608,7 +710,11 @@ function NavItemRow({
   return (
     <Link
       href={item.href}
-      className={clsx("sb-nav-item", active && "sb-nav-item--active")}
+      className={clsx(
+        "sb-nav-item",
+        active && "sb-nav-item--active",
+        nested && "sb-nav-item--child",
+      )}
       aria-current={active ? "page" : undefined}
       onClick={onClick}
       title={collapsed ? item.label : undefined}

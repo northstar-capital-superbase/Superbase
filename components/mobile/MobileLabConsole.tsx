@@ -21,12 +21,16 @@ export function MobileLabConsole({
   onSend,
   statuses,
   memory,
+  onNewChat,
+  onOpenHistory,
 }: {
   turns: ChatTurn[];
   busy: boolean;
   onSend: (text: string) => void;
   statuses: Record<string, AgentStatus>;
   memory: MemoryEntry[];
+  onNewChat: () => void;
+  onOpenHistory: () => void;
 }) {
   const [input, setInput] = useState("");
   const [activityOpen, setActivityOpen] = useState(false);
@@ -57,6 +61,32 @@ export function MobileLabConsole({
           <NorthstarMark />
         </span>
         <span className="mlc-title">Lab Console</span>
+        <div className="mlc-head-actions">
+          <button
+            type="button"
+            className="mlc-head-btn"
+            onClick={onOpenHistory}
+            aria-label="Chat history"
+            title="Chat history"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
+              <path d="M3 4v4h4M12 8v4l3 2" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            className="mlc-head-btn"
+            onClick={onNewChat}
+            aria-label="New chat"
+            title="New chat"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+              <path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4Z" />
+            </svg>
+          </button>
+        </div>
       </header>
 
       <div className="mlc-scroll" ref={scrollRef}>

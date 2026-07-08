@@ -7,7 +7,6 @@ import { Connections } from "./Connections";
 import { MemoryPanel } from "@/components/memory/MemoryPanel";
 import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { Chat, type ChatTurn } from "@/components/chat/Chat";
-import { MobileLabConsole } from "@/components/mobile/MobileLabConsole";
 import { SessionSwitcher } from "@/components/session/SessionSwitcher";
 import { useSessions } from "@/components/session/useSessions";
 import { Skeleton } from "@/components/ui";
@@ -246,9 +245,6 @@ export function Dashboard() {
       <div className="lx-bg" aria-hidden="true" />
       <div className="lx-grain" aria-hidden="true" />
 
-      {/* Desktop / tablet layout — hidden at phone widths where the chat-first
-          MobileLabConsole takes over (see mobile-console.css). */}
-      <div className="lx-desktop">
       <header className="lx-topbar">
         <div className="lx-topbar-inner lx-topbar-inner--slim">
           <RuntimePills runtime={runtime} trading={trading} />
@@ -313,15 +309,6 @@ export function Dashboard() {
           </span>
         </button>
       </main>
-      </div>
-
-      <MobileLabConsole
-        turns={turns}
-        busy={busy}
-        onSend={send}
-        statuses={statuses}
-        memory={memory}
-      />
 
       <MemoryExplorer
         sessionId={activeId}
