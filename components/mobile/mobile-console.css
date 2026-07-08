@@ -272,37 +272,6 @@
   }
 }
 
-/* ── Activity pill (floats above composer while busy) ───────────────────── */
-.mpill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 13px;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--mlc-accent, #6e8bff) 32%, transparent);
-  background: color-mix(in srgb, var(--mlc-accent, #6e8bff) 14%, rgba(13, 15, 22, 0.9));
-  color: var(--os-text);
-  font-size: 12.5px;
-  font-weight: 550;
-  cursor: pointer;
-  animation: mlc-fadeup 0.24s var(--os-ease);
-}
-.mpill-spinner {
-  width: 13px;
-  height: 13px;
-  border-radius: 50%;
-  border: 2px solid color-mix(in srgb, var(--mlc-accent, #6e8bff) 35%, transparent);
-  border-top-color: var(--mlc-accent, #6e8bff);
-  animation: mlc-spin 0.75s linear infinite;
-  flex: none;
-}
-.mpill-dot {
-  color: var(--os-text-4);
-}
-.mpill-text {
-  white-space: nowrap;
-}
-
 /* ── Context chip ───────────────────────────────────────────────────────── */
 .mchip {
   display: inline-flex;
@@ -412,141 +381,10 @@
   padding: 12px 14px 18px;
 }
 
-/* ── Compact rows (agents + memory) ─────────────────────────────────────── */
-.mrows {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.mrows-empty {
-  font-size: 12.5px;
-  color: var(--os-text-3);
-  padding: 12px 4px;
-}
-.mrow {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 10px 12px;
-  border-radius: 12px;
-  background: var(--os-surface-2);
-}
-.mrow-badge {
-  flex: none;
-  display: grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
-  font-size: 13px;
-  font-weight: 700;
-}
-.mrow-swatch {
-  flex: none;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  margin: 0 4px;
-}
-.mrow-main {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-.mrow-title {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--os-text);
-}
-.mrow-detail {
-  font-size: 11.5px;
-  color: var(--os-text-3);
-  line-height: 1.45;
-}
-.mrow-detail--clamp {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Agent state pill */
-.mstate {
-  flex: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 4px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--os-line);
-}
-.mstate-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  animation: mlc-pulse 1.5s ease-in-out infinite;
-}
-.mstate--thinking {
-  border-color: color-mix(in srgb, currentColor 40%, transparent);
-  background: color-mix(in srgb, currentColor 12%, transparent);
-}
-.mstate--queued {
-  color: var(--os-amber);
-  border-color: color-mix(in srgb, var(--os-amber) 32%, transparent);
-  background: color-mix(in srgb, var(--os-amber) 10%, transparent);
-}
-.mstate--done {
-  color: var(--os-green);
-  border-color: color-mix(in srgb, var(--os-green) 30%, transparent);
-  background: color-mix(in srgb, var(--os-green) 10%, transparent);
-}
-.mstate--idle {
-  color: var(--os-text-4);
-}
-
-/* Search field */
-.msearch {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 12px;
-  padding: 0 12px;
-  border-radius: 12px;
-  border: 1px solid var(--os-line);
-  background: rgba(0, 0, 0, 0.22);
-}
-.msearch svg {
-  color: var(--os-text-4);
-  flex: none;
-}
-.msearch input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  outline: none;
-  color: var(--os-text);
-  font-family: inherit;
-  font-size: 14px;
-  padding: 10px 0;
-}
-.msearch input::placeholder {
-  color: var(--os-text-4);
-}
-
 /* ── Motion ─────────────────────────────────────────────────────────────── */
 @keyframes mlc-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-@keyframes mlc-pulse {
-  50% {
-    opacity: 0.35;
   }
 }
 @keyframes mlc-fade {
@@ -566,10 +404,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mpill-spinner,
   .mlc-send-spinner,
-  .mstate-dot,
-  .mpill,
   .msheet-backdrop,
   .msheet {
     animation: none;

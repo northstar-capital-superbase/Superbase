@@ -72,7 +72,7 @@ app/                       # Next.js App Router
 components/                # dark dashboard UI, grouped by feature
   dashboard/               # Dashboard shell, Sidebar, Integrations, AgentRoster
   chat/                    # Chat console + agent trace + run metrics
-  memory/                  # MemoryPanel (live tail) + MemoryExplorer (search)
+  memory/                  # MemoryExplorer (search + filters over shared memory)
   session/                 # SessionSwitcher + useSessions (multi-lab)
   shared.ts                # shared client types, pricing/cost helper
 
