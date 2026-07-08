@@ -12,7 +12,13 @@ import {
   type RuntimeInfo,
   type TradingInfo,
 } from "@/components/shared";
-import { deriveChatTitle, useChatHistory } from "./useChatHistory";
+import {
+  deleteTranscript,
+  deriveChatTitle,
+  loadTranscript,
+  saveTranscript,
+  useChatHistory,
+} from "./useChatHistory";
 
 // Rebuild a transcript from persisted memory (used only when explicitly
 // reopening a chat from history — never on first load).
@@ -73,6 +79,12 @@ export function useLabConsole() {
     if (res.ok) setMemory((await res.json()).entries ?? []);
   }, [activeChatId]);
 
+  // Persist the active chat's transcript locally so it can be reopened from
+  // history even though the default in-memory backend doesn't retain it.
+  useEffect(() => {
+    if (registered.current && turns.length > 0) saveTranscript(activeChatId, turns);
+  }, [turns, activeChatId]);
+
   // Start a brand-new chat: new session, cleared transcript/memory/statuses.
   const newChat = useCallback(() => {
     setActiveChatId(newId());
@@ -82,22 +94,28 @@ export function useLabConsole() {
     registered.current = false;
   }, []);
 
-  // Explicitly reopen a previous chat from history.
+  // Explicitly reopen a previous chat from history. Prefer the locally saved
+  // transcript; fall back to reconstructing from server memory if present.
   const openChat = useCallback(async (id: string) => {
     setActiveChatId(id);
     setStatuses({});
     registered.current = true;
-    const res = await fetch(`/api/memory?sessionId=${id}&limit=300`);
-    const entries: MemoryEntry[] = res.ok
-      ? ((await res.json()).entries ?? [])
-      : [];
+    const local = loadTranscript(id);
+    let entries: MemoryEntry[] = [];
+    try {
+      const res = await fetch(`/api/memory?sessionId=${id}&limit=300`);
+      entries = res.ok ? ((await res.json()).entries ?? []) : [];
+    } catch {
+      entries = [];
+    }
     setMemory(entries.slice(-50));
-    setTurns(reconstructTurns(entries));
+    setTurns(local.length > 0 ? local : reconstructTurns(entries));
   }, []);
 
   const deleteChat = useCallback(
     (id: string) => {
       fetch(`/api/memory?sessionId=${id}`, { method: "DELETE" }).catch(() => {});
+      deleteTranscript(id);
       removeChat(id);
       if (id === activeChatId) newChat();
     },

@@ -1,11 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { ChatTurn } from "@/components/chat/Chat";
 
 // Lightweight, client-only history of past Lab Console chats. Each chat is a
-// crew session id (already used by the memory API) plus a display title. Stored
-// in localStorage — no backend/API changes. This only tracks which sessions the
-// user has started so they can be reopened from the History sheet.
+// crew session id (already used by the memory API) plus a display title and its
+// transcript, stored in localStorage. This is deliberately client-side: the
+// default in-memory backend does not persist a session's transcript across
+// requests, and we must not touch memory storage — so history/restore lives
+// entirely in the browser (no backend/API changes).
 export interface ChatSummary {
   id: string;
   title: string;
@@ -13,7 +16,34 @@ export interface ChatSummary {
 }
 
 const KEY = "northstar.labs.chatHistory";
+const TKEY = (id: string) => `northstar.labs.chat.${id}`;
 const MAX = 40;
+
+// Per-chat transcript persistence (client-only).
+export function saveTranscript(id: string, turns: ChatTurn[]): void {
+  try {
+    localStorage.setItem(TKEY(id), JSON.stringify(turns));
+  } catch {
+    // ignore quota/unavailable storage
+  }
+}
+
+export function loadTranscript(id: string): ChatTurn[] {
+  try {
+    const raw = localStorage.getItem(TKEY(id));
+    return raw ? (JSON.parse(raw) as ChatTurn[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function deleteTranscript(id: string): void {
+  try {
+    localStorage.removeItem(TKEY(id));
+  } catch {
+    // ignore
+  }
+}
 
 export function useChatHistory() {
   const [history, setHistory] = useState<ChatSummary[]>([]);
