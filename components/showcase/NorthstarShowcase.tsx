@@ -27,7 +27,7 @@ export function NorthstarShowcase() {
             <span className="nx-sync">
               <span className="nx-live" /> SYNCED
             </span>
-            <Link href="/labs" className="nx-btn nx-btn-aurora nx-glowpulse">
+            <Link href="/login" className="nx-btn nx-btn-aurora nx-glowpulse">
               Launch app
             </Link>
           </div>
