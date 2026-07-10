@@ -15,6 +15,7 @@ import {
   FONT_SCALE,
   RADIUS_VALUES,
   SETTINGS_KEY,
+  THEME_BG,
   accentColor,
   type AppearanceSettings,
   type NorthstarSettings,
@@ -41,6 +42,7 @@ function hydrate(raw: string | null): NorthstarSettings {
 // React so the pre-hydration inline script can mirror it.
 export function applyAppearance(root: HTMLElement, a: AppearanceSettings): void {
   root.dataset.theme = a.theme;
+  root.style.backgroundColor = THEME_BG[a.theme] ?? THEME_BG.midnight;
   root.dataset.density = a.density;
   root.dataset.radius = a.radius;
   root.dataset.bg = a.background;

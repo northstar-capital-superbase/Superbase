@@ -188,6 +188,20 @@ export const FONT_SCALE: Record<FontSize, string> = {
   large: "1.1",
 };
 
+// Base background per theme — mirrors --os-bg in globals.css. Used to paint the
+// root element instantly (pre-hydration + on live theme change) to avoid a
+// white flash before the stylesheet applies.
+export const THEME_BG: Record<ThemeName, string> = {
+  midnight: "#08090d",
+  graphite: "#101114",
+  nord: "#2e3440",
+  dracula: "#282a36",
+  "solarized-dark": "#002b36",
+  "terminal-green": "#08100a",
+  "ocean-blue": "#0a1420",
+  "northstar-purple": "#0d0a14",
+};
+
 export function accentColor(key: AccentKey): { color: string; bright: string } | null {
   if (key === "auto") return null;
   const a = ACCENTS.find((x) => x.key === key);

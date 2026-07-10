@@ -15,7 +15,9 @@ var d=document.documentElement,s=JSON.parse(localStorage.getItem("northstar.sett
 var R={sharp:["8px","6px","4px"],default:["16px","12px","9px"],round:["22px","16px","12px"]};
 var F={small:"0.92",default:"1",large:"1.1"};
 var A={blue:["#6e8bff","#8aa6ff"],violet:["#a78bfa","#c0a9ff"],cyan:["#38bdf8","#7dd3fc"],emerald:["#5bd6a8","#7fe6c0"],amber:["#e2b17c","#f0c79a"],rose:["#ff7a8a","#ff9aa6"]};
+var BG={midnight:"#08090d",graphite:"#101114",nord:"#2e3440",dracula:"#282a36","solarized-dark":"#002b36","terminal-green":"#08100a","ocean-blue":"#0a1420","northstar-purple":"#0d0a14"};
 d.dataset.theme=s.theme||"midnight";
+d.style.backgroundColor=BG[s.theme||"midnight"]||"#08090d";
 d.dataset.density=s.density||"cozy";
 d.dataset.radius=s.radius||"default";
 d.dataset.bg=s.background||"aurora";
