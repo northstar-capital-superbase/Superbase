@@ -38,8 +38,8 @@
   border-color: var(--os-line-2);
 }
 .mx-chip--active {
-  border-color: rgba(110, 139, 255, 0.5);
-  background: rgba(110, 139, 255, 0.13);
+  border-color: color-mix(in srgb, var(--os-accent) 50%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 13%, transparent);
   color: var(--os-text);
 }
 .mx-chip-dot {

@@ -26,7 +26,7 @@
   --gold: var(--os-amber);
   --red: var(--os-red);
 
-  --glow: rgba(110, 139, 255, 0.4);
+  --glow: color-mix(in srgb, var(--os-accent) 40%, transparent);
   /* Faint top-lit fill for interactive chrome (buttons, pills) — not cards */
   --white-fade: linear-gradient(
     180deg,
@@ -111,7 +111,8 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(8, 9, 13, 0.72);
+  /* Follows the active theme's base color (was hardcoded to Midnight) */
+  background: color-mix(in srgb, var(--os-bg) 76%, transparent);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   border-bottom: 1px solid var(--line);
@@ -144,8 +145,8 @@
   height: 32px;
   border-radius: 9px;
   color: var(--blue-bright);
-  border: 1px solid rgba(110, 139, 255, 0.3);
-  background: rgba(110, 139, 255, 0.09);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 9%, transparent);
   flex: none;
 }
 .lx-brand-name {
@@ -382,7 +383,7 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .lx-menu-item.is-active {
-  background: rgba(110, 139, 255, 0.13);
+  background: color-mix(in srgb, var(--os-accent) 13%, transparent);
 }
 .lx-menu-item button.name {
   flex: 1;
@@ -486,7 +487,7 @@
 }
 .lx-tile.blue:hover,
 .lx-tile.grey:hover {
-  border-color: rgba(110, 139, 255, 0.35);
+  border-color: color-mix(in srgb, var(--os-accent) 35%, transparent);
 }
 .lx-tile-top {
   display: flex;
@@ -521,15 +522,15 @@
   margin-top: 10px;
   padding: 6px 11px;
   border-radius: 8px;
-  border: 1px solid rgba(110, 139, 255, 0.4);
-  background: rgba(110, 139, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
   color: var(--blue-bright);
   font-size: 11.5px;
   font-weight: 600;
   transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
 }
 .lx-tile-action:hover {
-  background: rgba(110, 139, 255, 0.18);
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
 }
 .lx-tile-action:active {
   transform: translateY(1px);
@@ -691,8 +692,8 @@
   transition: border-color var(--os-dur) var(--os-ease), box-shadow var(--os-dur) var(--os-ease);
 }
 .lx-composer:focus-within {
-  border-color: rgba(110, 139, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(110, 139, 255, 0.12);
+  border-color: color-mix(in srgb, var(--os-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--os-accent) 12%, transparent);
 }
 .lx-composer textarea {
   flex: 1;
@@ -753,15 +754,17 @@
   margin: 0;
 }
 .lx-trace-toggle {
-  margin-top: 10px;
+  margin-top: 8px;
   background: none;
   border: none;
-  padding: 2px 0;
+  padding: 6px 0;
+  min-height: 32px;
   color: var(--text-3);
   font-size: 11px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
   transition: color var(--os-dur) var(--os-ease);
 }
 .lx-trace-toggle:hover {
@@ -843,11 +846,11 @@
   gap: 14px;
   padding: 16px 18px;
   border-radius: var(--r);
-  border: 1px solid rgba(110, 139, 255, 0.28);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 28%, transparent);
   background: linear-gradient(
       180deg,
-      rgba(110, 139, 255, 0.1),
-      rgba(110, 139, 255, 0.03)
+      color-mix(in srgb, var(--os-accent) 10%, transparent),
+      color-mix(in srgb, var(--os-accent) 3%, transparent)
     ),
     var(--surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--os-shadow-1);
@@ -855,7 +858,7 @@
     transform var(--os-dur) var(--os-ease);
 }
 .lx-console-cta:hover {
-  border-color: rgba(110, 139, 255, 0.55);
+  border-color: color-mix(in srgb, var(--os-accent) 55%, transparent);
   transform: translateY(-1px);
 }
 .lx-console-cta-icon {
@@ -866,8 +869,8 @@
   flex: none;
   border-radius: 11px;
   color: var(--blue-bright);
-  border: 1px solid rgba(110, 139, 255, 0.3);
-  background: rgba(110, 139, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
 }
 .lx-console-cta-main {
   display: flex;

@@ -4,7 +4,7 @@
 
 .cmp {
   --c-accent: var(--os-accent, #6e8bff);
-  --c-accent-2: #a78bfa;
+  --c-accent-2: var(--os-accent-bright, #a78bfa);
   --c-grad: linear-gradient(135deg, var(--c-accent), var(--c-accent-2));
   position: relative;
   display: flex;

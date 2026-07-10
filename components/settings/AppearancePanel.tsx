@@ -24,8 +24,14 @@ const PaintGlyph = (
   </svg>
 );
 
+// Small caption separating logical groups of controls within the section.
+function GroupLabel({ children }: { children: string }) {
+  return <div className="ap-group-label">{children}</div>;
+}
+
 // Isolated preview: applies the *pending* appearance to a scoped container so
-// the user sees the exact result before committing globally.
+// the user sees the exact result before committing globally. The mock chrome is
+// decorative — screen readers get a plain-language summary instead.
 function LivePreview({ draft }: { draft: AppearanceSettings }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -41,9 +47,13 @@ function LivePreview({ draft }: { draft: AppearanceSettings }) {
         <span className="ap-preview-title">Live preview</span>
         <span className="ap-preview-badge">{themeLabel}</span>
       </div>
-      <div ref={ref} className="ap-preview">
-        <div className="ap-pv-bg" aria-hidden="true" />
-        <aside className="ap-pv-rail">
+      <span className="ap-sr-only">
+        Preview of the pending appearance: {themeLabel} theme, {draft.density} density,{" "}
+        {draft.radius} corners, {draft.chatBubbles} chat bubbles.
+      </span>
+      <div ref={ref} className="ap-preview" aria-hidden="true">
+        <div className="ap-pv-bg" />
+        <aside className={clsx("ap-pv-rail", draft.sidebar === "collapsed" && "collapsed")}>
           <span className="ap-pv-brand">
             <span className="ap-pv-brand-mark" />
             {draft.sidebar === "expanded" && <span className="ap-pv-brand-name">Northstar</span>}
@@ -111,12 +121,15 @@ export function AppearancePanel() {
           description="Make Northstar yours. Edits preview instantly — Apply to save."
           icon={PaintGlyph}
         >
+          <GroupLabel>Theme</GroupLabel>
           <Row title="Theme" description="Eight hand-tuned palettes for the OS surfaces." stack>
             <ThemeSwatchGrid value={draft.theme} onChange={(theme) => set("theme", theme)} />
           </Row>
           <Row title="Accent color" description="Used across controls, highlights, and glows. Auto follows the theme.">
             <AccentPicker value={draft.accent} onChange={(accent) => set("accent", accent)} />
           </Row>
+
+          <GroupLabel>Layout &amp; type</GroupLabel>
           <Row title="Corner radius" description="From crisp to fully rounded." stack>
             <Slider
               ariaLabel="Corner radius"
@@ -153,6 +166,7 @@ export function AppearancePanel() {
               ]}
             />
           </Row>
+          <GroupLabel>Surfaces</GroupLabel>
           <Row title="Background style" description="Ambient glow, flat, or a faint grid." stack>
             <Segmented
               ariaLabel="Background style"
@@ -194,6 +208,8 @@ export function AppearancePanel() {
           <Row title="Agent colors" description="Tint agent chips by role, or keep them monochrome.">
             <Toggle label="Agent colors" checked={draft.agentColors} onChange={(v) => set("agentColors", v)} />
           </Row>
+
+          <GroupLabel>Motion</GroupLabel>
           <Row title="Animations" description="Micro-interactions and transitions across the OS.">
             <Toggle label="Animations" checked={draft.animations} onChange={(v) => set("animations", v)} />
           </Row>
@@ -206,13 +222,15 @@ export function AppearancePanel() {
       <div className="ap-preview-col">
         <LivePreview draft={draft} />
         <div className={clsx("ap-actions", dirty && "dirty")}>
-          <span className="ap-actions-note">
+          <span className="ap-actions-note" role="status">
+            <span className="ap-actions-dot" aria-hidden="true" />
             {dirty ? "Unsaved changes" : "All changes saved"}
           </span>
           <div className="ap-actions-btns">
             <Button
               onClick={() => setDraft(DEFAULT_APPEARANCE)}
               disabled={JSON.stringify(draft) === JSON.stringify(DEFAULT_APPEARANCE)}
+              title="Restore the default appearance"
             >
               Reset
             </Button>

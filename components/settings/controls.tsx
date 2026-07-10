@@ -179,11 +179,14 @@ export function Slider({
         aria-valuetext={options[idx]?.label}
         onChange={(e) => onChange(options[Number(e.target.value)]?.value ?? value)}
       />
+      {/* Visual duplicates of the range positions; the input above is the
+          accessible control, so these stay out of the tab order. */}
       <div className="lx-slider-ticks" aria-hidden="true">
         {options.map((o) => (
           <button
             key={o.value}
             type="button"
+            tabIndex={-1}
             className={clsx("lx-slider-tick", value === o.value && "on")}
             onClick={() => onChange(o.value)}
           >
@@ -255,6 +258,11 @@ export function ThemeSwatchGrid({
             <span className="lx-theme-bar" style={{ background: t.preview.surface }} />
             <span className="lx-theme-dot" style={{ background: t.preview.accent }} />
             <span className="lx-theme-line" style={{ background: t.preview.text }} />
+            <span className="lx-theme-check">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12.5l5.5 5.5L20 6.5" />
+              </svg>
+            </span>
           </span>
           <span className="lx-theme-meta">
             <span className="lx-theme-name">{t.label}</span>
