@@ -27,6 +27,9 @@ export function NorthstarShowcase() {
             <span className="nx-sync">
               <span className="nx-live" /> SYNCED
             </span>
+            <Link href="/login" className="nx-nav-link">
+              Sign in
+            </Link>
             <Link href="/login" className="nx-btn nx-btn-aurora nx-glowpulse">
               Launch app
             </Link>
@@ -44,7 +47,7 @@ export function NorthstarShowcase() {
             <StarGlyph color="#7d879c" size={16} />
             <span>Northstar Capital</span>
           </div>
-          <Link href="/labs" className="nx-nav-link">
+          <Link href="/login" className="nx-nav-link">
             Open the lab
           </Link>
           <div className="nx-footer-meta">

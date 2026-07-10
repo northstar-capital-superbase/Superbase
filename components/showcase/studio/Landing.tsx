@@ -195,7 +195,7 @@ export function Landing() {
             accountable. Here&apos;s the whole machine, working.
           </p>
           <div className="nx-hero-cta">
-            <Link href="/labs" className="nx-btn nx-btn-aurora nx-glowpulse">
+            <Link href="/login" className="nx-btn nx-btn-aurora nx-glowpulse">
               Launch the app <Arrow />
             </Link>
             <a href="#how" className="nx-btn nx-btn-ghost">
@@ -239,7 +239,7 @@ export function Landing() {
               </div>
               <h3 className="nx-pillar-name">{s.name}</h3>
               <p className="nx-pillar-body">{s.body}</p>
-              <Link href="/labs" className="nx-pillar-link">
+              <Link href="/login" className="nx-pillar-link">
                 Open the lab <Arrow />
               </Link>
             </article>
@@ -280,7 +280,7 @@ export function Landing() {
         <div className="nx-cta-glow" aria-hidden="true" />
         <div className="nx-container nx-cta-inner">
           <h2 className="nx-h2">Give your capital a mind of its own.</h2>
-          <Link href="/labs" className="nx-btn nx-btn-aurora nx-btn-lg nx-glowpulse">
+          <Link href="/login" className="nx-btn nx-btn-aurora nx-btn-lg nx-glowpulse">
             Launch Northstar <Arrow />
           </Link>
           <p className="nx-note">Northstar OS · currently in private development</p>
