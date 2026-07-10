@@ -2,7 +2,7 @@
 
 import clsx from "clsx";
 import type { ReactNode } from "react";
-import { ACCENTS, type AccentKey } from "./types";
+import { ACCENTS, THEMES, type AccentKey, type ThemeName } from "./types";
 
 // ── Section card ─────────────────────────────────────────────────────────────
 export function SettingsSection({
@@ -153,6 +153,119 @@ export function NumberField({
   );
 }
 
+// ── Slider ───────────────────────────────────────────────────────────────────
+export function Slider({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { value: string; label: string }[];
+  ariaLabel?: string;
+}) {
+  const idx = Math.max(0, options.findIndex((o) => o.value === value));
+  return (
+    <div className="lx-slider" role="group" aria-label={ariaLabel}>
+      <input
+        type="range"
+        className="lx-slider-input"
+        min={0}
+        max={options.length - 1}
+        step={1}
+        value={idx}
+        aria-label={ariaLabel}
+        aria-valuetext={options[idx]?.label}
+        onChange={(e) => onChange(options[Number(e.target.value)]?.value ?? value)}
+      />
+      <div className="lx-slider-ticks" aria-hidden="true">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            className={clsx("lx-slider-tick", value === o.value && "on")}
+            onClick={() => onChange(o.value)}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Select ───────────────────────────────────────────────────────────────────
+export function SelectRow<T extends string>({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+}: {
+  value: T;
+  onChange: (v: T) => void;
+  options: { value: T; label: string }[];
+  ariaLabel?: string;
+}) {
+  return (
+    <div className="lx-select">
+      <select
+        className="lx-select-input"
+        aria-label={ariaLabel}
+        value={value}
+        onChange={(e) => onChange(e.target.value as T)}
+      >
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <svg className="lx-select-caret" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M6 9l6 6 6-6" />
+      </svg>
+    </div>
+  );
+}
+
+// ── Theme swatch grid ────────────────────────────────────────────────────────
+export function ThemeSwatchGrid({
+  value,
+  onChange,
+}: {
+  value: ThemeName;
+  onChange: (v: ThemeName) => void;
+}) {
+  return (
+    <div className="lx-themes" role="radiogroup" aria-label="Theme">
+      {THEMES.map((t) => (
+        <button
+          key={t.name}
+          type="button"
+          role="radio"
+          aria-checked={value === t.name}
+          className={clsx("lx-theme-card", value === t.name && "on")}
+          onClick={() => onChange(t.name)}
+        >
+          <span
+            className="lx-theme-swatch"
+            style={{ background: t.preview.bg }}
+            aria-hidden="true"
+          >
+            <span className="lx-theme-bar" style={{ background: t.preview.surface }} />
+            <span className="lx-theme-dot" style={{ background: t.preview.accent }} />
+            <span className="lx-theme-line" style={{ background: t.preview.text }} />
+          </span>
+          <span className="lx-theme-meta">
+            <span className="lx-theme-name">{t.label}</span>
+            <span className="lx-theme-hint">{t.hint}</span>
+          </span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // ── Accent swatches ──────────────────────────────────────────────────────────
 export function AccentPicker({
   value,
@@ -170,7 +283,7 @@ export function AccentPicker({
           aria-label={a.label}
           aria-pressed={value === a.key}
           title={a.label}
-          className={clsx("lx-swatch", value === a.key && "on")}
+          className={clsx("lx-swatch", a.key === "auto" && "auto", value === a.key && "on")}
           style={{ ["--sw"]: a.color } as React.CSSProperties}
           onClick={() => onChange(a.key)}
         />

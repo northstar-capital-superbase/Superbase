@@ -80,8 +80,21 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(1400px 700px at 50% -340px, rgba(255, 255, 255, 0.07), transparent 56%),
-    radial-gradient(900px 560px at 85% -160px, rgba(110, 139, 255, 0.09), transparent 56%);
+    radial-gradient(1400px 700px at 50% -340px, rgba(255, 255, 255, 0.05), transparent 56%),
+    radial-gradient(900px 560px at 85% -160px, var(--os-glow-1, rgba(110, 139, 255, 0.09)), transparent 56%),
+    radial-gradient(760px 520px at 8% 108%, var(--os-glow-2, rgba(192, 132, 252, 0.08)), transparent 55%);
+  transition: opacity var(--os-dur-slow) var(--os-ease);
+}
+/* Background style: solid removes the ambient glow; grid adds a faint mesh. */
+[data-bg="solid"] .lx-bg {
+  background: none;
+}
+[data-bg="grid"] .lx-bg {
+  background:
+    radial-gradient(900px 560px at 85% -160px, var(--os-glow-1, rgba(110, 139, 255, 0.08)), transparent 56%),
+    linear-gradient(var(--os-line) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(90deg, var(--os-line) 1px, transparent 1px) 0 0 / 34px 34px;
+  opacity: 0.5;
 }
 .lx-grain {
   position: fixed;
@@ -707,9 +720,9 @@
   max-width: 80%;
 }
 .lx-bubble-user-text {
-  border-radius: 16px 16px 4px 16px;
-  background: rgba(110, 139, 255, 0.15);
-  border: 1px solid rgba(110, 139, 255, 0.2);
+  border-radius: var(--os-r) var(--os-r) 4px var(--os-r);
+  background: color-mix(in srgb, var(--blue) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, transparent);
   padding: 9px 13px;
   font-size: 13.5px;
   line-height: 1.55;
@@ -718,7 +731,7 @@
 }
 .lx-bubble-ai {
   max-width: 86%;
-  border-radius: 16px 16px 16px 4px;
+  border-radius: var(--os-r) var(--os-r) var(--os-r) 4px;
   border: 1px solid var(--line);
   background: var(--surface-2);
   padding: 12px 14px;
@@ -971,4 +984,88 @@
   .lx * {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Appearance controls (driven by data-* attributes on <html> / preview) ──
+   These are cross-cutting toggles the Appearance panel writes. They live here
+   because they target the shared .lx surfaces. */
+
+/* Motion off / reduced-motion preference: kill decorative animation app-wide. */
+[data-motion="reduced"] .lx *,
+[data-motion="reduced"] .sb *,
+[data-motion="reduced"] .mlc * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Glass off: drop backdrop blur to a flat surface (also a perf lever). */
+[data-glass="off"] .lx-topbar {
+  background: var(--os-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Density: tighten or relax the primary content rhythm. */
+[data-density="compact"] .lx-main {
+  gap: 14px;
+  padding: 16px 20px 52px;
+}
+[data-density="compact"] .lx-set-body {
+  padding: 4px 16px 12px;
+}
+[data-density="compact"] .lx-row,
+[data-density="compact"] .lx-kv-item {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+[data-density="comfortable"] .lx-main {
+  gap: 26px;
+  padding: 30px 24px 72px;
+}
+[data-density="comfortable"] .lx-set-body {
+  padding: 12px 24px 22px;
+}
+[data-density="comfortable"] .lx-row,
+[data-density="comfortable"] .lx-kv-item {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+/* Font size: scale the primary reading + composer text (content-first). */
+.lx-bubble-ai p,
+.lx-bubble-user-text,
+.cmp-input,
+.mlc-msg,
+.msg-body {
+  font-size: calc(13.5px * var(--os-font-scale, 1));
+}
+
+/* Chat bubble styles (real conversation surface, mirrors the preview). */
+[data-bubbles="minimal"] .lx-bubble-ai {
+  background: none;
+  border: none;
+  border-left: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  border-radius: 0;
+  padding: 4px 0 4px 12px;
+}
+[data-bubbles="minimal"] .lx-bubble-user-text {
+  background: none;
+  border: none;
+  padding: 6px 2px;
+}
+[data-bubbles="solid"] .lx-bubble-ai {
+  background: var(--surface-3);
+  border-color: transparent;
+}
+[data-bubbles="solid"] .lx-bubble-user-text {
+  background: var(--blue);
+  border-color: transparent;
+  color: #0b0d12;
+}
+
+/* Agent colors off: neutralize role tints in the live agent roster. */
+[data-agent-colors="off"] .ap-color,
+[data-agent-colors="off"] .lx-agent-dot {
+  filter: grayscale(1) opacity(0.7);
 }

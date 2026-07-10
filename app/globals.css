@@ -2,56 +2,201 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ────────────────────────────────────────────────────────────────────────────
+   Northstar OS design tokens (--os-*).
+   Consumed by the app surfaces (/labs, /settings, /connections, sidebar) and
+   the components/ui primitives via the .lx alias layer. The marketing showcase
+   (homepage) owns the separate --ns-* namespace and is NOT driven by these.
+
+   Themes are attribute-scoped ([data-theme="…"]) rather than :root-scoped so
+   the Appearance live-preview can render a *pending* theme in an isolated
+   container. The provider sets data-theme on <html>; the preview sets it on a
+   wrapper div.
+   ──────────────────────────────────────────────────────────────────────────── */
+
 :root {
   color-scheme: dark;
 
-  /* ────────────────────────────────────────────────────────────────────────
-     Northstar OS shared design tokens (--os-*).
-     Consumed by the app surfaces (/labs, /settings, /connections, sidebar)
-     and the components/ui primitives. The marketing showcase (homepage)
-     owns the separate --ns-* namespace in showcase.css and is intentionally
-     NOT driven by these tokens, so the homepage is unaffected.
-     ──────────────────────────────────────────────────────────────────────── */
+  /* Non-themed constants */
+  --os-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -24px rgba(0, 0, 0, 0.8);
+  --os-shadow-2: 0 24px 64px -32px rgba(0, 0, 0, 0.85);
+  --os-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  --os-ease-spring: cubic-bezier(0.16, 1, 0.3, 1);
+  --os-dur: 150ms;
+  --os-dur-slow: 220ms;
+  --os-spin: 0.85s;
+  --os-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  --os-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
 
-  /* Surfaces */
+  /* Radii + type scale (overridden inline by the settings provider) */
+  --os-r-lg: 16px;
+  --os-r: 12px;
+  --os-r-sm: 9px;
+  --os-font-scale: 1;
+}
+
+/* ── Theme palettes ─────────────────────────────────────────────────────────
+   Each block is a complete surface/text/accent/status set + ambient glow.  */
+
+:root,
+[data-theme="midnight"] {
   --os-bg: #08090d;
   --os-surface: #0e1016;
   --os-surface-2: #13161f;
   --os-surface-3: #191d2a;
   --os-line: rgba(255, 255, 255, 0.08);
   --os-line-2: rgba(255, 255, 255, 0.15);
-
-  /* Text scale (AA on --os-surface for 2/3; 4 is decorative-only) */
   --os-text: #f2f4f9;
   --os-text-2: #b4bac7;
   --os-text-3: #8a90a0;
   --os-text-4: #6b7284;
-
-  /* Accent + status. --os-accent tracks the user's accent choice
-     (useSettings writes inline overrides on <html>). */
   --os-accent: #6e8bff;
   --os-accent-bright: #8aa6ff;
   --os-green: #5bd6a8;
   --os-amber: #e2b17c;
   --os-red: #ff7a8a;
+  --os-glow-1: rgba(110, 139, 255, 0.09);
+  --os-glow-2: rgba(192, 132, 252, 0.08);
+}
 
-  /* Radii */
-  --os-r-lg: 16px;
-  --os-r: 12px;
-  --os-r-sm: 9px;
+[data-theme="graphite"] {
+  --os-bg: #101114;
+  --os-surface: #17181c;
+  --os-surface-2: #1b1d22;
+  --os-surface-3: #23252c;
+  --os-line: rgba(255, 255, 255, 0.07);
+  --os-line-2: rgba(255, 255, 255, 0.14);
+  --os-text: #eceef2;
+  --os-text-2: #b3b8c2;
+  --os-text-3: #878d99;
+  --os-text-4: #666c78;
+  --os-accent: #9aa4b8;
+  --os-accent-bright: #c2cad8;
+  --os-green: #7fd6a8;
+  --os-amber: #d9b98a;
+  --os-red: #e78d99;
+  --os-glow-1: rgba(154, 164, 184, 0.08);
+  --os-glow-2: rgba(255, 255, 255, 0.05);
+}
 
-  /* Shadows — soft and layered, no glow walls */
-  --os-shadow-1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -24px rgba(0, 0, 0, 0.8);
-  --os-shadow-2: 0 24px 64px -32px rgba(0, 0, 0, 0.85);
+[data-theme="nord"] {
+  --os-bg: #2e3440;
+  --os-surface: #333b48;
+  --os-surface-2: #3b4252;
+  --os-surface-3: #434c5e;
+  --os-line: rgba(236, 239, 244, 0.09);
+  --os-line-2: rgba(236, 239, 244, 0.18);
+  --os-text: #eceff4;
+  --os-text-2: #d8dee9;
+  --os-text-3: #a7b0c0;
+  --os-text-4: #7b8494;
+  --os-accent: #88c0d0;
+  --os-accent-bright: #8fbcbb;
+  --os-green: #a3be8c;
+  --os-amber: #ebcb8b;
+  --os-red: #bf616a;
+  --os-glow-1: rgba(136, 192, 208, 0.12);
+  --os-glow-2: rgba(129, 161, 193, 0.1);
+}
 
-  /* Motion */
-  --os-ease: cubic-bezier(0.25, 0.46, 0.45, 0.94);
-  --os-dur: 150ms;
-  --os-dur-slow: 220ms;
+[data-theme="dracula"] {
+  --os-bg: #282a36;
+  --os-surface: #2f313f;
+  --os-surface-2: #343746;
+  --os-surface-3: #414458;
+  --os-line: rgba(248, 248, 242, 0.08);
+  --os-line-2: rgba(248, 248, 242, 0.16);
+  --os-text: #f8f8f2;
+  --os-text-2: #d6d7e0;
+  --os-text-3: #a3a5b8;
+  --os-text-4: #787a90;
+  --os-accent: #bd93f9;
+  --os-accent-bright: #d0b0ff;
+  --os-green: #50fa7b;
+  --os-amber: #f1fa8c;
+  --os-red: #ff5555;
+  --os-glow-1: rgba(189, 147, 249, 0.14);
+  --os-glow-2: rgba(255, 121, 198, 0.1);
+}
 
-  /* Type */
-  --os-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
-  --os-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, system-ui, sans-serif;
+[data-theme="solarized-dark"] {
+  --os-bg: #002b36;
+  --os-surface: #063541;
+  --os-surface-2: #073642;
+  --os-surface-3: #0d4552;
+  --os-line: rgba(238, 232, 213, 0.1);
+  --os-line-2: rgba(238, 232, 213, 0.2);
+  --os-text: #eee8d5;
+  --os-text-2: #b6c2c2;
+  --os-text-3: #93a1a1;
+  --os-text-4: #6c7b7b;
+  --os-accent: #268bd2;
+  --os-accent-bright: #4fa8e0;
+  --os-green: #859900;
+  --os-amber: #b58900;
+  --os-red: #dc322f;
+  --os-glow-1: rgba(38, 139, 210, 0.14);
+  --os-glow-2: rgba(42, 161, 152, 0.1);
+}
+
+[data-theme="terminal-green"] {
+  --os-bg: #08100a;
+  --os-surface: #0d160f;
+  --os-surface-2: #0f1a12;
+  --os-surface-3: #15251a;
+  --os-line: rgba(120, 255, 160, 0.1);
+  --os-line-2: rgba(120, 255, 160, 0.2);
+  --os-text: #c8f5d4;
+  --os-text-2: #8fd6a2;
+  --os-text-3: #5f9e72;
+  --os-text-4: #457a55;
+  --os-accent: #3ddc84;
+  --os-accent-bright: #63f6a3;
+  --os-green: #3ddc84;
+  --os-amber: #d8c15a;
+  --os-red: #ff6b6b;
+  --os-glow-1: rgba(61, 220, 132, 0.12);
+  --os-glow-2: rgba(61, 220, 132, 0.06);
+}
+
+[data-theme="ocean-blue"] {
+  --os-bg: #0a1420;
+  --os-surface: #0e1c2c;
+  --os-surface-2: #102236;
+  --os-surface-3: #163049;
+  --os-line: rgba(200, 230, 255, 0.09);
+  --os-line-2: rgba(200, 230, 255, 0.18);
+  --os-text: #e6f0fa;
+  --os-text-2: #b3c8dc;
+  --os-text-3: #839ab2;
+  --os-text-4: #5f7488;
+  --os-accent: #38bdf8;
+  --os-accent-bright: #7dd3fc;
+  --os-green: #34d399;
+  --os-amber: #fbbf24;
+  --os-red: #fb7185;
+  --os-glow-1: rgba(56, 189, 248, 0.14);
+  --os-glow-2: rgba(45, 212, 191, 0.09);
+}
+
+[data-theme="northstar-purple"] {
+  --os-bg: #0d0a14;
+  --os-surface: #14101f;
+  --os-surface-2: #191024;
+  --os-surface-3: #221733;
+  --os-line: rgba(230, 220, 255, 0.09);
+  --os-line-2: rgba(230, 220, 255, 0.18);
+  --os-text: #f1ecfb;
+  --os-text-2: #cdc2e0;
+  --os-text-3: #9d92b4;
+  --os-text-4: #726785;
+  --os-accent: #a78bfa;
+  --os-accent-bright: #c4b0ff;
+  --os-green: #6ee7b7;
+  --os-amber: #fcd34d;
+  --os-red: #fb7185;
+  --os-glow-1: rgba(167, 139, 250, 0.16);
+  --os-glow-2: rgba(217, 70, 239, 0.1);
 }
 
 html,
@@ -60,27 +205,39 @@ body {
 }
 
 body {
-  @apply bg-base-900 text-slate-200 antialiased;
-  background-image:
-    radial-gradient(1200px 600px at 80% -10%, rgba(81, 104, 255, 0.12), transparent 60%),
-    radial-gradient(900px 500px at -10% 110%, rgba(192, 132, 252, 0.08), transparent 55%);
-  background-attachment: fixed;
+  background-color: var(--os-bg);
+  color: var(--os-text);
+  font-family: var(--os-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Global reduced-motion honoring the OS preference (in addition to the
+   in-app data-motion="reduced" toggle handled in labs.css). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Thin custom scrollbars to fit the dark lab aesthetic. */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #272c42 transparent;
+  scrollbar-color: var(--os-surface-3) transparent;
 }
 *::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 *::-webkit-scrollbar-thumb {
-  background: #272c42;
+  background: var(--os-surface-3);
   border-radius: 9999px;
 }
 *::-webkit-scrollbar-thumb:hover {
-  background: #323855;
+  background: var(--os-line-2);
 }
-
