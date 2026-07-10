@@ -19,6 +19,7 @@ import {
 import { AppearancePanel } from "./AppearancePanel";
 import { IntegrationsSettings, MemorySettings } from "./live";
 import { useSettings } from "./useSettings";
+import type { AgentProfile } from "@/components/shared";
 import "@/components/dashboard/labs.css";
 import "./settings.css";
 
@@ -177,9 +178,49 @@ function AgentsSettings() {
   const a = settings.agents;
   const t = settings.trading;
   const live = t.mode === "live";
+
+  // Real roster — the same agents that answer in the Lab Console.
+  const [roster, setRoster] = useState<AgentProfile[] | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/agents")
+      .then((r) => r.json())
+      .then((d) => {
+        if (!cancelled) setRoster(d.agents ?? []);
+      })
+      .catch(() => {
+        if (!cancelled) setRoster([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
-      <SettingsSection id="agents" title="Agents" description="How the crew works and what you see while it runs." icon={G.agents}>
+      <SettingsSection id="agents" title="Agents" description="The live crew, how it works, and what you see while it runs." icon={G.agents}>
+        <div className="lx-agents-roster" aria-busy={roster === null}>
+          {roster === null && <div className="lx-agents-roster-loading">Waking the roster…</div>}
+          {roster?.map((ag) => (
+            <div key={ag.id} className="lx-agents-roster-row">
+              <span
+                className="lx-agents-roster-badge"
+                aria-hidden="true"
+                style={{
+                  color: ag.color,
+                  borderColor: `color-mix(in srgb, ${ag.color} 40%, transparent)`,
+                  background: `color-mix(in srgb, ${ag.color} 12%, transparent)`,
+                }}
+              >
+                {ag.name.charAt(0)}
+              </span>
+              <span className="lx-agents-roster-main">
+                <span className="lx-agents-roster-name">{ag.name}</span>
+                <span className="lx-agents-roster-role">{ag.role}</span>
+              </span>
+            </div>
+          ))}
+        </div>
         <Row title="Show agent trace" description="Reveal each specialist's contribution under the answer.">
           <Toggle label="Show agent trace" checked={a.showTrace} onChange={(showTrace) => update("agents", { showTrace })} />
         </Row>

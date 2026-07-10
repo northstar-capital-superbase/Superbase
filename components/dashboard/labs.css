@@ -897,12 +897,7 @@
 
 /* ── Motion utilities ────────────────────────────────────────────────────── */
 .lx-spin {
-  animation: lx-spin var(--os-spin) linear infinite;
-}
-@keyframes lx-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: os-spin var(--os-spin) linear infinite;
 }
 @keyframes lx-pulse {
   50% {

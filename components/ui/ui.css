@@ -348,7 +348,7 @@
 
 /* ── Spinner & skeleton ──────────────────────────────────────────────────── */
 .ui-spinner {
-  animation: ui-spin var(--os-spin) linear infinite;
+  animation: os-spin var(--os-spin) linear infinite;
   flex: none;
 }
 .ui-skeleton {
@@ -359,11 +359,6 @@
 }
 
 /* ── Keyframes ───────────────────────────────────────────────────────────── */
-@keyframes ui-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes ui-pulse {
   50% {
     opacity: 0.45;

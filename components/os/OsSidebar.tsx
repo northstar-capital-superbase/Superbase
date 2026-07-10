@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { useSettingsContext } from "@/components/settings/SettingsProvider";
+import { useRuntimeStatus, type RuntimeStatus } from "@/components/useRuntimeStatus";
 import {
   LayoutDashboard,
   BarChart3,
@@ -89,60 +90,17 @@ const SECTIONS: NavSectionDef[] = [
 // Shared easing curve (avoids type inference issues with string literals)
 const EASE_OUT: [number, number, number, number] = [0.25, 0.46, 0.45, 0.94];
 
-interface RuntimeStatus {
-  loaded: boolean;
-  reachable: boolean;
-  provider: string | null;
-  model: string | null;
-  configured: boolean;
-  memory: "supabase" | "in-memory" | null;
-  tradingEnabled: boolean;
-  tradingMode: string | null;
-}
-
-const INITIAL_STATUS: RuntimeStatus = {
-  loaded: false,
-  reachable: false,
-  provider: null,
-  model: null,
-  configured: false,
-  memory: null,
-  tradingEnabled: false,
-  tradingMode: null,
-};
-
-// Live runtime status for the footer — real /api/health and /api/trading
-// reads, never hardcoded placeholder statuses.
-function useRuntimeStatus(): RuntimeStatus {
-  const [status, setStatus] = useState<RuntimeStatus>(INITIAL_STATUS);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const [h, t] = await Promise.allSettled([
-        fetch("/api/health").then((r) => r.json()),
-        fetch("/api/trading").then((r) => r.json()),
-      ]);
-      if (cancelled) return;
-      const health = h.status === "fulfilled" ? h.value : null;
-      const trading = t.status === "fulfilled" ? t.value : null;
-      setStatus({
-        loaded: true,
-        reachable: health !== null,
-        provider: health?.provider ?? null,
-        model: health?.model ?? null,
-        configured: health?.configured ?? false,
-        memory: health?.memory ?? null,
-        tradingEnabled: trading?.enabled ?? false,
-        tradingMode: trading?.mode ?? null,
-      });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  return status;
+// OS `prefers-reduced-motion` + both in-app motion settings, combined.
+// Framer-motion animates via JS (inline styles), so the [data-motion] CSS
+// rules don't reach it — every motion.* in this file must gate on this.
+function useMotionOff(): boolean {
+  const reduceMotion = useReducedMotion();
+  const { settings } = useSettingsContext();
+  return (
+    !!reduceMotion ||
+    settings.appearance.reducedMotion ||
+    !settings.appearance.animations
+  );
 }
 
 export function OsSidebar() {
@@ -150,8 +108,8 @@ export function OsSidebar() {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
-  const reduceMotion = useReducedMotion();
   const runtime = useRuntimeStatus();
+  const motionOff = useMotionOff();
 
   // Adopt the Appearance → Sidebar default once, after settings hydrate.
   // Manual ⌘\ toggles thereafter win for the rest of the session.
@@ -162,12 +120,6 @@ export function OsSidebar() {
       appliedDefault.current = true;
     }
   }, [ready, settings.appearance.sidebar]);
-
-  // Honor the in-app motion toggle for the JS-driven width animation too.
-  const motionOff =
-    !!reduceMotion ||
-    settings.appearance.reducedMotion ||
-    !settings.appearance.animations;
 
   // Sync --sb-width so the content area margin animates in lockstep
   useEffect(() => {
@@ -233,16 +185,16 @@ export function OsSidebar() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: reduceMotion ? 0 : 0.16 }}
+              transition={{ duration: motionOff ? 0 : 0.16 }}
               onClick={() => setMobileOpen(false)}
             />
             <motion.aside
               className="sb sb--mobile"
-              initial={{ x: reduceMotion ? 0 : -340, opacity: reduceMotion ? 1 : 0.6 }}
+              initial={{ x: motionOff ? 0 : -340, opacity: motionOff ? 1 : 0.6 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: reduceMotion ? 0 : -340, opacity: reduceMotion ? 1 : 0.6 }}
+              exit={{ x: motionOff ? 0 : -340, opacity: motionOff ? 1 : 0.6 }}
               transition={
-                reduceMotion
+                motionOff
                   ? { duration: 0 }
                   : { type: "spring", stiffness: 420, damping: 38 }
               }
@@ -283,6 +235,7 @@ function SidebarContent({
   runtime: RuntimeStatus;
   mobile?: boolean;
 }) {
+  const motionOff = useMotionOff();
   // App-specific runtime line — derived from live health, never hardcoded.
   const statusLine = !runtime.loaded
     ? { tone: "off" as const, label: "Checking runtime…" }
@@ -307,7 +260,7 @@ function SidebarContent({
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -8 }}
-              transition={{ duration: 0.16, ease: EASE_OUT }}
+              transition={{ duration: motionOff ? 0 : 0.16, ease: EASE_OUT }}
             >
               <span className="sb-brand-name">Northstar OS</span>
               <span className="sb-brand-sub">AI Operating System for Finance</span>
@@ -334,7 +287,7 @@ function SidebarContent({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
+            transition={{ duration: motionOff ? 0 : 0.15 }}
           >
             <span
               className={clsx(
@@ -375,7 +328,7 @@ function SidebarContent({
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.1, ease: EASE_OUT }}
+              transition={{ duration: motionOff ? 0 : 0.1, ease: EASE_OUT }}
             >
               <RuntimeRows runtime={runtime} />
 
@@ -395,7 +348,7 @@ function SidebarContent({
         >
           <motion.span
             animate={{ rotate: collapsed ? 180 : 0 }}
-            transition={{ duration: 0.22, ease: EASE_OUT }}
+            transition={{ duration: motionOff ? 0 : 0.22, ease: EASE_OUT }}
             style={{ display: "flex", alignItems: "center" }}
           >
             <ChevronLeft size={15} strokeWidth={2} />
@@ -407,7 +360,7 @@ function SidebarContent({
                 initial={{ opacity: 0, x: -4 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -4 }}
-                transition={{ duration: 0.14, ease: EASE_OUT }}
+                transition={{ duration: motionOff ? 0 : 0.14, ease: EASE_OUT }}
               >
                 Collapse
               </motion.span>
@@ -517,6 +470,7 @@ function NavSection({
 }) {
   const [open, setOpen] = useState(true);
   const showItems = collapsed || open;
+  const motionOff = useMotionOff();
 
   return (
     <div className="sb-nav-section">
@@ -540,7 +494,7 @@ function NavSection({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: EASE_OUT }}
+            transition={{ duration: motionOff ? 0 : 0.18, ease: EASE_OUT }}
             style={{ overflow: "hidden" }}
           >
             {section.items.map((item) =>
@@ -594,6 +548,7 @@ function NavGroup({
   const childActive = children.some((c) => isNavActive(c.href, pathname));
   const [open, setOpen] = useState(parentActive || childActive);
   const Icon = item.icon;
+  const motionOff = useMotionOff();
 
   // Collapsed rail: no nesting UI — show only the parent icon row.
   if (collapsed) {
@@ -633,7 +588,7 @@ function NavGroup({
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.18, ease: EASE_OUT }}
+            transition={{ duration: motionOff ? 0 : 0.18, ease: EASE_OUT }}
             style={{ overflow: "hidden" }}
           >
             {children.map((child) => (
@@ -670,6 +625,7 @@ function NavItemRow({
 }) {
   const Icon = item.icon;
   const soon = item.badge === "soon";
+  const motionOff = useMotionOff();
 
   const inner = (
     <>
@@ -684,7 +640,7 @@ function NavItemRow({
             initial={{ opacity: 0, x: -6 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -6 }}
-            transition={{ duration: 0.15, ease: EASE_OUT }}
+            transition={{ duration: motionOff ? 0 : 0.15, ease: EASE_OUT }}
           >
             {item.label}
           </motion.span>
@@ -698,7 +654,7 @@ function NavItemRow({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.12 }}
+            transition={{ duration: motionOff ? 0 : 0.12 }}
           >
             {item.badge}
           </motion.span>

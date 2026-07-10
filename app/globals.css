@@ -227,6 +227,14 @@ body {
   }
 }
 
+/* Single shared spinner rotation — every surface animates with
+   `os-spin var(--os-spin) linear infinite` instead of local duplicates. */
+@keyframes os-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* Thin custom scrollbars to fit the dark lab aesthetic. */
 * {
   scrollbar-width: thin;

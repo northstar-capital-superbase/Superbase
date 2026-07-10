@@ -279,7 +279,7 @@
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.4);
     border-top-color: #fff;
-    animation: mlc-spin var(--os-spin) linear infinite;
+    animation: os-spin var(--os-spin) linear infinite;
   }
 }
 
@@ -393,11 +393,6 @@
 }
 
 /* ── Motion ─────────────────────────────────────────────────────────────── */
-@keyframes mlc-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes mlc-fade {
   from {
     opacity: 0;

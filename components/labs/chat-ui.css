@@ -189,12 +189,7 @@
   border-radius: 50%;
   border: 2px solid rgba(255, 255, 255, 0.4);
   border-top-color: #fff;
-  animation: cmp-spin var(--os-spin) linear infinite;
-}
-@keyframes cmp-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: os-spin var(--os-spin) linear infinite;
 }
 
 /* ── Popup menu ("+" plugins & attachments) ───────────────────────────── */
