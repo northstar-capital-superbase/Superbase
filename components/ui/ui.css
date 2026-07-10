@@ -347,7 +347,7 @@
 
 /* ── Spinner & skeleton ──────────────────────────────────────────────────── */
 .ui-spinner {
-  animation: ui-spin 0.9s linear infinite;
+  animation: ui-spin var(--os-spin) linear infinite;
   flex: none;
 }
 .ui-skeleton {

@@ -57,6 +57,15 @@ export function useLabConsole() {
   const { history, addChat, removeChat } = useChatHistory();
   // Whether the current chat has been recorded in history yet (on first send).
   const registered = useRef(false);
+  // Timer that clears agent status badges after a run; cleared on unmount so a
+  // late fire can't setState on an unmounted console.
+  const statusResetTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (statusResetTimer.current) clearTimeout(statusResetTimer.current);
+    },
+    [],
+  );
 
   const pipelineFlow = useMemo(
     () => pipelineAgentIds(trading?.traderInCrew ?? false),
@@ -264,7 +273,8 @@ export function useLabConsole() {
       } finally {
         setBusy(false);
         await refreshMemory();
-        setTimeout(() => setStatuses({}), 1200);
+        if (statusResetTimer.current) clearTimeout(statusResetTimer.current);
+        statusResetTimer.current = setTimeout(() => setStatuses({}), 1200);
       }
     },
     [pushAssistant, refreshMemory, runFallback, activeChatId, addChat],

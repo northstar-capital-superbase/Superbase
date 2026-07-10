@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
 import { EmptyState } from "@/components/ui";
 import { Composer } from "@/components/labs/Composer";
@@ -31,7 +31,7 @@ export interface ChatTurn {
   webSearch?: boolean; // user asked with the web-search plugin on
 }
 
-export function Chat({
+export const Chat = memo(function Chat({
   turns,
   busy,
   onSend,
@@ -45,9 +45,12 @@ export function Chat({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const reduce =
+      typeof document !== "undefined" &&
+      document.documentElement.dataset.motion === "reduced";
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: reduce ? "auto" : "smooth",
     });
   }, [turns, busy]);
 
@@ -89,7 +92,7 @@ export function Chat({
       </div>
     </div>
   );
-}
+});
 
 function UserBubble({ turn }: { turn: ChatTurn }) {
   return (

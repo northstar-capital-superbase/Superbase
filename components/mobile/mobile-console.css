@@ -268,7 +268,7 @@
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.4);
     border-top-color: #fff;
-    animation: mlc-spin 0.75s linear infinite;
+    animation: mlc-spin var(--os-spin) linear infinite;
   }
 }
 

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
+import { useSettingsContext } from "@/components/settings/SettingsProvider";
 import {
   LayoutDashboard,
   BarChart3,
@@ -147,11 +148,28 @@ function useRuntimeStatus(): RuntimeStatus {
 }
 
 export function OsSidebar() {
+  const { settings, ready } = useSettingsContext();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
   const reduceMotion = useReducedMotion();
   const runtime = useRuntimeStatus();
+
+  // Adopt the Appearance → Sidebar default once, after settings hydrate.
+  // Manual ⌘\ toggles thereafter win for the rest of the session.
+  const appliedDefault = useRef(false);
+  useEffect(() => {
+    if (ready && !appliedDefault.current) {
+      setCollapsed(settings.appearance.sidebar === "collapsed");
+      appliedDefault.current = true;
+    }
+  }, [ready, settings.appearance.sidebar]);
+
+  // Honor the in-app motion toggle for the JS-driven width animation too.
+  const motionOff =
+    !!reduceMotion ||
+    settings.appearance.reducedMotion ||
+    !settings.appearance.animations;
 
   // Sync --sb-width so the content area margin animates in lockstep
   useEffect(() => {
@@ -177,7 +195,7 @@ export function OsSidebar() {
   }, [mobileOpen]);
 
   const toggle = () => setCollapsed((c) => !c);
-  const dur = reduceMotion ? 0 : 0.22;
+  const dur = motionOff ? 0 : 0.22;
 
   return (
     <>

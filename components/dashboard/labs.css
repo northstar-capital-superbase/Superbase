@@ -894,7 +894,7 @@
 
 /* ── Motion utilities ────────────────────────────────────────────────────── */
 .lx-spin {
-  animation: lx-spin 0.9s linear infinite;
+  animation: lx-spin var(--os-spin) linear infinite;
 }
 @keyframes lx-spin {
   to {
