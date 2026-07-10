@@ -11,14 +11,14 @@
 
 .msheet-backdrop {
   --mlc-accent: var(--os-accent, #6e8bff);
-  --mlc-accent-2: #a78bfa;
+  --mlc-accent-2: var(--os-accent-bright, #a78bfa);
 }
 
 @media (max-width: 768px) {
   /* Chat-first shell — fixed, full-viewport, calm and spacious */
   .mlc {
     --mlc-accent: var(--os-accent, #6e8bff);
-    --mlc-accent-2: #a78bfa;
+    --mlc-accent-2: var(--os-accent-bright, #a78bfa);
     --mlc-grad: linear-gradient(135deg, var(--mlc-accent), var(--mlc-accent-2));
 
     position: fixed;
@@ -42,9 +42,15 @@
     height: 54px;
     padding: 0 16px 0 64px; /* leave room for the sidebar hamburger (top-left) */
     border-bottom: 1px solid var(--os-line);
-    background: rgba(8, 9, 13, 0.82);
+    /* Follows the active theme's base color (was hardcoded to Midnight) */
+    background: color-mix(in srgb, var(--os-bg) 84%, transparent);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+  [data-glass="off"] .mlc-head {
+    background: var(--os-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
   .mlc-mark {
     display: grid;
@@ -71,8 +77,8 @@
   .mlc-head-btn {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
     border-radius: 10px;
     border: none;
     background: transparent;
@@ -183,9 +189,14 @@
     flex: none;
     padding: 8px 12px calc(10px + env(safe-area-inset-bottom, 0px));
     border-top: 1px solid var(--os-line);
-    background: rgba(8, 9, 13, 0.9);
+    background: color-mix(in srgb, var(--os-bg) 92%, transparent);
     backdrop-filter: blur(14px) saturate(150%);
     -webkit-backdrop-filter: blur(14px) saturate(150%);
+  }
+  [data-glass="off"] .mlc-foot {
+    background: var(--os-bg);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
   }
   .mlc-foot-rail {
     display: flex;
@@ -268,7 +279,7 @@
     border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.4);
     border-top-color: #fff;
-    animation: mlc-spin 0.75s linear infinite;
+    animation: os-spin var(--os-spin) linear infinite;
   }
 }
 
@@ -277,7 +288,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 12px;
   border-radius: 999px;
   border: 1px solid var(--os-line);
   background: var(--os-surface-2);
@@ -323,8 +334,8 @@
   background: var(--os-surface);
   box-shadow: var(--os-shadow-2);
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  animation: mlc-sheet-up 0.26s var(--os-ease);
-  transition: transform 0.2s var(--os-ease);
+  animation: mlc-sheet-up var(--os-dur-sheet) var(--os-ease-spring);
+  transition: transform var(--os-dur-slow) var(--os-ease);
 }
 .msheet-grab {
   display: flex;
@@ -363,9 +374,9 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 9px;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
   border: 1px solid var(--os-line);
   background: var(--os-surface-2);
   color: var(--os-text-2);
@@ -382,11 +393,6 @@
 }
 
 /* ── Motion ─────────────────────────────────────────────────────────────── */
-@keyframes mlc-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
 @keyframes mlc-fade {
   from {
     opacity: 0;
@@ -409,4 +415,11 @@
   .msheet {
     animation: none;
   }
+}
+/* In-app Reduced Motion — explicit coverage regardless of where the sheet
+   mounts relative to the .lx/.mlc scopes. */
+[data-motion="reduced"] .msheet-backdrop,
+[data-motion="reduced"] .msheet {
+  animation: none;
+  transition-duration: 0.01ms;
 }

@@ -1,4 +1,6 @@
-import { Fragment, type ReactNode } from "react";
+"use client";
+
+import { Fragment, memo, useMemo, type ReactNode } from "react";
 import "./chat-ui.css";
 
 // Lightweight, dependency-free markdown renderer for assistant replies so they
@@ -109,8 +111,8 @@ function renderInline(text: string): ReactNode[] {
   });
 }
 
-export function MessageContent({ text }: { text: string }) {
-  const blocks = parseBlocks(text);
+export const MessageContent = memo(function MessageContent({ text }: { text: string }) {
+  const blocks = useMemo(() => parseBlocks(text), [text]);
   return (
     <div className="md">
       {blocks.map((b, i) => {
@@ -135,4 +137,4 @@ export function MessageContent({ text }: { text: string }) {
       })}
     </div>
   );
-}
+});

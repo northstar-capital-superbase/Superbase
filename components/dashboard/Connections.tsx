@@ -3,14 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import clsx from "clsx";
 import { Button, OwnerNote, Spinner, StatusPill, type StatusTone } from "@/components/ui";
-
-interface Health {
-  ok: boolean;
-  provider: string | null;
-  model: string | null;
-  memory: "supabase" | "in-memory";
-  configured: boolean;
-}
+import { useRuntimeStatus } from "@/components/useRuntimeStatus";
 
 interface CheckResult {
   ok: boolean;
@@ -23,15 +16,6 @@ interface CheckResult {
 }
 
 type Probe = CheckResult | "loading" | null;
-
-interface TradingStatus {
-  ok: boolean;
-  enabled: boolean;
-  endpoint: string;
-  mode?: string;
-  maxOrderUsd?: number;
-  error?: string;
-}
 
 type Bucket = "connected" | "ready" | "needs";
 
@@ -99,22 +83,14 @@ function serviceStatus(s: Service): { tone: StatusTone; label: string } {
 // connect / Needs configuration, and re-runs the real /api/health and
 // /api/trading probes on demand so the whole stack is verifiable from here.
 export function Connections() {
-  const [health, setHealth] = useState<Health | null>(null);
-  const [trading, setTrading] = useState<TradingStatus | null>(null);
+  // Base health/trading reads come from the shared runtime hook (same source
+  // as the sidebar footer); the deep ?ping/?memory/?probe checks stay local.
+  const { health, trading, refresh } = useRuntimeStatus();
   const [llmProbe, setLlmProbe] = useState<Probe>(null);
   const [memProbe, setMemProbe] = useState<Probe>(null);
   const [tradeProbe, setTradeProbe] = useState<Probe>(null);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
   const [checking, setChecking] = useState(false);
-
-  const loadStatus = useCallback(async () => {
-    const [h, t] = await Promise.allSettled([
-      fetch("/api/health").then((r) => r.json()),
-      fetch("/api/trading").then((r) => r.json()),
-    ]);
-    if (h.status === "fulfilled") setHealth(h.value);
-    if (t.status === "fulfilled") setTrading(t.value);
-  }, []);
 
   const runChecks = useCallback(async () => {
     setChecking(true);
@@ -129,14 +105,10 @@ export function Connections() {
     setLlmProbe(llm.status === "fulfilled" ? llm.value : { ok: false, error: "request failed" });
     setMemProbe(mem.status === "fulfilled" ? mem.value : { ok: false, error: "request failed" });
     setTradeProbe(trade.status === "fulfilled" ? trade.value : { ok: false, error: "request failed" });
-    await loadStatus();
+    await refresh();
     setCheckedAt(new Date());
     setChecking(false);
-  }, [loadStatus]);
-
-  useEffect(() => {
-    loadStatus();
-  }, [loadStatus]);
+  }, [refresh]);
 
   // Return from the Robinhood OAuth flow → auto-run a fresh check.
   useEffect(() => {

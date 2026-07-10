@@ -3,9 +3,8 @@
 import { useEffect, useRef } from "react";
 import { MemoryContextChip } from "./MemoryContextChip";
 import { Composer } from "@/components/labs/Composer";
-import { MessageContent } from "@/components/labs/MessageContent";
-import { MessageAttachments } from "@/components/labs/MessageAttachments";
 import { AgentsPanel } from "@/components/labs/AgentsPanel";
+import { MessageThread, NorthstarMark } from "@/components/labs/MessageThread";
 import type { ChatTurn, SendFn } from "@/components/chat/Chat";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import type { AgentProfile, MemoryEntry } from "@/components/shared";
@@ -14,7 +13,8 @@ import "./mobile-console.css";
 // Chat-first mobile lab console. The crew (Agents panel) is shown inline at the
 // top of the thread with live status, and Shared Memory opens the full Memory
 // Explorer via the context chip. Desktop keeps its own layout; this component is
-// only shown at phone widths (see mobile-console.css).
+// only shown at phone widths (see mobile-console.css). Bubbles and the agent
+// trace come from the shared MessageThread.
 export function MobileLabConsole({
   turns,
   busy,
@@ -41,9 +41,12 @@ export function MobileLabConsole({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const reduce =
+      typeof document !== "undefined" &&
+      document.documentElement.dataset.motion === "reduced";
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: reduce ? "auto" : "smooth",
     });
   }, [turns, busy]);
 
@@ -91,34 +94,10 @@ export function MobileLabConsole({
           collapsible
         />
         {turns.length === 0 ? (
-          <MobileEmptyState onPick={onSend} />
+          <MobileEmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         ) : (
           <div className="mlc-thread">
-            {turns.map((t) =>
-              t.role === "user" ? (
-                <div className="mlc-bubble mlc-bubble--user" key={t.id}>
-                  <div className="mlc-user-inner">
-                    {t.attachments && <MessageAttachments items={t.attachments} />}
-                    {t.content && <span className="mlc-user-text">{t.content}</span>}
-                    {t.webSearch && (
-                      <span className="msg-plugin-tag">
-                        <SearchGlyph /> Web search
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ) : (
-                <div className="mlc-bubble mlc-bubble--ai ai-turn" key={t.id}>
-                  <span className="ai-avatar" aria-hidden="true">
-                    <NorthstarMark />
-                  </span>
-                  <div className="ai-body">
-                    <div className="ai-name">Northstar</div>
-                    <MessageContent text={t.content} />
-                  </div>
-                </div>
-              ),
-            )}
+            <MessageThread turns={turns} variant="mobile" />
           </div>
         )}
       </div>
@@ -134,15 +113,27 @@ export function MobileLabConsole({
   );
 }
 
-function MobileEmptyState({ onPick }: { onPick: (t: string) => void }) {
-  const samples = [
-    "Plan a 3-month roadmap for an open-source dev tool",
-    "Should we migrate our monolith to microservices?",
-  ];
+const MLC_SAMPLES = [
+  "Plan a 3-month roadmap for an open-source dev tool",
+  "Should we migrate our monolith to microservices?",
+];
+const MLC_TRADING_SAMPLES = [
+  "What is my Agentic account balance and top holdings?",
+  "Summarize portfolio drift vs my 55/25/20 allocation",
+];
+
+function MobileEmptyState({
+  onPick,
+  tradingEnabled,
+}: {
+  onPick: (t: string) => void;
+  tradingEnabled: boolean;
+}) {
+  const samples = tradingEnabled ? MLC_TRADING_SAMPLES : MLC_SAMPLES;
   return (
     <div className="mlc-empty">
       <span className="mlc-empty-mark" aria-hidden="true">
-        <NorthstarMark />
+        <NorthstarMark size={18} dot />
       </span>
       <h2 className="mlc-empty-title">How can the lab help?</h2>
       <p className="mlc-empty-sub">
@@ -157,27 +148,5 @@ function MobileEmptyState({ onPick }: { onPick: (t: string) => void }) {
         ))}
       </div>
     </div>
-  );
-}
-
-function SearchGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.2-3.2" />
-    </svg>
-  );
-}
-
-function NorthstarMark() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 1.5 L13.4 10.6 L22.5 12 L13.4 13.4 L12 22.5 L10.6 13.4 L1.5 12 L10.6 10.6 Z"
-        fill="currentColor"
-        fillOpacity="0.9"
-      />
-      <circle cx="12" cy="12" r="1.5" fill="rgba(255,255,255,0.22)" />
-    </svg>
   );
 }

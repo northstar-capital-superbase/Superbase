@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
+import { memo, useEffect, useRef } from "react";
+import { type CrewRun } from "@/components/shared";
 import { EmptyState } from "@/components/ui";
 import { Composer } from "@/components/labs/Composer";
-import { MessageContent } from "@/components/labs/MessageContent";
-import { MessageAttachments } from "@/components/labs/MessageAttachments";
+import { MessageThread } from "@/components/labs/MessageThread";
 
 export interface Attachment {
   id: string;
@@ -31,7 +30,7 @@ export interface ChatTurn {
   webSearch?: boolean; // user asked with the web-search plugin on
 }
 
-export function Chat({
+export const Chat = memo(function Chat({
   turns,
   busy,
   onSend,
@@ -45,9 +44,12 @@ export function Chat({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const reduce =
+      typeof document !== "undefined" &&
+      document.documentElement.dataset.motion === "reduced";
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: reduce ? "auto" : "smooth",
     });
   }, [turns, busy]);
 
@@ -69,13 +71,7 @@ export function Chat({
         {turns.length === 0 && (
           <ConsoleEmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         )}
-        {turns.map((t) =>
-          t.role === "user" ? (
-            <UserBubble key={t.id} turn={t} />
-          ) : (
-            <AssistantBubble key={t.id} text={t.content} run={t.run} />
-          ),
-        )}
+        <MessageThread turns={turns} variant="desktop" />
         {busy && <Thinking />}
       </div>
 
@@ -89,152 +85,7 @@ export function Chat({
       </div>
     </div>
   );
-}
-
-function UserBubble({ turn }: { turn: ChatTurn }) {
-  return (
-    <div className="lx-bubble-user">
-      <div className="lx-bubble-user-inner">
-        {turn.attachments && <MessageAttachments items={turn.attachments} />}
-        {turn.content && <span className="lx-bubble-user-text">{turn.content}</span>}
-        {turn.webSearch && (
-          <span className="msg-plugin-tag">
-            <SearchGlyph /> Web search
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className="lx-fadeup ai-turn">
-      <span className="ai-avatar" aria-hidden="true">
-        <StarMark />
-      </span>
-      <div className="ai-body">
-        <div className="ai-name">Northstar</div>
-        <MessageContent text={text} />
-        {run && (
-          <button
-            className="lx-trace-toggle"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-          >
-            <Caret open={open} />
-            {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
-            specialists)
-          </button>
-        )}
-        {run && open && <AgentTrace run={run} />}
-      </div>
-    </div>
-  );
-}
-
-function StarMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 1.5 L13.4 10.6 L22.5 12 L13.4 13.4 L12 22.5 L10.6 13.4 L1.5 12 L10.6 10.6 Z"
-        fill="currentColor"
-        fillOpacity="0.9"
-      />
-    </svg>
-  );
-}
-
-function SearchGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.2-3.2" />
-    </svg>
-  );
-}
-
-function Caret({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{
-        transform: open ? "rotate(180deg)" : undefined,
-        transition: "transform 150ms ease",
-      }}
-    >
-      <path d="M2 3.5 5 6.5 8 3.5" />
-    </svg>
-  );
-}
-
-function AgentTrace({ run }: { run: CrewRun }) {
-  const steps = [...run.specialistResults, run.synthesis];
-  const totalMs = steps.reduce((a, r) => a + r.ms, 0);
-  const inTok = steps.reduce((a, r) => a + (r.tokens?.input ?? 0), 0);
-  const outTok = steps.reduce((a, r) => a + (r.tokens?.output ?? 0), 0);
-  const hasTokens = inTok + outTok > 0;
-  const cost = estimateCostUSD(run.synthesis.model, inTok, outTok);
-
-  return (
-    <div className="lx-trace">
-      <div className="lx-trace-meta lx-mono">
-        <span style={{ color: "var(--text-2)" }}>{run.synthesis.model}</span>
-        <span>· {totalMs}ms total</span>
-        {hasTokens && (
-          <span>
-            · {inTok + outTok} tok ({inTok} in / {outTok} out)
-          </span>
-        )}
-        <span>· {run.specialistResults.length + 1} agent calls</span>
-        {cost !== null && cost > 0 && (
-          <span style={{ color: "var(--text-2)" }}>· ~${cost.toFixed(4)}</span>
-        )}
-      </div>
-      <TraceStep author="orchestrator" label="Plan" content={run.plan} />
-      {run.specialistResults.map((r) => (
-        <TraceStep
-          key={r.agent}
-          author={r.agent}
-          label={`${AGENT_META[r.agent].label} · ${r.ms}ms${
-            r.tokens ? ` · ${r.tokens.input + r.tokens.output} tok` : ""
-          }`}
-          content={r.output}
-        />
-      ))}
-    </div>
-  );
-}
-
-function TraceStep({
-  author,
-  label,
-  content,
-}: {
-  author: keyof typeof AGENT_META;
-  label: string;
-  content: string;
-}) {
-  const color = AGENT_META[author].color;
-  return (
-    <div className="lx-trace-step">
-      <div className="lx-trace-step-h" style={{ color }}>
-        <span className="lx-dot" style={{ backgroundColor: color }} />
-        {label}
-      </div>
-      <p>{content}</p>
-    </div>
-  );
-}
+});
 
 function Thinking() {
   return (

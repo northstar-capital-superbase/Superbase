@@ -6,3 +6,4 @@ export { Menu } from "./Menu";
 export { EmptyState } from "./EmptyState";
 export { Input, TextArea } from "./Input";
 export { Spinner, Skeleton } from "./Spinner";
+export { DisclosureChevron } from "./DisclosureChevron";

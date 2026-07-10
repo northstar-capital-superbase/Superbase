@@ -4,6 +4,7 @@ import { evaluateToolCall, tradingMode } from "../mcp/trading-policy";
 import { getMemory } from "../memory";
 import { getProvider } from "../llm";
 import type { ChatMessage } from "../llm/types";
+import { buildMemoryMessages } from "./context";
 import type { AgentContext, AgentResult } from "./types";
 import { TRADING } from "./profiles";
 
@@ -34,7 +35,7 @@ export class TradingAgent {
     if (!mcp) {
       const res = await provider.complete({
         system: advisorySystemPrompt(),
-        messages: buildMessages(ctx, []),
+        messages: buildMemoryMessages(ctx),
         temperature: 0.5,
         maxTokens: 900,
       });
@@ -59,7 +60,7 @@ export class TradingAgent {
     }
 
     const systemPrompt = buildSystemPrompt(tools);
-    const messages: ChatMessage[] = buildMessages(ctx, tools);
+    const messages: ChatMessage[] = buildMemoryMessages(ctx);
 
     let totalInput = 0;
     let totalOutput = 0;
@@ -202,23 +203,6 @@ Include a call block anywhere in your response:
 The tool result will be returned as a <tool_result> block, then you continue.
 You may call multiple tools per turn. When you have all the information you need,
 provide your final answer without any <mcp_call> blocks.`;
-}
-
-function buildMessages(ctx: AgentContext, _tools: McpTool[]): ChatMessage[] {
-  const messages: ChatMessage[] = [];
-
-  if (ctx.memory.length) {
-    const context = ctx.memory
-      .map((m) => `[${m.author}] ${m.content}`)
-      .join("\n");
-    messages.push({
-      role: "user",
-      content: `Shared lab memory (most recent last):\n${context}`,
-    });
-  }
-
-  messages.push({ role: "user", content: `Task: ${ctx.task}` });
-  return messages;
 }
 
 interface ToolCall {

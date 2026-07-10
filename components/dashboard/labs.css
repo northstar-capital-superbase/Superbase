@@ -26,7 +26,7 @@
   --gold: var(--os-amber);
   --red: var(--os-red);
 
-  --glow: rgba(110, 139, 255, 0.4);
+  --glow: color-mix(in srgb, var(--os-accent) 40%, transparent);
   /* Faint top-lit fill for interactive chrome (buttons, pills) — not cards */
   --white-fade: linear-gradient(
     180deg,
@@ -80,8 +80,21 @@
   z-index: 0;
   pointer-events: none;
   background:
-    radial-gradient(1400px 700px at 50% -340px, rgba(255, 255, 255, 0.07), transparent 56%),
-    radial-gradient(900px 560px at 85% -160px, rgba(110, 139, 255, 0.09), transparent 56%);
+    radial-gradient(1400px 700px at 50% -340px, rgba(255, 255, 255, 0.05), transparent 56%),
+    radial-gradient(900px 560px at 85% -160px, var(--os-glow-1, rgba(110, 139, 255, 0.09)), transparent 56%),
+    radial-gradient(760px 520px at 8% 108%, var(--os-glow-2, rgba(192, 132, 252, 0.08)), transparent 55%);
+  transition: opacity var(--os-dur-slow) var(--os-ease);
+}
+/* Background style: solid removes the ambient glow; grid adds a faint mesh. */
+[data-bg="solid"] .lx-bg {
+  background: none;
+}
+[data-bg="grid"] .lx-bg {
+  background:
+    radial-gradient(900px 560px at 85% -160px, var(--os-glow-1, rgba(110, 139, 255, 0.08)), transparent 56%),
+    linear-gradient(var(--os-line) 1px, transparent 1px) 0 0 / 34px 34px,
+    linear-gradient(90deg, var(--os-line) 1px, transparent 1px) 0 0 / 34px 34px;
+  opacity: 0.5;
 }
 .lx-grain {
   position: fixed;
@@ -98,7 +111,8 @@
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(8, 9, 13, 0.72);
+  /* Follows the active theme's base color (was hardcoded to Midnight) */
+  background: color-mix(in srgb, var(--os-bg) 76%, transparent);
   backdrop-filter: blur(14px) saturate(150%);
   -webkit-backdrop-filter: blur(14px) saturate(150%);
   border-bottom: 1px solid var(--line);
@@ -131,8 +145,8 @@
   height: 32px;
   border-radius: 9px;
   color: var(--blue-bright);
-  border: 1px solid rgba(110, 139, 255, 0.3);
-  background: rgba(110, 139, 255, 0.09);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 9%, transparent);
   flex: none;
 }
 .lx-brand-name {
@@ -369,7 +383,7 @@
   background: rgba(255, 255, 255, 0.05);
 }
 .lx-menu-item.is-active {
-  background: rgba(110, 139, 255, 0.13);
+  background: color-mix(in srgb, var(--os-accent) 13%, transparent);
 }
 .lx-menu-item button.name {
   flex: 1;
@@ -473,7 +487,7 @@
 }
 .lx-tile.blue:hover,
 .lx-tile.grey:hover {
-  border-color: rgba(110, 139, 255, 0.35);
+  border-color: color-mix(in srgb, var(--os-accent) 35%, transparent);
 }
 .lx-tile-top {
   display: flex;
@@ -508,15 +522,15 @@
   margin-top: 10px;
   padding: 6px 11px;
   border-radius: 8px;
-  border: 1px solid rgba(110, 139, 255, 0.4);
-  background: rgba(110, 139, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
   color: var(--blue-bright);
   font-size: 11.5px;
   font-weight: 600;
   transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
 }
 .lx-tile-action:hover {
-  background: rgba(110, 139, 255, 0.18);
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
 }
 .lx-tile-action:active {
   transform: translateY(1px);
@@ -678,8 +692,8 @@
   transition: border-color var(--os-dur) var(--os-ease), box-shadow var(--os-dur) var(--os-ease);
 }
 .lx-composer:focus-within {
-  border-color: rgba(110, 139, 255, 0.55);
-  box-shadow: 0 0 0 3px rgba(110, 139, 255, 0.12);
+  border-color: color-mix(in srgb, var(--os-accent) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--os-accent) 12%, transparent);
 }
 .lx-composer textarea {
   flex: 1;
@@ -707,9 +721,9 @@
   max-width: 80%;
 }
 .lx-bubble-user-text {
-  border-radius: 16px 16px 4px 16px;
-  background: rgba(110, 139, 255, 0.15);
-  border: 1px solid rgba(110, 139, 255, 0.2);
+  border-radius: var(--os-r) var(--os-r) 4px var(--os-r);
+  background: color-mix(in srgb, var(--blue) 15%, transparent);
+  border: 1px solid color-mix(in srgb, var(--blue) 22%, transparent);
   padding: 9px 13px;
   font-size: 13.5px;
   line-height: 1.55;
@@ -718,7 +732,7 @@
 }
 .lx-bubble-ai {
   max-width: 86%;
-  border-radius: 16px 16px 16px 4px;
+  border-radius: var(--os-r) var(--os-r) var(--os-r) 4px;
   border: 1px solid var(--line);
   background: var(--surface-2);
   padding: 12px 14px;
@@ -740,15 +754,17 @@
   margin: 0;
 }
 .lx-trace-toggle {
-  margin-top: 10px;
+  margin-top: 8px;
   background: none;
   border: none;
-  padding: 2px 0;
+  padding: 6px 0;
+  min-height: 32px;
   color: var(--text-3);
   font-size: 11px;
   display: inline-flex;
   align-items: center;
   gap: 5px;
+  cursor: pointer;
   transition: color var(--os-dur) var(--os-ease);
 }
 .lx-trace-toggle:hover {
@@ -830,11 +846,11 @@
   gap: 14px;
   padding: 16px 18px;
   border-radius: var(--r);
-  border: 1px solid rgba(110, 139, 255, 0.28);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 28%, transparent);
   background: linear-gradient(
       180deg,
-      rgba(110, 139, 255, 0.1),
-      rgba(110, 139, 255, 0.03)
+      color-mix(in srgb, var(--os-accent) 10%, transparent),
+      color-mix(in srgb, var(--os-accent) 3%, transparent)
     ),
     var(--surface);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), var(--os-shadow-1);
@@ -842,7 +858,7 @@
     transform var(--os-dur) var(--os-ease);
 }
 .lx-console-cta:hover {
-  border-color: rgba(110, 139, 255, 0.55);
+  border-color: color-mix(in srgb, var(--os-accent) 55%, transparent);
   transform: translateY(-1px);
 }
 .lx-console-cta-icon {
@@ -853,8 +869,8 @@
   flex: none;
   border-radius: 11px;
   color: var(--blue-bright);
-  border: 1px solid rgba(110, 139, 255, 0.3);
-  background: rgba(110, 139, 255, 0.1);
+  border: 1px solid color-mix(in srgb, var(--os-accent) 30%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
 }
 .lx-console-cta-main {
   display: flex;
@@ -881,12 +897,7 @@
 
 /* ── Motion utilities ────────────────────────────────────────────────────── */
 .lx-spin {
-  animation: lx-spin 0.9s linear infinite;
-}
-@keyframes lx-spin {
-  to {
-    transform: rotate(360deg);
-  }
+  animation: os-spin var(--os-spin) linear infinite;
 }
 @keyframes lx-pulse {
   50% {
@@ -971,4 +982,169 @@
   .lx * {
     transition-duration: 0.01ms !important;
   }
+}
+
+/* ── Appearance controls (driven by data-* attributes on <html> / preview) ──
+   These are cross-cutting toggles the Appearance panel writes. They live here
+   because they target the shared .lx surfaces. */
+
+/* Motion off / reduced-motion preference: kill decorative animation app-wide. */
+[data-motion="reduced"] .lx *,
+[data-motion="reduced"] .sb *,
+[data-motion="reduced"] .mlc * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Glass off: drop backdrop blur to a flat surface (also a perf lever). */
+[data-glass="off"] .lx-topbar {
+  background: var(--os-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Density: tighten or relax the primary content rhythm. */
+[data-density="compact"] .lx-main {
+  gap: 14px;
+  padding: 16px 20px 52px;
+}
+[data-density="compact"] .lx-set-body {
+  padding: 4px 16px 12px;
+}
+[data-density="compact"] .lx-row,
+[data-density="compact"] .lx-kv-item {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+[data-density="comfortable"] .lx-main {
+  gap: 26px;
+  padding: 30px 24px 72px;
+}
+[data-density="comfortable"] .lx-set-body {
+  padding: 12px 24px 22px;
+}
+[data-density="comfortable"] .lx-row,
+[data-density="comfortable"] .lx-kv-item {
+  padding-top: 18px;
+  padding-bottom: 18px;
+}
+
+/* First-run hint banner (Command Center) */
+.lx-hint {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--blue) 8%, transparent), transparent),
+    var(--surface);
+  box-shadow: var(--os-shadow-1);
+  animation: lx-fadeup 0.3s var(--os-ease) both;
+}
+.lx-hint-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  flex: none;
+  color: var(--blue-bright);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+.lx-hint-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.lx-hint-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lx-hint-sub {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.lx-hint-cta {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue-bright);
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--blue) 34%, transparent);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
+}
+.lx-hint-cta:hover {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  transform: translateY(-1px);
+}
+.lx-hint-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  transition: color var(--os-dur) var(--os-ease), background-color var(--os-dur) var(--os-ease);
+}
+.lx-hint-x:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+@media (max-width: 640px) {
+  .lx-hint {
+    flex-wrap: wrap;
+  }
+  .lx-hint-cta {
+    order: 3;
+  }
+}
+
+/* Font size: scale the primary reading + composer text (content-first). */
+.lx-bubble-ai p,
+.lx-bubble-user-text,
+.cmp-input,
+.mlc-msg,
+.msg-body {
+  font-size: calc(13.5px * var(--os-font-scale, 1));
+}
+
+/* Chat bubble styles (real conversation surface, mirrors the preview). */
+[data-bubbles="minimal"] .lx-bubble-ai {
+  background: none;
+  border: none;
+  border-left: 2px solid color-mix(in srgb, var(--blue) 55%, transparent);
+  border-radius: 0;
+  padding: 4px 0 4px 12px;
+}
+[data-bubbles="minimal"] .lx-bubble-user-text {
+  background: none;
+  border: none;
+  padding: 6px 2px;
+}
+[data-bubbles="solid"] .lx-bubble-ai {
+  background: var(--surface-3);
+  border-color: transparent;
+}
+[data-bubbles="solid"] .lx-bubble-user-text {
+  background: var(--blue);
+  border-color: transparent;
+  color: #0b0d12;
+}
+
+/* Agent colors off: neutralize role tints in the live agent roster. */
+[data-agent-colors="off"] .ap-color,
+[data-agent-colors="off"] .lx-agent-dot {
+  filter: grayscale(1) opacity(0.7);
 }
