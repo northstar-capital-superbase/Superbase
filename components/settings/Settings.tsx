@@ -19,6 +19,7 @@ import {
 import { AppearancePanel } from "./AppearancePanel";
 import { IntegrationsSettings, MemorySettings } from "./live";
 import { useSettings } from "./useSettings";
+import { useRuntimeStatus } from "@/components/useRuntimeStatus";
 import type { AgentProfile } from "@/components/shared";
 import "@/components/dashboard/labs.css";
 import "./settings.css";
@@ -326,21 +327,12 @@ function PrivacySettings() {
 function DeveloperSettings() {
   const { settings, update } = useSettings();
   const d = settings.developer;
-  const [api, setApi] = useState<StatusState>("checking");
-  const [mem, setMem] = useState<string>("…");
-  useEffect(() => {
-    void (async () => {
-      try {
-        const r = await fetch("/api/health");
-        const data = await r.json();
-        setApi(data.ok ? "ok" : "warn");
-        setMem(data.memory === "supabase" ? "Supabase" : "Local");
-      } catch {
-        setApi("warn");
-        setMem("unknown");
-      }
-    })();
-  }, []);
+  // Reuses the same runtime probe as the sidebar footer and Connections
+  // (RuntimeStatusProvider, mounted in OsShell) instead of a local /api/health
+  // fetch, so visiting Settings doesn't trigger a second request.
+  const runtime = useRuntimeStatus();
+  const api: StatusState = !runtime.loaded ? "checking" : runtime.health?.ok ? "ok" : "warn";
+  const mem = !runtime.loaded ? "…" : runtime.memory === "supabase" ? "Supabase" : "Local";
   const env = (typeof process !== "undefined" && process.env.NODE_ENV) || "production";
   const build = (typeof process !== "undefined" && process.env.NEXT_PUBLIC_BUILD) || "local";
   return (

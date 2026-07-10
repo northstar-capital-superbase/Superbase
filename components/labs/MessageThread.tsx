@@ -4,6 +4,7 @@ import { useState } from "react";
 import { MessageContent } from "./MessageContent";
 import { MessageAttachments } from "./MessageAttachments";
 import { AgentTrace } from "./AgentTrace";
+import { DisclosureChevron } from "@/components/ui";
 import { useSettings } from "@/components/settings/useSettings";
 import type { ChatTurn } from "@/components/chat/Chat";
 import type { CrewRun } from "@/components/shared";
@@ -101,7 +102,7 @@ function AssistantBubble({
             onClick={() => setOpen((o) => !o)}
             aria-expanded={open}
           >
-            <Caret open={open} />
+            <DisclosureChevron open={open} size={9} variant="caret" />
             {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
             specialists)
           </button>
@@ -146,28 +147,6 @@ function SearchGlyph() {
     >
       <circle cx="11" cy="11" r="7" />
       <path d="m20 20-3.2-3.2" />
-    </svg>
-  );
-}
-
-function Caret({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{
-        transform: open ? "rotate(180deg)" : undefined,
-        transition: "transform 150ms ease",
-      }}
-    >
-      <path d="M2 3.5 5 6.5 8 3.5" />
     </svg>
   );
 }

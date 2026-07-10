@@ -9,6 +9,7 @@ import {
 } from "@/components/mobile/mobileData";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import type { AgentProfile } from "@/components/shared";
+import { DisclosureChevron } from "@/components/ui";
 import "./agents-panel.css";
 
 // Always-visible roster of the real crew with live status, shown directly on the
@@ -35,7 +36,7 @@ export const AgentsPanel = memo(function AgentsPanel({
 
   const header = (
     <>
-      {collapsible && <Chevron open={open} />}
+      {collapsible && <DisclosureChevron open={open} size={12} variant="chevron" />}
       <span className="ap-title">Agents</span>
       <span className="ap-count">{crew.length}</span>
       {busy && (
@@ -110,27 +111,5 @@ function StatePill({
       )}
       {stateLabel(state)}
     </span>
-  );
-}
-
-function Chevron({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="12"
-      height="12"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{
-        transform: open ? "rotate(90deg)" : undefined,
-        transition: "transform 160ms ease",
-      }}
-    >
-      <path d="M9 6l6 6-6 6" />
-    </svg>
   );
 }
