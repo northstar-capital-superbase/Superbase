@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import {
   crewAgents,
   deriveAgentState,
@@ -13,8 +13,9 @@ import "./agents-panel.css";
 
 // Always-visible roster of the real crew with live status, shown directly on the
 // Lab Console (desktop rail + inline on mobile). Statuses are driven by the live
-// run (see useLabConsole `statuses`).
-export function AgentsPanel({
+// run (see useLabConsole `statuses`). Memoized so thread updates (new turns,
+// streaming text) don't re-render the roster — only status ticks do.
+export const AgentsPanel = memo(function AgentsPanel({
   agents,
   statuses,
   busy,
@@ -87,7 +88,7 @@ export function AgentsPanel({
       )}
     </section>
   );
-}
+});
 
 function StatePill({
   state,

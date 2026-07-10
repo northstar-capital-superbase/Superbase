@@ -1,13 +1,10 @@
 "use client";
 
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef } from "react";
 import { type CrewRun } from "@/components/shared";
 import { EmptyState } from "@/components/ui";
 import { Composer } from "@/components/labs/Composer";
-import { MessageContent } from "@/components/labs/MessageContent";
-import { MessageAttachments } from "@/components/labs/MessageAttachments";
-import { AgentTrace } from "@/components/labs/AgentTrace";
-import { useSettings } from "@/components/settings/useSettings";
+import { MessageThread } from "@/components/labs/MessageThread";
 
 export interface Attachment {
   id: string;
@@ -74,13 +71,7 @@ export const Chat = memo(function Chat({
         {turns.length === 0 && (
           <ConsoleEmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         )}
-        {turns.map((t) =>
-          t.role === "user" ? (
-            <UserBubble key={t.id} turn={t} />
-          ) : (
-            <AssistantBubble key={t.id} text={t.content} run={t.run} />
-          ),
-        )}
+        <MessageThread turns={turns} variant="desktop" />
         {busy && <Thinking />}
       </div>
 
@@ -95,94 +86,6 @@ export const Chat = memo(function Chat({
     </div>
   );
 });
-
-function UserBubble({ turn }: { turn: ChatTurn }) {
-  return (
-    <div className="lx-bubble-user">
-      <div className="lx-bubble-user-inner">
-        {turn.attachments && <MessageAttachments items={turn.attachments} />}
-        {turn.content && <span className="lx-bubble-user-text">{turn.content}</span>}
-        {turn.webSearch && (
-          <span className="msg-plugin-tag">
-            <SearchGlyph /> Web search
-          </span>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
-  const { settings } = useSettings();
-  const showTrace = settings.agents.showTrace;
-  const [open, setOpen] = useState(settings.agents.autoOpenTrace);
-  return (
-    <div className="lx-fadeup ai-turn">
-      <span className="ai-avatar" aria-hidden="true">
-        <StarMark />
-      </span>
-      <div className="ai-body">
-        <div className="ai-name">Northstar</div>
-        <MessageContent text={text} />
-        {run && showTrace && (
-          <button
-            className="lx-trace-toggle"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-          >
-            <Caret open={open} />
-            {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length}{" "}
-            specialists)
-          </button>
-        )}
-        {run && showTrace && open && <AgentTrace run={run} />}
-      </div>
-    </div>
-  );
-}
-
-function StarMark() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 1.5 L13.4 10.6 L22.5 12 L13.4 13.4 L12 22.5 L10.6 13.4 L1.5 12 L10.6 10.6 Z"
-        fill="currentColor"
-        fillOpacity="0.9"
-      />
-    </svg>
-  );
-}
-
-function SearchGlyph() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-      <circle cx="11" cy="11" r="7" />
-      <path d="m20 20-3.2-3.2" />
-    </svg>
-  );
-}
-
-function Caret({ open }: { open: boolean }) {
-  return (
-    <svg
-      width="9"
-      height="9"
-      viewBox="0 0 10 10"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      style={{
-        transform: open ? "rotate(180deg)" : undefined,
-        transition: "transform 150ms ease",
-      }}
-    >
-      <path d="M2 3.5 5 6.5 8 3.5" />
-    </svg>
-  );
-}
 
 function Thinking() {
   return (

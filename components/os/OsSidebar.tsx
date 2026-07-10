@@ -487,14 +487,17 @@ function NavSection({
           </span>
         </button>
       )}
+      {/* Transform-based reveal (opacity + small y-slide) — animating height
+          re-runs layout every frame, so the row list fades/slides instead and
+          the container reflows exactly once on mount/unmount. */}
       <AnimatePresence initial={false}>
         {showItems && (
           <motion.div
             key="items"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: motionOff ? 0 : 0.18, ease: EASE_OUT }}
+            initial={{ opacity: 0, y: motionOff ? 0 : -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: motionOff ? 0 : -6 }}
+            transition={{ duration: motionOff ? 0 : 0.16, ease: EASE_OUT }}
             style={{ overflow: "hidden" }}
           >
             {section.items.map((item) =>
@@ -581,14 +584,15 @@ function NavGroup({
           </span>
         </button>
       </div>
+      {/* Same transform-based reveal as NavSection — no per-frame height layout. */}
       <AnimatePresence initial={false}>
         {open && (
           <motion.div
             key="subitems"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: motionOff ? 0 : 0.18, ease: EASE_OUT }}
+            initial={{ opacity: 0, y: motionOff ? 0 : -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: motionOff ? 0 : -6 }}
+            transition={{ duration: motionOff ? 0 : 0.16, ease: EASE_OUT }}
             style={{ overflow: "hidden" }}
           >
             {children.map((child) => (
