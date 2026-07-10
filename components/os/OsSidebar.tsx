@@ -15,7 +15,6 @@ import {
   Brain,
   Zap,
   Wrench,
-  Globe,
   Rocket,
   Link2,
   Shield,
@@ -73,7 +72,6 @@ const SECTIONS: NavSectionDef[] = [
     label: "Northstar Labs",
     items: [
       { key: "builder",     label: "Agent Builder",    icon: Wrench,       href: "/builder", badge: "soon" },
-      { key: "mcp",         label: "MCP Integrations", icon: Globe,        href: "/connections" },
       { key: "sandbox",     label: "Sandbox",          icon: Rocket,       href: "/sandbox", badge: "soon" },
     ],
   },

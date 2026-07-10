@@ -1,5 +1,6 @@
 import { getProvider } from "../llm";
 import type { ChatMessage } from "../llm/types";
+import { buildMemoryMessages } from "./context";
 import type { AgentContext, AgentProfile, AgentResult } from "./types";
 
 // Base class every specialist extends. It wires an agent profile to the active
@@ -9,20 +10,7 @@ export class Agent {
   constructor(public readonly profile: AgentProfile) {}
 
   protected buildMessages(ctx: AgentContext): ChatMessage[] {
-    const messages: ChatMessage[] = [];
-
-    if (ctx.memory.length) {
-      const context = ctx.memory
-        .map((m) => `[${m.author}] ${m.content}`)
-        .join("\n");
-      messages.push({
-        role: "user",
-        content: `Shared lab memory (most recent first is bottom):\n${context}`,
-      });
-    }
-
-    messages.push({ role: "user", content: `Task: ${ctx.task}` });
-    return messages;
+    return buildMemoryMessages(ctx);
   }
 
   async run(ctx: AgentContext): Promise<AgentResult> {

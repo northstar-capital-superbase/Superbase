@@ -5,7 +5,10 @@ import Link from "next/link";
 import { AgentRoster } from "./AgentRoster";
 import { Connections } from "./Connections";
 import { Skeleton } from "@/components/ui";
+import { useSettings } from "@/components/settings/useSettings";
 import "./labs.css";
+
+const HINT_KEY = "northstar.hint.commandcenter.dismissed";
 import {
   type AgentProfile,
   type RuntimeInfo,
@@ -53,6 +56,8 @@ export function Dashboard() {
           </Link>
         </div>
 
+        <FirstRunHint />
+
         <Connections />
 
         {agents.length === 0 ? (
@@ -78,6 +83,47 @@ export function Dashboard() {
           </span>
         </Link>
       </main>
+    </div>
+  );
+}
+
+// Lightweight, dismissible first-run pointer to the Lab Console. Honors
+// Settings → General → "Show tips" and remembers dismissal locally.
+function FirstRunHint() {
+  const { settings, ready } = useSettings();
+  const [dismissed, setDismissed] = useState(true);
+  useEffect(() => {
+    setDismissed(localStorage.getItem(HINT_KEY) === "1");
+  }, []);
+  if (!ready || dismissed || !settings.general.showTips) return null;
+  const dismiss = () => {
+    setDismissed(true);
+    try {
+      localStorage.setItem(HINT_KEY, "1");
+    } catch {
+      /* storage may be unavailable */
+    }
+  };
+  return (
+    <div className="lx-hint" role="note">
+      <span className="lx-hint-mark" aria-hidden="true">
+        <ChatGlyph />
+      </span>
+      <div className="lx-hint-main">
+        <span className="lx-hint-title">Welcome to Northstar OS</span>
+        <span className="lx-hint-sub">
+          Hand the crew a task in the Lab Console — the orchestrator plans, specialists
+          collaborate through shared memory, then it synthesizes one answer.
+        </span>
+      </div>
+      <Link href="/labs/console" className="lx-hint-cta">
+        Open Console →
+      </Link>
+      <button type="button" className="lx-hint-x" onClick={dismiss} aria-label="Dismiss">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6L6 18" />
+        </svg>
+      </button>
     </div>
   );
 }

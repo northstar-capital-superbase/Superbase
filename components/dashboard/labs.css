@@ -1032,6 +1032,87 @@
   padding-bottom: 18px;
 }
 
+/* First-run hint banner (Command Center) */
+.lx-hint {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: var(--r);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, var(--line));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--blue) 8%, transparent), transparent),
+    var(--surface);
+  box-shadow: var(--os-shadow-1);
+  animation: lx-fadeup 0.3s var(--os-ease) both;
+}
+.lx-hint-mark {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  flex: none;
+  color: var(--blue-bright);
+  border: 1px solid color-mix(in srgb, var(--blue) 30%, transparent);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+}
+.lx-hint-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+.lx-hint-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.lx-hint-sub {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.lx-hint-cta {
+  flex: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--blue-bright);
+  padding: 8px 13px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--blue) 34%, transparent);
+  background: color-mix(in srgb, var(--blue) 10%, transparent);
+  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
+}
+.lx-hint-cta:hover {
+  background: color-mix(in srgb, var(--blue) 18%, transparent);
+  transform: translateY(-1px);
+}
+.lx-hint-x {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid transparent;
+  transition: color var(--os-dur) var(--os-ease), background-color var(--os-dur) var(--os-ease);
+}
+.lx-hint-x:hover {
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.05);
+}
+@media (max-width: 640px) {
+  .lx-hint {
+    flex-wrap: wrap;
+  }
+  .lx-hint-cta {
+    order: 3;
+  }
+}
+
 /* Font size: scale the primary reading + composer text (content-first). */
 .lx-bubble-ai p,
 .lx-bubble-user-text,

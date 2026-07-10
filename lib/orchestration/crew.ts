@@ -15,6 +15,9 @@ export interface CrewRun {
   sessionId: string;
   task: string;
   plan: string;
+  // Orchestrator plan-phase cost, so the UI trace can account for every call.
+  planMs?: number;
+  planTokens?: { input: number; output: number };
   specialistResults: AgentResult[];
   synthesis: AgentResult;
   backend: "supabase" | "in-memory";
@@ -107,6 +110,8 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
         sessionId,
         task,
         plan: planResult.output,
+        planMs: planResult.ms,
+        planTokens: planResult.tokens,
         specialistResults,
         synthesis,
         backend: memoryBackend(),

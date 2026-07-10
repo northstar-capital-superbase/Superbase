@@ -1,11 +1,13 @@
 "use client";
 
 import { memo, useEffect, useRef, useState } from "react";
-import { AGENT_META, estimateCostUSD, type CrewRun } from "@/components/shared";
+import { type CrewRun } from "@/components/shared";
 import { EmptyState } from "@/components/ui";
 import { Composer } from "@/components/labs/Composer";
 import { MessageContent } from "@/components/labs/MessageContent";
 import { MessageAttachments } from "@/components/labs/MessageAttachments";
+import { AgentTrace } from "@/components/labs/AgentTrace";
+import { useSettings } from "@/components/settings/useSettings";
 
 export interface Attachment {
   id: string;
@@ -111,7 +113,9 @@ function UserBubble({ turn }: { turn: ChatTurn }) {
 }
 
 function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
-  const [open, setOpen] = useState(false);
+  const { settings } = useSettings();
+  const showTrace = settings.agents.showTrace;
+  const [open, setOpen] = useState(settings.agents.autoOpenTrace);
   return (
     <div className="lx-fadeup ai-turn">
       <span className="ai-avatar" aria-hidden="true">
@@ -120,7 +124,7 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
       <div className="ai-body">
         <div className="ai-name">Northstar</div>
         <MessageContent text={text} />
-        {run && (
+        {run && showTrace && (
           <button
             className="lx-trace-toggle"
             onClick={() => setOpen((o) => !o)}
@@ -131,7 +135,7 @@ function AssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
             specialists)
           </button>
         )}
-        {run && open && <AgentTrace run={run} />}
+        {run && showTrace && open && <AgentTrace run={run} />}
       </div>
     </div>
   );
@@ -177,65 +181,6 @@ function Caret({ open }: { open: boolean }) {
     >
       <path d="M2 3.5 5 6.5 8 3.5" />
     </svg>
-  );
-}
-
-function AgentTrace({ run }: { run: CrewRun }) {
-  const steps = [...run.specialistResults, run.synthesis];
-  const totalMs = steps.reduce((a, r) => a + r.ms, 0);
-  const inTok = steps.reduce((a, r) => a + (r.tokens?.input ?? 0), 0);
-  const outTok = steps.reduce((a, r) => a + (r.tokens?.output ?? 0), 0);
-  const hasTokens = inTok + outTok > 0;
-  const cost = estimateCostUSD(run.synthesis.model, inTok, outTok);
-
-  return (
-    <div className="lx-trace">
-      <div className="lx-trace-meta lx-mono">
-        <span style={{ color: "var(--text-2)" }}>{run.synthesis.model}</span>
-        <span>· {totalMs}ms total</span>
-        {hasTokens && (
-          <span>
-            · {inTok + outTok} tok ({inTok} in / {outTok} out)
-          </span>
-        )}
-        <span>· {run.specialistResults.length + 1} agent calls</span>
-        {cost !== null && cost > 0 && (
-          <span style={{ color: "var(--text-2)" }}>· ~${cost.toFixed(4)}</span>
-        )}
-      </div>
-      <TraceStep author="orchestrator" label="Plan" content={run.plan} />
-      {run.specialistResults.map((r) => (
-        <TraceStep
-          key={r.agent}
-          author={r.agent}
-          label={`${AGENT_META[r.agent].label} · ${r.ms}ms${
-            r.tokens ? ` · ${r.tokens.input + r.tokens.output} tok` : ""
-          }`}
-          content={r.output}
-        />
-      ))}
-    </div>
-  );
-}
-
-function TraceStep({
-  author,
-  label,
-  content,
-}: {
-  author: keyof typeof AGENT_META;
-  label: string;
-  content: string;
-}) {
-  const color = AGENT_META[author].color;
-  return (
-    <div className="lx-trace-step">
-      <div className="lx-trace-step-h" style={{ color }}>
-        <span className="lx-dot" style={{ backgroundColor: color }} />
-        {label}
-      </div>
-      <p>{content}</p>
-    </div>
   );
 }
 

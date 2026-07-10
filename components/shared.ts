@@ -45,6 +45,8 @@ export interface CrewRun {
   sessionId: string;
   task: string;
   plan: string;
+  planMs?: number;
+  planTokens?: { input: number; output: number };
   specialistResults: AgentResult[];
   synthesis: AgentResult;
   backend: "supabase" | "in-memory";

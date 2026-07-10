@@ -23,12 +23,6 @@ interface MemoryProbe {
   ms?: number;
   error?: string;
 }
-interface TradingStatus {
-  ok: boolean;
-  enabled: boolean;
-  mode?: string;
-  maxOrderUsd?: number;
-}
 
 function activeSessionId(): string {
   try {

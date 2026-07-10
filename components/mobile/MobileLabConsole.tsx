@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MemoryContextChip } from "./MemoryContextChip";
 import { Composer } from "@/components/labs/Composer";
 import { MessageContent } from "@/components/labs/MessageContent";
 import { MessageAttachments } from "@/components/labs/MessageAttachments";
 import { AgentsPanel } from "@/components/labs/AgentsPanel";
+import { AgentTrace } from "@/components/labs/AgentTrace";
+import { useSettings } from "@/components/settings/useSettings";
 import type { ChatTurn, SendFn } from "@/components/chat/Chat";
+import type { CrewRun } from "@/components/shared";
 import type { AgentStatus } from "@/components/dashboard/AgentRoster";
 import type { AgentProfile, MemoryEntry } from "@/components/shared";
 import "./mobile-console.css";
@@ -41,9 +44,12 @@ export function MobileLabConsole({
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const reduce =
+      typeof document !== "undefined" &&
+      document.documentElement.dataset.motion === "reduced";
     scrollRef.current?.scrollTo({
       top: scrollRef.current.scrollHeight,
-      behavior: "smooth",
+      behavior: reduce ? "auto" : "smooth",
     });
   }, [turns, busy]);
 
@@ -91,7 +97,7 @@ export function MobileLabConsole({
           collapsible
         />
         {turns.length === 0 ? (
-          <MobileEmptyState onPick={onSend} />
+          <MobileEmptyState onPick={onSend} tradingEnabled={tradingEnabled} />
         ) : (
           <div className="mlc-thread">
             {turns.map((t) =>
@@ -108,15 +114,7 @@ export function MobileLabConsole({
                   </div>
                 </div>
               ) : (
-                <div className="mlc-bubble mlc-bubble--ai ai-turn" key={t.id}>
-                  <span className="ai-avatar" aria-hidden="true">
-                    <NorthstarMark />
-                  </span>
-                  <div className="ai-body">
-                    <div className="ai-name">Northstar</div>
-                    <MessageContent text={t.content} />
-                  </div>
-                </div>
+                <MobileAssistantBubble key={t.id} text={t.content} run={t.run} />
               ),
             )}
           </div>
@@ -134,11 +132,50 @@ export function MobileLabConsole({
   );
 }
 
-function MobileEmptyState({ onPick }: { onPick: (t: string) => void }) {
-  const samples = [
-    "Plan a 3-month roadmap for an open-source dev tool",
-    "Should we migrate our monolith to microservices?",
-  ];
+function MobileAssistantBubble({ text, run }: { text: string; run?: CrewRun }) {
+  const { settings } = useSettings();
+  const showTrace = settings.agents.showTrace;
+  const [open, setOpen] = useState(settings.agents.autoOpenTrace);
+  return (
+    <div className="mlc-bubble mlc-bubble--ai ai-turn">
+      <span className="ai-avatar" aria-hidden="true">
+        <NorthstarMark />
+      </span>
+      <div className="ai-body">
+        <div className="ai-name">Northstar</div>
+        <MessageContent text={text} />
+        {run && showTrace && (
+          <button
+            className="lx-trace-toggle"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+          >
+            {open ? "Hide" : "Show"} agent trace ({run.specialistResults.length} specialists)
+          </button>
+        )}
+        {run && showTrace && open && <AgentTrace run={run} />}
+      </div>
+    </div>
+  );
+}
+
+const MLC_SAMPLES = [
+  "Plan a 3-month roadmap for an open-source dev tool",
+  "Should we migrate our monolith to microservices?",
+];
+const MLC_TRADING_SAMPLES = [
+  "What is my Agentic account balance and top holdings?",
+  "Summarize portfolio drift vs my 55/25/20 allocation",
+];
+
+function MobileEmptyState({
+  onPick,
+  tradingEnabled,
+}: {
+  onPick: (t: string) => void;
+  tradingEnabled: boolean;
+}) {
+  const samples = tradingEnabled ? MLC_TRADING_SAMPLES : MLC_SAMPLES;
   return (
     <div className="mlc-empty">
       <span className="mlc-empty-mark" aria-hidden="true">
