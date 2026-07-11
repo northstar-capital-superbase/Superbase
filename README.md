@@ -127,6 +127,9 @@ See `.env.example`. The lab auto-detects:
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, with `supabase/schema.sql` applied to that
   project. Every private route (`/labs`, `/settings`, `/connections`) redirects
   to `/login` without a valid session.
+- **Password reset:** hidden by default. Enable
+  `NEXT_PUBLIC_PASSWORD_RESET_ENABLED=true` only after SMTP delivery and the
+  recovery/update-password flow are configured.
 - **LLM provider (required to answer):** `ANTHROPIC_API_KEY` → Claude, else
   `OPENAI_API_KEY` → OpenAI. Force with `LLM_PROVIDER`. Without a key the crew
   endpoints return a clear "not configured" error.
@@ -137,7 +140,10 @@ See `.env.example`. The lab auto-detects:
   configured, memory falls back to in-process (still isolated per user within
   that process).
 - **Robinhood Agentic Trading:** set `ROBINHOOD_MCP_TOKEN` (OAuth bearer from the
-  Robinhood MCP connect flow). The **Trader** joins every crew run automatically.
+  Robinhood MCP connect flow) and explicitly allow owner emails with
+  `TRADING_ALLOWED_USER_EMAILS`. The global connection is denied to every other
+  account; production OAuth remains disabled until encrypted per-user token
+  storage exists. The **Trader** joins only authorized crew runs.
   Verify with `GET /api/trading?probe=1`. Full setup: [`docs/TRADING.md`](docs/TRADING.md).
 
 ## Robinhood Agentic — go live

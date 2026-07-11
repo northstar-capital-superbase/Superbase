@@ -30,7 +30,8 @@ CI runs: `npm ci` → typecheck → lint → test → build (`.github/workflows/
 - **Required:** `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase Auth — accounts, profiles, per-user memory isolation). Apply `supabase/schema.sql` to that project first (SQL editor or `supabase db push`).
 - Without an LLM key: crew runs return a clear "not configured" error; memory backend falls back to in-process if Supabase isn't set.
 - Optional: `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` for live models; `SUPABASE_SERVICE_ROLE_KEY` only matters for the admin `/api/health?memory=1` diagnostic probe — per-user chat memory authenticates as the signed-in user instead.
-- **Robinhood Agentic:** connect via `/labs` → **Connect Robinhood** (`GET /api/trading/oauth/start`) or set `ROBINHOOD_MCP_TOKEN` — see `docs/TRADING.md`. Local OAuth writes `.robinhood-mcp-token`. Trader auto-joins crew runs when a token is present.
+- **Password reset:** leave `NEXT_PUBLIC_PASSWORD_RESET_ENABLED=false` until SMTP and the recovery/update-password flow are configured; the UI hides the control while disabled.
+- **Robinhood Agentic:** set `ROBINHOOD_MCP_TOKEN` and explicitly authorize owner emails with `TRADING_ALLOWED_USER_EMAILS` — see `docs/TRADING.md`. Local OAuth is owner-only and writes `.robinhood-mcp-token`; production OAuth is disabled until encrypted per-user token storage exists. Trader joins only authorized crew runs.
 
 Verify runtime: `curl http://localhost:3000/api/health` → `{"ok":true,"provider":"mock",...}`.
 Verify Robinhood MCP: `curl http://localhost:3000/api/trading?probe=1` (requires token).
