@@ -1155,3 +1155,343 @@
 [data-agent-colors="off"] .lx-agent-dot {
   filter: grayscale(1) opacity(0.7);
 }
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Command Center 2.0 — the AI operating system home. Mobile-first; all colors,
+   radii and motion come from the shared --os-* tokens (via the .lx aliases).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Respect device safe areas without ever shrinking below the base rhythm. */
+.cc {
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+  padding-bottom: max(64px, env(safe-area-inset-bottom));
+}
+
+/* Header — greeting leads, a quiet date eyebrow sits above it. */
+.cc-head {
+  padding: 6px 2px 0;
+}
+.cc-date {
+  margin: 0 0 8px;
+}
+.cc-greeting {
+  margin: 0;
+  font-size: clamp(24px, 4.2vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: var(--text);
+}
+
+/* Section shell (CcSection) */
+.cc-section {
+  overflow: hidden;
+}
+.cc-body {
+  padding: 16px 20px;
+}
+/* Lists that manage their own row padding sit closer to the header. */
+.cc-body--flush {
+  padding: 6px 10px 10px;
+}
+
+/* Vertical rhythm + gentle staggered reveal for the stacked sections. */
+.cc-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cc-reveal > * {
+  animation: lx-fadeup 0.4s var(--os-ease-spring, var(--os-ease)) both;
+}
+.cc-reveal > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.cc-reveal > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.cc-reveal > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.cc-reveal > *:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+/* Daily briefing — the one prominent, calm summary. */
+.cc-briefing {
+  padding: 18px 20px;
+  border-color: color-mix(in srgb, var(--os-accent) 22%, var(--line));
+  background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--os-accent) 7%, transparent),
+      transparent 60%
+    ),
+    var(--surface);
+}
+.cc-briefing .lx-eyebrow {
+  display: block;
+  margin-bottom: 10px;
+}
+.cc-briefing-text {
+  margin: 0;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+/* Two-up row — portfolio + pending on wide screens, stacked on mobile. */
+.cc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Recent activity timeline */
+.cc-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-event {
+  display: flex;
+  gap: 12px;
+  padding: 11px 10px;
+}
+.cc-event + .cc-event {
+  border-top: 1px solid var(--line);
+}
+.cc-event-dot {
+  margin-top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--blue) 55%, transparent);
+  flex: none;
+}
+.cc-event-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  border-radius: 8px;
+  transition: color var(--os-dur) var(--os-ease);
+}
+.cc-event-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-event-meta {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.cc-event-main:hover .cc-event-title {
+  color: var(--blue-bright);
+}
+
+/* Portfolio snapshot */
+.cc-snapshot-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-snapshot-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+.cc-inline-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
+  color: var(--blue-bright);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
+}
+.cc-inline-action:hover {
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
+  transform: translateY(-1px);
+}
+
+/* Pending items */
+.cc-pending {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-pending-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  flex-wrap: wrap;
+}
+.cc-pending-item + .cc-pending-item {
+  border-top: 1px solid var(--line);
+}
+.cc-pending-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.cc-pending-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-pending-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.cc-pending-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
+  color: var(--blue-bright);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
+}
+.cc-pending-action:hover {
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
+  transform: translateY(-1px);
+}
+.cc-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--os-accent) 16%, transparent);
+  color: var(--blue-bright);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* All-set (empty pending) */
+.cc-allset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cc-allset-check {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+}
+.cc-allset-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-allset-note {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Crew status — collapsed disclosure */
+.cc-crew-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text);
+}
+.cc-crew-head:disabled {
+  cursor: default;
+}
+.cc-crew-head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.cc-crew-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.cc-crew-retry {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-bright);
+}
+.cc-crew-body {
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--line);
+  animation: lx-fadeup 0.25s var(--os-ease);
+}
+
+/* Continue working — a large, comfortable CTA on the home. */
+.cc-continue {
+  min-height: 68px;
+  padding: 18px 20px;
+}
+
+/* Responsive — collapse the two-up row and make actions full-width on phones. */
+@media (max-width: 720px) {
+  .cc-grid {
+    grid-template-columns: 1fr;
+  }
+  .cc-pending-item {
+    align-items: stretch;
+  }
+  .cc-pending-action,
+  .cc-inline-action {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Honor OS-level reduced motion for the home's staggered reveal (the in-app
+   [data-motion="reduced"] toggle is already handled by the shared rules above). */
+@media (prefers-reduced-motion: reduce) {
+  .cc-reveal > *,
+  .cc-crew-body {
+    animation: none;
+  }
+}

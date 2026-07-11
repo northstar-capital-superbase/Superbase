@@ -1,41 +1,70 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { AgentRoster } from "./AgentRoster";
-import { Connections } from "./Connections";
+import { DailyBriefing } from "./DailyBriefing";
+import { Recommendations } from "./Recommendations";
+import { RecentActivity } from "./RecentActivity";
+import { PortfolioSnapshot } from "./PortfolioSnapshot";
+import { PendingItems } from "./PendingItems";
+import { CrewStatus, type CrewLoadState } from "./CrewStatus";
 import { Skeleton } from "@/components/ui";
 import { useSettings } from "@/components/settings/useSettings";
 import { useAuth } from "@/hooks/useAuth";
+import { useRuntimeStatus } from "@/components/useRuntimeStatus";
+import { useChatHistory } from "@/components/labs/useChatHistory";
 import { greetingText } from "@/lib/auth/greeting";
+import { buildPendingItems, type CommandCenterSignals } from "@/lib/dashboard/briefing";
+import type { AgentProfile } from "@/components/shared";
 import "./labs.css";
 
 const HINT_KEY = "northstar.hint.commandcenter.dismissed";
-import {
-  type AgentProfile,
-  type RuntimeInfo,
-  type TradingInfo,
-} from "@/components/shared";
 
-// Command Center — the main dashboard / landing area. It shows runtime status,
-// connections, and the agent roster overview. The AI chat and shared memory
-// live in the nested Lab Console (/labs/console), not here.
+// Command Center — the home of the AI operating system. It answers, in order:
+// what's my situation (greeting + briefing), what's recommended, what changed
+// (activity), what's my portfolio, what needs me (pending), who's on the crew,
+// and what should I do next (continue). Every section renders only real, empty,
+// or unavailable state — never fabricated data. Runtime/trading status is read
+// from the shared RuntimeStatusProvider (mounted in OsShell) so this page adds
+// no duplicate /api/health or /api/trading requests; the one extra fetch here
+// is /api/agents for the crew roster.
 export function Dashboard() {
   const { user, profile } = useAuth();
+  const runtime = useRuntimeStatus();
+  const { history } = useChatHistory(user?.id);
+
   const [agents, setAgents] = useState<AgentProfile[]>([]);
-  const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
-  const [trading, setTrading] = useState<TradingInfo | null>(null);
+  const [crewState, setCrewState] = useState<CrewLoadState>("loading");
+
+  const loadAgents = useCallback(() => {
+    setCrewState("loading");
+    fetch("/api/agents")
+      .then((r) => {
+        if (!r.ok) throw new Error(`agents ${r.status}`);
+        return r.json();
+      })
+      .then((d) => {
+        setAgents((d.agents as AgentProfile[]) ?? []);
+        setCrewState("ready");
+      })
+      .catch(() => {
+        setAgents([]);
+        setCrewState("error");
+      });
+  }, []);
 
   useEffect(() => {
-    fetch("/api/agents")
-      .then((r) => r.json())
-      .then((d) => {
-        setAgents(d.agents ?? []);
-        setRuntime(d.runtime ?? null);
-        setTrading(d.trading ?? null);
-      })
-      .catch(() => {});
-  }, []);
+    loadAgents();
+  }, [loadAgents]);
+
+  const signals: CommandCenterSignals = {
+    configured: runtime.configured,
+    memory: runtime.memory,
+    tradingEnabled: runtime.tradingEnabled,
+    hasDisplayName: Boolean(profile?.displayName?.trim()),
+    hasSessions: history.length > 0,
+  };
+  const pending = buildPendingItems(signals);
 
   return (
     <div className="lx">
@@ -44,42 +73,43 @@ export function Dashboard() {
 
       <header className="lx-topbar">
         <div className="lx-topbar-inner lx-topbar-inner--slim">
-          <RuntimePills runtime={runtime} trading={trading} />
+          <RuntimePills />
         </div>
       </header>
 
-      <main className="lx-main">
-        <div className="lx-head">
-          <div>
-            <p className="lx-greeting">{greetingText(profile?.displayName, user?.email)}</p>
-            <h1 className="lx-title">Agent Operating System</h1>
-            <p className="lx-sub">Command Center · multi-agent overview</p>
-          </div>
-          <Link href="/" className="lx-tour">
-            ← Home
-          </Link>
+      <main className="lx-main cc">
+        <div className="cc-head">
+          <DateEyebrow />
+          <h1 className="cc-greeting">{greetingText(profile?.displayName, user?.email)}</h1>
         </div>
 
         <FirstRunHint />
 
-        <Connections />
+        <div className="cc-reveal">
+          <DailyBriefing signals={signals} loading={!runtime.loaded} />
 
-        {agents.length === 0 ? (
-          <RosterSkeleton />
-        ) : (
-          <AgentRoster agents={agents} statuses={{}} />
-        )}
+          <Recommendations />
 
-        {/* Entry point to the AI chat (which owns shared memory + agents live) */}
-        <Link href="/labs/console" className="lx-console-cta">
+          <RecentActivity history={history} />
+
+          <div className="cc-grid">
+            <PortfolioSnapshot loading={!runtime.loaded} connected={runtime.tradingEnabled} />
+            <PendingItems items={pending} loading={!runtime.loaded} />
+          </div>
+
+          <CrewStatus state={crewState} agents={agents} onRetry={loadAgents} />
+        </div>
+
+        {/* Continue working — the home funnels naturally into the Lab Console. */}
+        <Link href="/labs/console" className="lx-console-cta cc-continue">
           <span className="lx-console-cta-icon" aria-hidden="true">
             <ChatGlyph />
           </span>
           <span className="lx-console-cta-main">
             <span className="lx-console-cta-title">Open Lab Console</span>
             <span className="lx-console-cta-sub">
-              Orchestrated multi-agent chat — shared memory and live agent
-              activity live here.
+              Hand the crew a task — the orchestrator plans, specialists collaborate
+              through shared memory, then it synthesizes one answer.
             </span>
           </span>
           <span className="lx-console-cta-arrow" aria-hidden="true">
@@ -88,6 +118,26 @@ export function Dashboard() {
         </Link>
       </main>
     </div>
+  );
+}
+
+// The date line above the greeting — computed after mount to avoid any
+// server/client timezone hydration mismatch.
+function DateEyebrow() {
+  const [label, setLabel] = useState("");
+  useEffect(() => {
+    setLabel(
+      new Date().toLocaleDateString(undefined, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }),
+    );
+  }, []);
+  return (
+    <p className="lx-eyebrow cc-date" aria-hidden={label ? undefined : true}>
+      {label || "\u00a0"}
+    </p>
   );
 }
 
@@ -132,15 +182,12 @@ function FirstRunHint() {
   );
 }
 
-function RuntimePills({
-  runtime,
-  trading,
-}: {
-  runtime: RuntimeInfo | null;
-  trading: TradingInfo | null;
-}) {
+// Runtime status pills in the slim topbar. Sourced from the shared runtime
+// probe (no extra fetch): language model, shared memory, trader.
+function RuntimePills() {
+  const { loaded, provider, model, configured, memory, tradingEnabled } = useRuntimeStatus();
   // Waking up: show quiet placeholders instead of misleading "off" states.
-  if (!runtime) {
+  if (!loaded) {
     return (
       <div className="lx-pills" aria-label="Checking runtime status">
         <Skeleton width={92} height={27} style={{ borderRadius: 999 }} />
@@ -149,43 +196,21 @@ function RuntimePills({
       </div>
     );
   }
-  const llmLive = runtime.configured;
-  const memLive = runtime.memory === "supabase";
-  const traderLive = trading?.traderInCrew ?? false;
+  const memLive = memory === "supabase";
   return (
     <div className="lx-pills">
-      <span className="lx-pill" title={runtime.model ?? "model"}>
-        <span className={`lx-dot ${llmLive ? "on" : "off"}`} />
-        <b>{runtime.provider ?? "no model"}</b>
+      <span className="lx-pill" title={model ?? "model"}>
+        <span className={`lx-dot ${configured ? "on" : "off"}`} />
+        <b>{provider ?? "no model"}</b>
       </span>
       <span className="lx-pill opt">
         <span className={`lx-dot ${memLive ? "on" : "off"}`} />
         {memLive ? "Supabase" : "In-memory"}
       </span>
       <span className="lx-pill opt">
-        <span className={`lx-dot ${traderLive ? "on" : "off"}`} />
-        Trader {traderLive ? "live" : "off"}
+        <span className={`lx-dot ${tradingEnabled ? "on" : "off"}`} />
+        Trader {tradingEnabled ? "live" : "off"}
       </span>
-    </div>
-  );
-}
-
-// Placeholder cards while /api/agents wakes the roster.
-function RosterSkeleton() {
-  return (
-    <div className="lx-roster" aria-label="Waking the roster…" aria-busy="true">
-      {Array.from({ length: 5 }).map((_, i) => (
-        <div key={i} className="lx-agent" aria-hidden="true">
-          <div className="lx-agent-top">
-            <Skeleton width={28} height={28} style={{ borderRadius: 9 }} />
-            <Skeleton width={40} height={10} />
-          </div>
-          <Skeleton width="60%" height={13} style={{ marginTop: 14 }} />
-          <Skeleton width="45%" height={10} style={{ marginTop: 6 }} />
-          <Skeleton width="90%" height={10} style={{ marginTop: 10 }} />
-          <Skeleton width="75%" height={10} style={{ marginTop: 5 }} />
-        </div>
-      ))}
     </div>
   );
 }
