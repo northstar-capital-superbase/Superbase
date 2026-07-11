@@ -1197,7 +1197,7 @@
 
 /* Header — greeting leads, a quiet date eyebrow sits above it. */
 .cc-head {
-  padding: 6px 2px 0;
+  padding: 6px 0 0;
 }
 .cc-date {
   margin: 0 0 8px;
@@ -1235,6 +1235,36 @@
 /* Lists that manage their own row padding sit closer to the header. */
 .cc-body--flush {
   padding: 6px 10px 10px;
+}
+
+/* Empty states inside Command Center sections use the same compact,
+   icon-left row language as the "all set" state — calm and intentional
+   instead of two tall hollow blocks stacked mid-page. */
+.cc-section .ui-empty {
+  height: auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 12px;
+  padding: 4px 0;
+}
+.cc-section .ui-empty-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+.cc-section .ui-empty-mark svg {
+  width: 16px;
+  height: 16px;
+}
+.cc-section .ui-empty h3 {
+  font-size: 13.5px;
+}
+.cc-section .ui-empty p {
+  margin: 3px 0 0;
+  max-width: 60ch;
+  line-height: 1.5;
 }
 
 /* Vertical rhythm + gentle staggered reveal for the stacked sections. */
@@ -1280,6 +1310,9 @@
   line-height: 1.55;
   letter-spacing: -0.01em;
   color: var(--text);
+  /* Cap the measure — a briefing that spans the full 1240px shell reads
+     like a status bar, not a briefing. */
+  max-width: 68ch;
 }
 
 /* Two-up row — portfolio + pending on wide screens, stacked on mobile. */
@@ -1319,8 +1352,14 @@
   gap: 2px;
   min-width: 0;
   flex: 1;
+  /* Static padding + negative margin so the hover wash never shifts layout. */
+  padding: 4px 8px;
+  margin: -4px -8px;
   border-radius: 8px;
-  transition: color var(--os-dur) var(--os-ease);
+  transition: background-color var(--os-dur) var(--os-ease);
+}
+.cc-event-main:hover {
+  background: rgba(255, 255, 255, 0.03);
 }
 .cc-event-title {
   font-size: 13.5px;
@@ -1351,11 +1390,15 @@
   line-height: 1.55;
   color: var(--text-3);
 }
-.cc-inline-action {
+/* Shared quiet-action button (Portfolio connect + Pending/Recommendation
+   rows) — one declaration so the two lists stay in lockstep. The trailing
+   arrow nudges right on hover and the button settles on press, so actions
+   feel tactile without any flash. */
+.cc-inline-action,
+.cc-pending-action {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  margin-top: 12px;
   min-height: 40px;
   padding: 9px 14px;
   border-radius: 10px;
@@ -1366,9 +1409,26 @@
   font-weight: 600;
   transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
 }
-.cc-inline-action:hover {
+.cc-inline-action:hover,
+.cc-pending-action:hover {
   background: color-mix(in srgb, var(--os-accent) 18%, transparent);
   transform: translateY(-1px);
+}
+.cc-inline-action:active,
+.cc-pending-action:active {
+  background: color-mix(in srgb, var(--os-accent) 22%, transparent);
+  transform: translateY(0);
+}
+.cc-inline-action > span[aria-hidden],
+.cc-pending-action > span[aria-hidden] {
+  transition: transform var(--os-dur) var(--os-ease);
+}
+.cc-inline-action:hover > span[aria-hidden],
+.cc-pending-action:hover > span[aria-hidden] {
+  transform: translateX(2px);
+}
+.cc-inline-action {
+  margin-top: 12px;
 }
 
 /* Recommendations — up to three, each with title / description / confidence /
@@ -1482,23 +1542,7 @@
   color: var(--text-3);
 }
 .cc-pending-action {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
   flex: none;
-  min-height: 40px;
-  padding: 9px 14px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
-  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
-  color: var(--blue-bright);
-  font-size: 12.5px;
-  font-weight: 600;
-  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
-}
-.cc-pending-action:hover {
-  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
-  transform: translateY(-1px);
 }
 .cc-count {
   display: inline-grid;
@@ -1543,6 +1587,9 @@
 }
 
 /* Crew status — collapsed disclosure */
+.cc-crew {
+  overflow: hidden;
+}
 .cc-crew-head {
   display: flex;
   align-items: center;
@@ -1555,6 +1602,18 @@
   border: none;
   text-align: left;
   color: var(--text);
+  transition: background-color var(--os-dur) var(--os-ease);
+}
+.cc-crew-head:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.cc-crew-head:not(:disabled):active {
+  background: rgba(255, 255, 255, 0.035);
+}
+/* Full-bleed button inside a clipped card — keep the focus ring visible. */
+.cc-crew-head:focus-visible {
+  outline-offset: -2px;
+  border-radius: var(--r);
 }
 .cc-crew-head:disabled {
   cursor: default;
@@ -1578,16 +1637,52 @@
   font-weight: 600;
   color: var(--blue-bright);
 }
+/* Smooth height expand/collapse via the grid-rows trick — no JS measuring,
+   no layout thrash outside the card. Content fades slightly behind the
+   height so the motion reads as one gesture. */
+.cc-crew-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--os-dur-sheet, 320ms)
+    var(--os-ease-spring, var(--os-ease));
+}
+.cc-crew-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.cc-crew-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--os-dur-slow) var(--os-ease),
+    visibility 0s var(--os-dur-sheet, 320ms);
+}
+.cc-crew-collapse[data-open="true"] .cc-crew-collapse-inner {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity var(--os-dur-slow) var(--os-ease) 80ms, visibility 0s;
+}
 .cc-crew-body {
   padding: 4px 20px 20px;
   border-top: 1px solid var(--line);
-  animation: lx-fadeup 0.25s var(--os-ease);
 }
 
-/* Continue working — a large, comfortable CTA on the home. */
+/* Continue working — a large, comfortable CTA on the home. It joins the
+   tail of the staggered reveal so the eye's journey ends where the next
+   action begins; the arrow answers hover, and press settles the card. */
 .cc-continue {
   min-height: 68px;
   padding: 18px 20px;
+  animation: lx-fadeup 0.4s var(--os-ease-spring, var(--os-ease)) 0.25s both;
+}
+.cc-continue:active {
+  transform: translateY(0);
+}
+.cc-continue .lx-console-cta-arrow {
+  transition: transform var(--os-dur) var(--os-ease);
+}
+.cc-continue:hover .lx-console-cta-arrow {
+  transform: translateX(3px);
 }
 
 /* Responsive — collapse the two-up row and make actions full-width on phones. */
@@ -1611,7 +1706,7 @@
    [data-motion="reduced"] toggle is already handled by the shared rules above). */
 @media (prefers-reduced-motion: reduce) {
   .cc-reveal > *,
-  .cc-crew-body {
+  .cc-continue {
     animation: none;
   }
 }

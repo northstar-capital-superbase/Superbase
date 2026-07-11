@@ -70,9 +70,20 @@ export function CrewStatus({
         )}
       </button>
 
-      {open && canExpand ? (
-        <div id="cc-crew-body" className="cc-crew-body">
-          <AgentRoster agents={agents} statuses={{}} />
+      {/* Mounted whenever expandable so collapse can animate closed (height
+          via grid rows — see .cc-crew-collapse); aria-hidden + visibility
+          keep the collapsed roster out of the a11y tree. */}
+      {canExpand ? (
+        <div
+          className="cc-crew-collapse"
+          data-open={open ? "true" : "false"}
+          aria-hidden={!open}
+        >
+          <div className="cc-crew-collapse-inner">
+            <div id="cc-crew-body" className="cc-crew-body">
+              <AgentRoster agents={agents} statuses={{}} />
+            </div>
+          </div>
         </div>
       ) : null}
     </section>

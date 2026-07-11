@@ -30,7 +30,7 @@ export function Recommendations({
         <EmptyState
           icon={<SparkIcon />}
           title="No recommendations yet"
-          description="Northstar surfaces suggestions here as it learns your goals and connects your accounts. Nothing is invented — this stays empty until there's something real to act on."
+          description="Suggestions appear here as Northstar learns your goals and accounts — nothing is ever invented."
         />
       ) : (
         <ul className="cc-recs">

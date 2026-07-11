@@ -24,6 +24,12 @@ describe("crewSummary", () => {
       crewSummary({ state: "ready", runtimeLoaded: true, configured: true, count: 4 }),
     ).toBe("Crew ready · 4 agents available");
   });
+
+  it("states the error plainly (the Retry affordance carries the action)", () => {
+    expect(
+      crewSummary({ state: "error", runtimeLoaded: true, configured: true, count: 0 }),
+    ).toBe("Crew status unavailable");
+  });
 });
 
 describe("pipelineAgentIds", () => {

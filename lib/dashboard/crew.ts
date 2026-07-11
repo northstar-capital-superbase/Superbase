@@ -18,7 +18,9 @@ export function crewSummary({
   count: number;
 }): string {
   if (state === "loading" || !runtimeLoaded) return "Checking crew…";
-  if (state === "error") return "Crew status unavailable — activate to retry";
+  // The header's trailing "Retry" affordance says what to do — the summary
+  // just states the situation.
+  if (state === "error") return "Crew status unavailable";
   if (count === 0) return "Crew unavailable";
   if (!configured) return "Crew unavailable · add a model key";
   return `Crew ready · ${count} ${count === 1 ? "agent" : "agents"} available`;
