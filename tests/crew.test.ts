@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { runCrew, streamCrew, type CrewEvent } from "@/lib/orchestration/crew";
 import { setProvider } from "@/lib/llm";
+import { memoryBackend } from "@/lib/memory";
 import { FakeProvider } from "./fake-provider";
 
 // Force a deterministic, network-free provider for tests.
@@ -17,7 +18,7 @@ describe("runCrew", () => {
       "behavioral",
     ]);
     expect(run.synthesis.agent).toBe("orchestrator");
-    expect(run.backend).toBe("in-memory");
+    expect(run.backend).toBe(memoryBackend());
 
     // Metrics threaded through every agent call.
     for (const r of run.specialistResults) {
