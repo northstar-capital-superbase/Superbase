@@ -14,13 +14,20 @@ export function DailyBriefing({
   loading: boolean;
 }) {
   return (
-    <section className="lx-card cc-briefing" aria-label="Daily briefing">
-      <span className="lx-eyebrow">Daily briefing</span>
+    <section
+      className="lx-card cc-briefing"
+      aria-labelledby="daily-briefing-heading"
+      aria-busy={loading || undefined}
+    >
+      <h2 id="daily-briefing-heading" className="lx-eyebrow">Daily briefing</h2>
       {loading ? (
-        <div className="cc-briefing-loading" aria-hidden="true">
-          <Skeleton width="92%" height={16} />
-          <Skeleton width="70%" height={16} style={{ marginTop: 8 }} />
-        </div>
+        <>
+          <span className="cc-sr-only" role="status">Loading daily briefing</span>
+          <div className="cc-briefing-loading" aria-hidden="true">
+            <Skeleton width="92%" height={16} />
+            <Skeleton width="70%" height={16} style={{ marginTop: 8 }} />
+          </div>
+        </>
       ) : (
         <p className="cc-briefing-text">{buildBriefing(signals)}</p>
       )}

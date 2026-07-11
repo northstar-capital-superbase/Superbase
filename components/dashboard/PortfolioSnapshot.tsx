@@ -19,6 +19,7 @@ export function PortfolioSnapshot({
   return (
     <CcSection
       label="Portfolio"
+      busy={loading}
       meta={
         loading ? (
           <Skeleton width={70} height={20} style={{ borderRadius: 999 }} />

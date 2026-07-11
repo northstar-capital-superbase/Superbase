@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { DailyBriefing } from "./DailyBriefing";
 import { Recommendations } from "./Recommendations";
@@ -15,7 +15,7 @@ import { useRuntimeStatus } from "@/components/useRuntimeStatus";
 import { useChatHistory } from "@/components/labs/useChatHistory";
 import { greetingText } from "@/lib/auth/greeting";
 import { buildPendingItems, type CommandCenterSignals } from "@/lib/dashboard/briefing";
-import type { AgentProfile } from "@/components/shared";
+import { pipelineAgentIds, type AgentProfile } from "@/components/shared";
 import "./labs.css";
 
 const HINT_KEY = "northstar.hint.commandcenter.dismissed";
@@ -65,6 +65,10 @@ export function Dashboard() {
     hasSessions: history.length > 0,
   };
   const pending = buildPendingItems(signals);
+  const activeAgents = useMemo(() => {
+    const activeIds = new Set(pipelineAgentIds(runtime.tradingEnabled));
+    return agents.filter((agent) => activeIds.has(agent.id));
+  }, [agents, runtime.tradingEnabled]);
 
   return (
     <div className="lx">
@@ -100,7 +104,13 @@ export function Dashboard() {
             <PendingItems items={pending} loading={!runtime.loaded} />
           </div>
 
-          <CrewStatus state={crewState} agents={agents} onRetry={loadAgents} />
+          <CrewStatus
+            state={crewState}
+            agents={activeAgents}
+            runtimeLoaded={runtime.loaded}
+            configured={runtime.configured}
+            onRetry={loadAgents}
+          />
         </div>
 
         {/* Continue working — the home funnels naturally into the Lab Console. */}
@@ -188,7 +198,8 @@ function FirstRunHint() {
 // Runtime status pills in the slim topbar. Sourced from the shared runtime
 // probe (no extra fetch): language model, shared memory, trader.
 function RuntimePills() {
-  const { loaded, provider, model, configured, memory, tradingEnabled } = useRuntimeStatus();
+  const { loaded, reachable, provider, model, configured, memory, tradingEnabled } =
+    useRuntimeStatus();
   // Waking up: show quiet placeholders instead of misleading "off" states.
   if (!loaded) {
     return (
@@ -199,9 +210,24 @@ function RuntimePills() {
       </div>
     );
   }
+  if (!reachable) {
+    return (
+      <div className="lx-pills" aria-label="Runtime unavailable">
+        <span className="lx-pill">
+          <span className="lx-dot off" aria-hidden="true" />
+          <b>Runtime unavailable</b>
+        </span>
+      </div>
+    );
+  }
   const memLive = memory === "supabase";
   return (
-    <div className="lx-pills">
+    <div
+      className="lx-pills"
+      aria-label={`Language model ${provider ?? "not configured"}, memory ${
+        memLive ? "Supabase" : "in-memory"
+      }, trader ${tradingEnabled ? "available" : "off"}`}
+    >
       <span className="lx-pill" title={model ?? "model"}>
         <span className={`lx-dot ${configured ? "on" : "off"}`} />
         <b>{provider ?? "no model"}</b>

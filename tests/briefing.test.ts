@@ -22,14 +22,14 @@ describe("buildBriefing", () => {
 
   it("reports configured + no brokerage and invites first steps", () => {
     const text = buildBriefing(base);
-    expect(text).toContain("Your account is configured.");
+    expect(text).toContain("Northstar is configured.");
     expect(text).toContain("No financial accounts are connected yet.");
     expect(text).toContain("connect your first brokerage");
   });
 
   it("acknowledges a connected brokerage", () => {
     const text = buildBriefing({ ...base, tradingEnabled: true });
-    expect(text).toContain("a brokerage is connected");
+    expect(text).toContain("Robinhood access is available");
     expect(text).not.toContain("No financial accounts");
   });
 

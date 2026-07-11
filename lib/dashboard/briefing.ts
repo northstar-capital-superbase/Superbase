@@ -26,9 +26,9 @@ export function buildBriefing(s: CommandCenterSignals): string {
 
   const parts: string[] = [];
   if (s.tradingEnabled) {
-    parts.push("Your account is configured and a brokerage is connected.");
+    parts.push("Northstar is configured and Robinhood access is available.");
   } else {
-    parts.push("Your account is configured.");
+    parts.push("Northstar is configured.");
     parts.push("No financial accounts are connected yet.");
   }
 

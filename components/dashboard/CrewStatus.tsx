@@ -4,39 +4,39 @@ import { useState } from "react";
 import { AgentRoster } from "./AgentRoster";
 import { DisclosureChevron, Skeleton } from "@/components/ui";
 import type { AgentProfile } from "@/components/shared";
+import { crewSummary, type CrewLoadState } from "@/lib/dashboard/crew";
 
-export type CrewLoadState = "loading" | "ready" | "error";
+export type { CrewLoadState };
 
 // Collapsed-by-default crew summary. Agents support the home, they don't
-// dominate it. The header states honest readiness ("Crew ready · N agents
-// online"); expanding reveals the roster (idle on the home — live per-agent
-// status only appears during a Lab Console run, so we never imply work here).
+// dominate it. Readiness requires both a loaded roster and a configured model;
+// expanding reveals the roster (idle on the home — live per-agent status only
+// appears during a Lab Console run, so we never imply work here).
 export function CrewStatus({
   state,
   agents,
+  runtimeLoaded,
+  configured,
   onRetry,
 }: {
   state: CrewLoadState;
   agents: AgentProfile[];
+  runtimeLoaded: boolean;
+  configured: boolean;
   onRetry: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const count = agents.length;
-  const ready = state === "ready" && count > 0;
-
-  const summary =
-    state === "loading"
-      ? "Checking crew…"
-      : state === "error"
-        ? "Crew status unavailable — tap to retry"
-        : `Crew ready · ${count} ${count === 1 ? "agent" : "agents"} online`;
+  const canExpand = state === "ready" && count > 0;
+  const operational = canExpand && runtimeLoaded && configured;
+  const summary = crewSummary({ state, runtimeLoaded, configured, count });
 
   const onHeadClick = () => {
     if (state === "error") {
       onRetry();
       return;
     }
-    if (ready) setOpen((v) => !v);
+    if (canExpand) setOpen((v) => !v);
   };
 
   return (
@@ -45,15 +45,15 @@ export function CrewStatus({
         type="button"
         className="cc-crew-head"
         onClick={onHeadClick}
-        aria-expanded={ready ? open : undefined}
-        aria-controls={ready ? "cc-crew-body" : undefined}
-        disabled={state === "loading"}
+        aria-expanded={canExpand ? open : undefined}
+        aria-controls={canExpand ? "cc-crew-body" : undefined}
+        disabled={state === "loading" || !runtimeLoaded}
       >
         <span className="cc-crew-head-left">
           <span className="lx-eyebrow">Crew</span>
           <span className="cc-crew-summary">
             <span
-              className={`lx-dot ${ready ? "on" : "off"}`}
+              className={`lx-dot ${operational ? "on" : "off"}`}
               aria-hidden="true"
             />
             {summary}
@@ -70,7 +70,7 @@ export function CrewStatus({
         )}
       </button>
 
-      {open && ready ? (
+      {open && canExpand ? (
         <div id="cc-crew-body" className="cc-crew-body">
           <AgentRoster agents={agents} statuses={{}} />
         </div>

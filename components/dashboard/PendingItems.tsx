@@ -17,6 +17,7 @@ export function PendingItems({
   return (
     <CcSection
       label="Pending items"
+      busy={loading}
       meta={
         !loading && items.length > 0 ? (
           <span className="cc-count">{items.length}</span>
