@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getProviderSafe } from "@/lib/llm";
 import { getMemory, memoryBackend } from "@/lib/memory";
+import { getAuthedUser, type AuthedUser } from "@/lib/auth/getUser";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -27,8 +28,13 @@ export async function GET(req: Request) {
     configured: provider !== null,
   };
 
+  const user = ping || memoryCheck ? await getAuthedUser() : null;
+  if ((ping || memoryCheck) && !user) {
+    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  }
+
   if (memoryCheck) {
-    return NextResponse.json(...(await probeMemory(base)));
+    return NextResponse.json(...(await probeMemory(base, user!)));
   }
 
   if (!ping) {
@@ -76,19 +82,21 @@ export async function GET(req: Request) {
 // Write→read→clear roundtrip against the active memory store.
 async function probeMemory(
   base: Record<string, unknown>,
+  user: AuthedUser,
 ): Promise<[Record<string, unknown>, { status: number }?]> {
   const started = Date.now();
   const sessionId = `__healthcheck_${Date.now()}`;
   try {
-    const memory = getMemory();
+    const memory = getMemory({ accessToken: user.accessToken });
     const written = await memory.append({
       sessionId,
+      userId: user.id,
       kind: "fact",
       author: "healthcheck",
       content: "supabase connectivity probe",
     });
-    const back = await memory.recent({ sessionId, limit: 1 });
-    await memory.clear(sessionId);
+    const back = await memory.recent({ sessionId, userId: user.id, limit: 1 });
+    await memory.clear(sessionId, user.id);
 
     const roundTripped = back.some((e) => e.id === written.id);
     return [

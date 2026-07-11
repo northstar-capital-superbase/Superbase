@@ -13,6 +13,10 @@ import {
 import type { Session, SupabaseClient, User } from "@supabase/supabase-js";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 import { isSupabaseAuthConfigured } from "@/lib/supabase/env";
+import {
+  ACTIVE_SETTINGS_USER_KEY,
+  SETTINGS_KEY,
+} from "@/components/settings/types";
 
 export interface Profile {
   displayName: string | null;
@@ -20,6 +24,7 @@ export interface Profile {
 
 export interface AuthResult {
   error: string | null;
+  authenticated?: boolean;
 }
 
 interface AuthContextValue {
@@ -29,6 +34,7 @@ interface AuthContextValue {
   ready: boolean;
   // Whether Supabase Auth env vars are present at all.
   configured: boolean;
+  passwordResetEnabled: boolean;
   user: User | null;
   session: Session | null;
   profile: Profile | null;
@@ -45,17 +51,24 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-// Every localStorage key that can carry another user's data on a shared
-// browser. Cleared on sign-out so the next person to sign in on this device
-// never sees a trace of the previous session (chat history is additionally
-// namespaced per-user — see components/labs/useChatHistory.ts).
-const LOCAL_KEYS_TO_CLEAR_ON_SIGN_OUT = [/^northstar\.labs\./, /^northstar\.hint\./];
-
+// Remove legacy, unscoped browser state on sign-out. Current chat/settings
+// keys are namespaced by user id, so they can persist for their owner without
+// ever being loaded into the next account's UI.
 function clearLocalUserState(): void {
   try {
     const keys = Object.keys(localStorage);
     for (const key of keys) {
-      if (LOCAL_KEYS_TO_CLEAR_ON_SIGN_OUT.some((re) => re.test(key))) {
+      const legacyTranscript =
+        key.startsWith("northstar.labs.chat.") &&
+        !key.slice("northstar.labs.chat.".length).includes(".");
+      if (
+        key === SETTINGS_KEY ||
+        key === ACTIVE_SETTINGS_USER_KEY ||
+        key === "northstar.sessions.v1" ||
+        key === "northstar.labs.chatHistory" ||
+        legacyTranscript ||
+        key.startsWith("northstar.hint.")
+      ) {
         localStorage.removeItem(key);
       }
     }
@@ -66,12 +79,15 @@ function clearLocalUserState(): void {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const configured = isSupabaseAuthConfigured();
+  const passwordResetEnabled =
+    process.env.NEXT_PUBLIC_PASSWORD_RESET_ENABLED === "true";
   const clientRef = useRef<SupabaseClient | null>(
     configured ? createSupabaseBrowserClient() : null,
   );
   const [ready, setReady] = useState(!configured);
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const currentUserId = useRef<string | null>(null);
 
   const loadProfile = useCallback(async (userId: string) => {
     const client = clientRef.current;
@@ -81,7 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .select("display_name")
       .eq("user_id", userId)
       .maybeSingle();
-    setProfile({ displayName: data?.display_name ?? null });
+    if (currentUserId.current === userId) {
+      setProfile({ displayName: data?.display_name ?? null });
+    }
   }, []);
 
   useEffect(() => {
@@ -89,18 +107,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!client) return;
 
     let cancelled = false;
-    client.auth.getSession().then(({ data }) => {
+    client.auth.getUser().then(async ({ data: userData }) => {
       if (cancelled) return;
-      setSession(data.session);
-      if (data.session?.user) loadProfile(data.session.user.id);
+      if (!userData.user) {
+        currentUserId.current = null;
+        setSession(null);
+        setProfile(null);
+        setReady(true);
+        return;
+      }
+      const { data: sessionData } = await client.auth.getSession();
+      if (cancelled) return;
+      currentUserId.current = userData.user.id;
+      setSession(sessionData.session);
+      void loadProfile(userData.user.id);
       setReady(true);
     });
 
     // Session restore, sign-in, sign-out, and token refresh all flow through
     // this single subscription so every consumer of useAuth() stays in sync.
     const { data: sub } = client.auth.onAuthStateChange((_event, next) => {
+      currentUserId.current = next?.user.id ?? null;
       setSession(next);
-      if (next?.user) loadProfile(next.user.id);
+      if (next?.user) void loadProfile(next.user.id);
       else setProfile(null);
     });
 
@@ -114,7 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const client = clientRef.current;
     if (!client) return { error: "Authentication is not configured." };
     const { error } = await client.auth.signInWithPassword({ email, password });
-    return { error: error?.message ?? null };
+    return { error: error?.message ?? null, authenticated: !error };
   }, []);
 
   const signUpWithPassword = useCallback(
@@ -122,7 +151,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const client = clientRef.current;
       if (!client) return { error: "Authentication is not configured." };
       const origin = typeof window !== "undefined" ? window.location.origin : undefined;
-      const { error } = await client.auth.signUp({
+      const { data, error } = await client.auth.signUp({
         email,
         password,
         options: {
@@ -130,12 +159,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           emailRedirectTo: origin ? `${origin}/auth/callback` : undefined,
         },
       });
-      return { error: error?.message ?? null };
+      return {
+        error: error?.message ?? null,
+        authenticated: Boolean(data.session),
+      };
     },
     [],
   );
 
   const sendPasswordReset = useCallback(async (email: string) => {
+    if (!passwordResetEnabled) {
+      return { error: "Password reset email is not configured for this deployment." };
+    }
     const client = clientRef.current;
     if (!client) return { error: "Authentication is not configured." };
     const origin = typeof window !== "undefined" ? window.location.origin : undefined;
@@ -143,11 +178,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       redirectTo: origin ? `${origin}/auth/callback?type=recovery` : undefined,
     });
     return { error: error?.message ?? null };
-  }, []);
+  }, [passwordResetEnabled]);
 
   const signOut = useCallback(async () => {
     const client = clientRef.current;
-    if (client) await client.auth.signOut();
+    if (client) {
+      const { error } = await client.auth.signOut();
+      if (error) await client.auth.signOut({ scope: "local" });
+    }
+    currentUserId.current = null;
     setSession(null);
     setProfile(null);
     clearLocalUserState();
@@ -173,6 +212,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       ready,
       configured,
+      passwordResetEnabled,
       user: session?.user ?? null,
       session,
       profile,
@@ -185,6 +225,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [
       ready,
       configured,
+      passwordResetEnabled,
       session,
       profile,
       signInWithPassword,

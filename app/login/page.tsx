@@ -4,6 +4,7 @@ import { Suspense, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useAuth } from "@/hooks/useAuth";
+import { safeRedirectPath } from "@/lib/auth/redirect";
 import "@/components/dashboard/labs.css";
 import "@/components/auth/auth.css";
 
@@ -33,7 +34,7 @@ function LoginScreen() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { ready, user } = useAuth();
-  const redirectTo = searchParams.get("redirect") || "/labs";
+  const redirectTo = safeRedirectPath(searchParams.get("redirect"));
 
   useEffect(() => {
     if (ready && user) router.replace(redirectTo);

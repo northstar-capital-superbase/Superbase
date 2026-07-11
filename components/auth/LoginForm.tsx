@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Alert, OwnerNote } from "@/components/ui/Alert";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { safeRedirectPath } from "@/lib/auth/redirect";
 import "./auth.css";
 
 type Mode = "sign-in" | "sign-up" | "forgot";
@@ -16,7 +17,14 @@ type Mode = "sign-in" | "sign-up" | "forgot";
 // password) — no simulated/placeholder login path.
 export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
   const router = useRouter();
-  const { configured, signInWithPassword, signUpWithPassword, sendPasswordReset } = useAuth();
+  const safeRedirectTo = safeRedirectPath(redirectTo);
+  const {
+    configured,
+    passwordResetEnabled,
+    signInWithPassword,
+    signUpWithPassword,
+    sendPasswordReset,
+  } = useAuth();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -50,13 +58,13 @@ export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
           setError(err);
           return;
         }
-        router.replace(redirectTo);
+        router.replace(safeRedirectTo);
         router.refresh();
         return;
       }
 
       if (mode === "sign-up") {
-        const { error: err } = await signUpWithPassword(
+        const { error: err, authenticated } = await signUpWithPassword(
           email.trim(),
           password,
           displayName.trim() || undefined,
@@ -65,11 +73,14 @@ export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
           setError(err);
           return;
         }
-        setNotice(
-          "Account created. If email confirmation is required, check your inbox — otherwise you're signed in.",
-        );
-        router.replace(redirectTo);
-        router.refresh();
+        if (authenticated) {
+          router.replace(safeRedirectTo);
+          router.refresh();
+        } else {
+          setNotice(
+            "Check your email to confirm the account, then return here to sign in.",
+          );
+        }
         return;
       }
 
@@ -124,7 +135,7 @@ export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
               <Input
                 type="text"
                 autoComplete="name"
-                placeholder="Andrew"
+                placeholder="Your name"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
                 disabled={busy}
@@ -177,14 +188,16 @@ export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
 
         {mode === "sign-in" && (
           <>
-            <button
-              type="button"
-              className="auth-link"
-              onClick={() => switchMode("forgot")}
-              disabled={!configured}
-            >
-              Forgot password?
-            </button>
+            {passwordResetEnabled && (
+              <button
+                type="button"
+                className="auth-link"
+                onClick={() => switchMode("forgot")}
+                disabled={!configured}
+              >
+                Forgot password?
+              </button>
+            )}
             <p className="auth-switch">
               New to Northstar?{" "}
               <button type="button" className="auth-link auth-link--inline" onClick={() => switchMode("sign-up")}>
