@@ -1,6 +1,7 @@
 import { streamCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
 import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -47,6 +48,7 @@ export async function POST(req: Request) {
           specialists,
           userId: user.id,
           accessToken: user.accessToken,
+          tradingAllowed: tradingAllowedFor(user.email),
         })) {
           send(event);
         }

@@ -5,6 +5,8 @@ import {
   resetMcpClient,
   saveRobinhoodMcpToken,
 } from "@/lib/mcp";
+import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 
@@ -19,6 +21,20 @@ interface OAuthCookie {
 
 // GET /api/trading/oauth/callback — exchange code for MCP bearer token.
 export async function GET(req: Request) {
+  const user = await getAuthedUser();
+  if (!user) {
+    const login = new URL("/login", req.url);
+    login.searchParams.set("redirect", "/connections");
+    return NextResponse.redirect(login);
+  }
+  if (!tradingAllowedFor(user.email)) {
+    return htmlResponse(
+      "Robinhood unavailable",
+      "<p>This account is not authorized to connect the shared Robinhood account.</p>",
+      403,
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const error = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
@@ -85,14 +101,15 @@ export async function GET(req: Request) {
       return NextResponse.redirect(new URL("/labs?rh_connected=1", req.url));
     }
 
+    // Never render a bearer token into production HTML. Until encrypted
+    // per-user storage exists, production OAuth is deliberately disabled at
+    // the start route and this fail-closed branch covers stale callbacks.
     return htmlResponse(
-      "Robinhood connected",
-      `<p>OAuth succeeded. Add this bearer token to your deploy environment:</p>
-       <pre style="word-break:break-all;white-space:pre-wrap;background:#111;padding:1rem;border-radius:8px">${escapeHtml(tokens.accessToken)}</pre>
-       <p>Set <code>ROBINHOOD_MCP_TOKEN</code> in Vercel (or your host), redeploy, then probe:</p>
-       <pre>curl "https://your-app/api/trading?probe=1"</pre>
-       <p><a href="/labs">Back to /labs</a></p>`,
-      200,
+      "Robinhood token storage unavailable",
+      `<p>OAuth completed, but Northstar did not expose or persist the bearer token.</p>
+       <p>Configure <code>ROBINHOOD_MCP_TOKEN</code> through your host's secret manager, or add encrypted per-user token storage before enabling this flow.</p>
+       <p><a href="/connections">Back to Connections</a></p>`,
+      503,
     );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

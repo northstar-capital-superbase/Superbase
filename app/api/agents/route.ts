@@ -8,6 +8,8 @@ import {
   maxOrdersPerRun,
   tradingMode,
 } from "@/lib/mcp";
+import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 // Reads runtime env (active provider/model), so it must not be statically
@@ -16,8 +18,13 @@ export const dynamic = "force-dynamic";
 
 // GET /api/agents — agent roster + active runtime config for the dashboard.
 export async function GET() {
+  const user = await getAuthedUser();
+  if (!user) {
+    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  }
+
   const provider = getProviderSafe();
-  const tradingEnabled = mcpEnabled();
+  const tradingEnabled = mcpEnabled() && tradingAllowedFor(user.email);
   return NextResponse.json({
     agents: listProfiles(),
     runtime: {

@@ -14,6 +14,9 @@ export interface RunOptions {
   // user — never trusted from client input.
   userId?: string;
   accessToken?: string;
+  // The global Robinhood credential is owner-only until per-user token
+  // storage lands. API routes compute this from the authenticated email.
+  tradingAllowed?: boolean;
 }
 
 export interface CrewRun {
@@ -48,7 +51,7 @@ export type CrewEvent =
 // emitted as a CrewEvent so the dashboard reflects real progress.
 export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
   const { sessionId, task, userId, accessToken } = opts;
-  const specialists = resolveSpecialists(opts.specialists);
+  const specialists = resolveSpecialists(opts.specialists, opts.tradingAllowed ?? false);
   const memory = getMemory({ accessToken });
   const loadContext = (): Promise<MemoryEntry[]> =>
     memory.recent({ sessionId, userId, limit: 24 });

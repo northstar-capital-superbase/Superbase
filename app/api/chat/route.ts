@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { runCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
 import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
       specialists,
       userId: user.id,
       accessToken: user.accessToken,
+      tradingAllowed: tradingAllowedFor(user.email),
     });
     return NextResponse.json(run);
   } catch (err) {
