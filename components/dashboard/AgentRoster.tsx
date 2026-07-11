@@ -2,10 +2,13 @@
 
 import clsx from "clsx";
 import type { AgentProfile } from "@/components/shared";
+import { lastActivityLabel, currentTaskLabel, type AgentStatus } from "@/lib/dashboard/crew";
 
-export type AgentStatus = "idle" | "thinking" | "done";
+export type { AgentStatus };
 
-// Grid of agent cards that animate as the workflow progresses.
+// Grid of agent cards that animate as the workflow progresses. Each card shows
+// status, last activity, and current task — all derived honestly from the same
+// status enum, never a fabricated timestamp or task description.
 export function AgentRoster({
   agents,
   statuses,
@@ -46,6 +49,16 @@ function AgentCard({
       <div className="lx-agent-name">{agent.name}</div>
       <div className="lx-agent-role">{agent.role}</div>
       <p className="lx-agent-desc">{agent.description}</p>
+      <dl className="lx-agent-meta">
+        <div className="lx-agent-meta-row">
+          <dt>Last activity</dt>
+          <dd>{lastActivityLabel(status)}</dd>
+        </div>
+        <div className="lx-agent-meta-row">
+          <dt>Current task</dt>
+          <dd>{currentTaskLabel(status)}</dd>
+        </div>
+      </dl>
     </div>
   );
 }

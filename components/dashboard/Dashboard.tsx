@@ -88,7 +88,10 @@ export function Dashboard() {
         <div className="cc-reveal">
           <DailyBriefing signals={signals} loading={!runtime.loaded} />
 
-          <Recommendations />
+          {/* No recommendations engine exists yet — [] renders the honest
+              empty state. A future engine plugs in here without a redesign
+              (see lib/dashboard/recommendations.ts). */}
+          <Recommendations recommendations={[]} />
 
           <RecentActivity history={history} />
 

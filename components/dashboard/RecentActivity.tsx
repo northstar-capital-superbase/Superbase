@@ -3,22 +3,30 @@
 import Link from "next/link";
 import { EmptyState } from "@/components/ui";
 import type { ChatSummary } from "@/components/labs/useChatHistory";
+import {
+  activityFromChatHistory,
+  relativeTime,
+  ACTIVITY_KIND_LABEL,
+} from "@/lib/dashboard/activity";
 import { CcSection } from "./CcSection";
 
 // Real, client-side activity: the user's own Lab Console sessions (already
 // persisted per-account in localStorage). No fabricated events — if there's no
 // history we say so plainly. The timeline is capped so the home stays calm.
+// Events carry a `kind` (see lib/dashboard/activity) so agent runs, memory
+// updates, portfolio analysis, workflows, research, and auth can join this
+// same timeline later without a redesign.
 const MAX_VISIBLE = 5;
 
 export function RecentActivity({ history }: { history: ChatSummary[] }) {
-  const items = history.slice(0, MAX_VISIBLE);
+  const events = activityFromChatHistory(history).slice(0, MAX_VISIBLE);
 
   return (
     <CcSection
       label="Recent activity"
-      bodyClassName={items.length ? "cc-body cc-body--flush" : "cc-body"}
+      bodyClassName={events.length ? "cc-body cc-body--flush" : "cc-body"}
     >
-      {items.length === 0 ? (
+      {events.length === 0 ? (
         <EmptyState
           icon={<PulseIcon />}
           title="No activity yet"
@@ -26,13 +34,14 @@ export function RecentActivity({ history }: { history: ChatSummary[] }) {
         />
       ) : (
         <ol className="cc-timeline">
-          {items.map((chat) => (
-            <li key={chat.id} className="cc-event">
-              <span className="cc-event-dot" aria-hidden="true" />
-              <Link href="/labs/console" className="cc-event-main">
-                <span className="cc-event-title">{chat.title}</span>
+          {events.map((event) => (
+            <li key={event.id} className="cc-event">
+              <span className={`cc-event-dot cc-event-dot--${event.kind}`} aria-hidden="true" />
+              <Link href={event.href ?? "/labs/console"} className="cc-event-main">
+                <span className="cc-event-title">{event.title}</span>
                 <span className="cc-event-meta">
-                  Lab session · <time dateTime={chat.createdAt}>{relativeTime(chat.createdAt)}</time>
+                  {ACTIVITY_KIND_LABEL[event.kind]} ·{" "}
+                  <time dateTime={event.timestamp}>{relativeTime(event.timestamp)}</time>
                 </span>
               </Link>
             </li>
@@ -41,23 +50,6 @@ export function RecentActivity({ history }: { history: ChatSummary[] }) {
       )}
     </CcSection>
   );
-}
-
-// Compact "2h ago" / "3d ago" formatting. Falls back to the raw date on parse
-// failure so we never render "NaN".
-function relativeTime(iso: string): string {
-  const then = new Date(iso).getTime();
-  if (Number.isNaN(then)) return "recently";
-  const diff = Date.now() - then;
-  if (diff < 0) return "just now";
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days}d ago`;
-  return new Date(iso).toLocaleDateString();
 }
 
 function PulseIcon() {

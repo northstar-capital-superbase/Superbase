@@ -657,6 +657,33 @@
   color: var(--text-3);
   margin: 8px 0 0;
 }
+/* Honest per-agent status detail (Command Center crew expansion). Always
+   truthful — "No recent activity" / "No active task" rather than an
+   invented timestamp, until a live run actually populates these. */
+.lx-agent-meta {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lx-agent-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lx-agent-meta-row dt {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-4);
+}
+.lx-agent-meta-row dd {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
 .lx-agent-pill {
   display: inline-flex;
   align-items: center;
@@ -1330,6 +1357,83 @@
   transform: translateY(-1px);
 }
 
+/* Recommendations — up to three, each with title / description / confidence /
+   review action. Mirrors the Pending items row rhythm (same list pattern) so
+   the two centerpiece lists feel like one visual language. */
+.cc-recs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-rec {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 10px;
+  flex-wrap: wrap;
+}
+.cc-rec + .cc-rec {
+  border-top: 1px solid var(--line);
+}
+.cc-rec-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.cc-rec-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-rec-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.cc-rec-confidence {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.cc-rec-confidence--high {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+}
+.cc-rec-confidence--medium {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+}
+.cc-rec-confidence--low {
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Recent activity — per-kind dot tint (forward-compatible with future event
+   kinds beyond lab_session; only the color mapping changes when they land). */
+.cc-event-dot--agent_run,
+.cc-event-dot--workflow {
+  background: var(--green);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--green) 55%, transparent);
+}
+.cc-event-dot--memory_update,
+.cc-event-dot--research {
+  background: var(--gold);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.cc-event-dot--portfolio_analysis,
+.cc-event-dot--auth {
+  background: var(--text-3);
+  box-shadow: none;
+}
+
 /* Pending items */
 .cc-pending {
   list-style: none;
@@ -1477,11 +1581,13 @@
   .cc-grid {
     grid-template-columns: 1fr;
   }
-  .cc-pending-item {
+  .cc-pending-item,
+  .cc-rec {
     align-items: stretch;
   }
   .cc-pending-action,
-  .cc-inline-action {
+  .cc-inline-action,
+  .cc-rec .cc-pending-action {
     width: 100%;
     justify-content: center;
   }
