@@ -35,7 +35,10 @@ export async function GET(req: Request) {
       (!author || e.author.toLowerCase() === author) &&
       (!q || e.content.toLowerCase().includes(q)),
   );
-  return NextResponse.json({ entries, total: window.length, shown: entries.length });
+  return NextResponse.json(
+    { entries, total: window.length, shown: entries.length },
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 }
 
 // DELETE /api/memory?sessionId=... — wipe a session's shared memory. Scoped
@@ -48,5 +51,8 @@ export async function DELETE(req: Request) {
   const sessionId = searchParams.get("sessionId") ?? "default";
   const memory = getMemory({ accessToken: user.accessToken });
   await memory.clear(sessionId, user.id);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json(
+    { ok: true },
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 }

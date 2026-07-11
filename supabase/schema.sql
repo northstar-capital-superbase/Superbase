@@ -20,6 +20,12 @@ create table if not exists public.lab_memory (
   user_id     uuid references auth.users(id) on delete cascade
 );
 
+-- Brownfield upgrade: CREATE TABLE IF NOT EXISTS leaves an existing
+-- pre-auth lab_memory table untouched. Add the ownership column explicitly
+-- before enabling owner-based RLS policies below.
+alter table public.lab_memory
+  add column if not exists user_id uuid references auth.users(id) on delete cascade;
+
 create index if not exists lab_memory_session_idx
   on public.lab_memory (session_id, created_at desc);
 
@@ -28,10 +34,9 @@ create index if not exists lab_memory_user_session_idx
 
 alter table public.lab_memory enable row level security;
 
--- Server routes authenticate the caller and use the service role key (which
--- bypasses RLS) to read/write, but always stamp user_id from the resolved
--- session. These policies are the last line of defense if the anon key is
--- ever used directly from the client.
+-- User-owned routes authenticate as the caller with their session JWT and
+-- the anon key, so these policies enforce ownership in Postgres. The service
+-- role must never be used for user-owned memory reads or writes.
 drop policy if exists "Users see own memory" on public.lab_memory;
 create policy "Users see own memory" on public.lab_memory
   for select using (auth.uid() = user_id);

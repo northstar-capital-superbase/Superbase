@@ -25,21 +25,24 @@ export async function GET() {
 
   const provider = getProviderSafe();
   const tradingEnabled = mcpEnabled() && tradingAllowedFor(user.email);
-  return NextResponse.json({
-    agents: listProfiles(),
-    runtime: {
-      provider: provider?.name ?? "not configured",
-      model: provider?.model ?? "—",
-      memory: memoryBackend(),
-      configured: provider !== null,
+  return NextResponse.json(
+    {
+      agents: listProfiles(),
+      runtime: {
+        provider: provider?.name ?? "not configured",
+        model: provider?.model ?? "—",
+        memory: memoryBackend(),
+        configured: provider !== null,
+      },
+      trading: {
+        enabled: tradingEnabled,
+        endpoint: "https://agent.robinhood.com/mcp/trading",
+        mode: tradingMode(),
+        maxOrderUsd: maxOrderUsd(),
+        maxOrdersPerRun: maxOrdersPerRun(),
+        traderInCrew: tradingEnabled,
+      },
     },
-    trading: {
-      enabled: tradingEnabled,
-      endpoint: "https://agent.robinhood.com/mcp/trading",
-      mode: tradingMode(),
-      maxOrderUsd: maxOrderUsd(),
-      maxOrdersPerRun: maxOrdersPerRun(),
-      traderInCrew: tradingEnabled,
-    },
-  });
+    { headers: { "Cache-Control": "private, no-store" } },
+  );
 }

@@ -40,11 +40,14 @@ export async function GET(req: Request) {
       ok: true,
       ...base,
       error: "Robinhood is unavailable for this account.",
-    });
+    }, { headers: { "Cache-Control": "private, no-store" } });
   }
 
   if (!probe) {
-    return NextResponse.json({ ok: true, ...base });
+    return NextResponse.json(
+      { ok: true, ...base },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   }
 
   if (!enabled) {
@@ -55,7 +58,7 @@ export async function GET(req: Request) {
         error:
           "ROBINHOOD_MCP_TOKEN is not configured — connect via GET /api/trading/oauth/start",
       },
-      { status: 503 },
+      { status: 503, headers: { "Cache-Control": "private, no-store" } },
     );
   }
 
@@ -63,7 +66,10 @@ export async function GET(req: Request) {
   const result = await client.probe();
   return NextResponse.json(
     { ...base, ...result },
-    { status: result.ok ? 200 : 502 },
+    {
+      status: result.ok ? 200 : 502,
+      headers: { "Cache-Control": "private, no-store" },
+    },
   );
 }
 
