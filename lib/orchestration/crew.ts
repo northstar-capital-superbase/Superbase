@@ -9,6 +9,11 @@ export interface RunOptions {
   task: string;
   // Subset of specialists to consult. Defaults to all, in order.
   specialists?: AgentId[];
+  // Authenticated owner of this run, resolved server-side. When set, every
+  // memory read/write for this run is scoped to (and authenticated as) this
+  // user — never trusted from client input.
+  userId?: string;
+  accessToken?: string;
 }
 
 export interface CrewRun {
@@ -42,15 +47,15 @@ export type CrewEvent =
 // Every step is written back to shared memory so runs compound over time, and
 // emitted as a CrewEvent so the dashboard reflects real progress.
 export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
-  const { sessionId, task } = opts;
+  const { sessionId, task, userId, accessToken } = opts;
   const specialists = resolveSpecialists(opts.specialists);
-  const memory = getMemory();
+  const memory = getMemory({ accessToken });
   const loadContext = (): Promise<MemoryEntry[]> =>
-    memory.recent({ sessionId, limit: 24 });
+    memory.recent({ sessionId, userId, limit: 24 });
 
   try {
     // Record the user's task.
-    await memory.append({ sessionId, kind: "message", author: "user", content: task });
+    await memory.append({ sessionId, userId, kind: "message", author: "user", content: task });
 
     // 1. Orchestrator plans.
     yield { type: "agent_start", agent: "orchestrator" };
@@ -59,9 +64,12 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
       sessionId,
       task: `Draft a short delegation plan for this task, naming which specialists matter most: "${task}"`,
       memory: await loadContext(),
+      userId,
+      accessToken,
     });
     await memory.append({
       sessionId,
+      userId,
       kind: "plan",
       author: "orchestrator",
       content: planResult.output,
@@ -76,10 +84,13 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
         sessionId,
         task,
         memory: await loadContext(),
+        userId,
+        accessToken,
       });
       specialistResults.push(result);
       await memory.append({
         sessionId,
+        userId,
         kind: "agent_output",
         author: id,
         content: result.output,
@@ -94,9 +105,12 @@ export async function* streamCrew(opts: RunOptions): AsyncGenerator<CrewEvent> {
       sessionId,
       task: `Synthesize the specialists' contributions into one clear answer for: "${task}"`,
       memory: await loadContext(),
+      userId,
+      accessToken,
     });
     await memory.append({
       sessionId,
+      userId,
       kind: "agent_output",
       author: "orchestrator",
       content: synthesis.output,

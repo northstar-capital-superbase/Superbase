@@ -20,26 +20,37 @@ const globalForMemory = globalThis as unknown as {
 // would freeze to their build-time (often empty) values under `next start`.
 // Bracket access on the NEXT_PUBLIC_* fallbacks avoids that static inlining so
 // they're still read at runtime for anyone who set them.
-function supabaseConfig(): { url?: string; key?: string } {
+function supabaseConfig(): { url?: string; anonKey?: string; adminKey?: string } {
   const url = process.env.SUPABASE_URL || process.env["NEXT_PUBLIC_SUPABASE_URL"];
-  const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ||
-    process.env.SUPABASE_ANON_KEY ||
-    process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
-  return { url, key };
+  const anonKey = process.env.SUPABASE_ANON_KEY || process.env["NEXT_PUBLIC_SUPABASE_ANON_KEY"];
+  const adminKey = process.env.SUPABASE_SERVICE_ROLE_KEY || anonKey;
+  return { url, anonKey, adminKey };
 }
 
 // Uses Supabase when configured, otherwise falls back to the in-process store.
-export function getMemory(): MemoryStore {
-  if (globalForMemory.__northstarMemory) return globalForMemory.__northstarMemory;
+//
+// Pass `accessToken` (the caller's own session JWT, resolved server-side via
+// lib/auth/getUser.ts — never a client-supplied id) for every user-owned
+// read/write. That authenticates the underlying Supabase request AS that
+// user, so Postgres RLS enforces the per-user boundary directly — the
+// strongest guarantee available, independent of application-level filters.
+// A fresh client is created per call in that case (identity changes per
+// request); the unauthenticated path keeps the process-wide singleton used
+// by diagnostics (e.g. /api/health?memory=1).
+export function getMemory(opts?: { accessToken?: string }): MemoryStore {
+  const { url, anonKey, adminKey } = supabaseConfig();
 
-  const { url, key } = supabaseConfig();
+  if (opts?.accessToken && url && anonKey) {
+    return new SupabaseStore(url, anonKey, opts.accessToken);
+  }
+
+  if (globalForMemory.__northstarMemory) return globalForMemory.__northstarMemory;
   globalForMemory.__northstarMemory =
-    url && key ? new SupabaseStore(url, key) : new InMemoryStore();
+    url && adminKey ? new SupabaseStore(url, adminKey) : new InMemoryStore();
   return globalForMemory.__northstarMemory;
 }
 
 export function memoryBackend(): "supabase" | "in-memory" {
-  const { url, key } = supabaseConfig();
-  return url && key ? "supabase" : "in-memory";
+  const { url, adminKey } = supabaseConfig();
+  return url && adminKey ? "supabase" : "in-memory";
 }

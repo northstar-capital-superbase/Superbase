@@ -94,7 +94,7 @@ export class TradingAgent {
 
         if (!decision.allow) {
           if (decision.mutating) {
-            await audit(ctx.sessionId, `BLOCKED ${tool} ${compact(args)} — ${decision.reason}`);
+            await audit(ctx, `BLOCKED ${tool} ${compact(args)} — ${decision.reason}`);
           }
           results.push(
             `<tool_result tool="${tool}" error="true">BLOCKED by trading policy: ${decision.reason}</tool_result>`,
@@ -104,7 +104,7 @@ export class TradingAgent {
 
         if (decision.mutating) {
           ordersExecuted += 1;
-          await audit(ctx.sessionId, `ORDER ${tool} ${compact(args)} (mode=${tradingMode()})`);
+          await audit(ctx, `ORDER ${tool} ${compact(args)} (mode=${tradingMode()})`);
         }
 
         try {
@@ -144,13 +144,15 @@ export class TradingAgent {
 // ── Helpers ────────────────────────────────────────────────────────────────
 
 // Append an audit line for every order decision to shared memory (so it shows
-// in the run trace / Memory Explorer) and to the server log.
-async function audit(sessionId: string, line: string): Promise<void> {
+// in the run trace / Memory Explorer) and to the server log. Scoped to the
+// run's authenticated owner, same as every other memory write in a crew run.
+async function audit(ctx: AgentContext, line: string): Promise<void> {
   // eslint-disable-next-line no-console
-  console.warn(`[trading-audit] ${sessionId} :: ${line}`);
+  console.warn(`[trading-audit] ${ctx.sessionId} :: ${line}`);
   try {
-    await getMemory().append({
-      sessionId,
+    await getMemory({ accessToken: ctx.accessToken }).append({
+      sessionId: ctx.sessionId,
+      userId: ctx.userId,
       kind: "fact",
       author: "trader",
       content: `[audit] ${line}`,

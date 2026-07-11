@@ -7,6 +7,10 @@ export type MemoryKind = "message" | "agent_output" | "fact" | "plan";
 export interface MemoryEntry {
   id: string;
   sessionId: string;
+  // Owning authenticated user. Optional only for back-compat with rows
+  // written before auth existed — every new write sets it from the
+  // server-resolved session, never from client input.
+  userId?: string | null;
   kind: MemoryKind;
   author: string; // agent id or "user"
   content: string;
@@ -16,6 +20,9 @@ export interface MemoryEntry {
 
 export interface MemoryQuery {
   sessionId: string;
+  // When set, results are scoped to this user in addition to sessionId —
+  // the isolation boundary between accounts.
+  userId?: string | null;
   kinds?: MemoryKind[];
   limit?: number;
 }
@@ -23,5 +30,5 @@ export interface MemoryQuery {
 export interface MemoryStore {
   append(entry: Omit<MemoryEntry, "id" | "createdAt">): Promise<MemoryEntry>;
   recent(query: MemoryQuery): Promise<MemoryEntry[]>;
-  clear(sessionId: string): Promise<void>;
+  clear(sessionId: string, userId?: string | null): Promise<void>;
 }

@@ -19,14 +19,20 @@ export class InMemoryStore implements MemoryStore {
   }
 
   async recent(query: MemoryQuery): Promise<MemoryEntry[]> {
-    const { sessionId, kinds, limit = 50 } = query;
+    const { sessionId, userId, kinds, limit = 50 } = query;
     return this.entries
       .filter((e) => e.sessionId === sessionId)
+      // Isolation boundary for the default (no Supabase configured) backend:
+      // a session owned by one user is invisible to every other user, even
+      // on the same shared in-process store.
+      .filter((e) => userId === undefined || (e.userId ?? null) === userId)
       .filter((e) => !kinds || kinds.includes(e.kind))
       .slice(-limit);
   }
 
-  async clear(sessionId: string): Promise<void> {
-    this.entries = this.entries.filter((e) => e.sessionId !== sessionId);
+  async clear(sessionId: string, userId?: string | null): Promise<void> {
+    this.entries = this.entries.filter(
+      (e) => !(e.sessionId === sessionId && (userId === undefined || (e.userId ?? null) === userId)),
+    );
   }
 }
