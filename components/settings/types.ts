@@ -99,6 +99,11 @@ export interface NorthstarSettings {
 }
 
 export const SETTINGS_KEY = "northstar.settings.v2";
+export const ACTIVE_SETTINGS_USER_KEY = "northstar.settings.active-user";
+
+export function settingsKeyForUser(userId: string): string {
+  return `${SETTINGS_KEY}.${userId}`;
+}
 
 export const DEFAULT_APPEARANCE: AppearanceSettings = {
   theme: "midnight",

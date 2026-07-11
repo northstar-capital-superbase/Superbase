@@ -1,5 +1,7 @@
 import { streamCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,8 +14,12 @@ const json = (body: unknown, status: number, headers?: Record<string, string>) =
 
 // POST /api/chat/stream — runs the multi-agent workflow and streams each step
 // as Server-Sent Events (`data: <json CrewEvent>\n\n`), so the dashboard can
-// light up agents and fill the memory tail in real time.
+// light up agents and fill the memory tail in real time. Identity is
+// resolved server-side from the session cookie, same as /api/chat.
 export async function POST(req: Request) {
+  const user = await getAuthedUser();
+  if (!user) return json({ error: "Sign in required." }, 401);
+
   const limit = rateLimit(clientKey(req));
   if (!limit.allowed) {
     return json(
@@ -36,7 +42,14 @@ export async function POST(req: Request) {
       const send = (obj: unknown) =>
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(obj)}\n\n`));
       try {
-        for await (const event of streamCrew({ sessionId, task, specialists })) {
+        for await (const event of streamCrew({
+          sessionId,
+          task,
+          specialists,
+          userId: user.id,
+          accessToken: user.accessToken,
+          tradingAllowed: tradingAllowedFor(user.email),
+        })) {
           send(event);
         }
       } catch (err) {

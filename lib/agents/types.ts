@@ -20,6 +20,11 @@ export interface AgentContext {
   sessionId: string;
   task: string;
   memory: MemoryEntry[]; // recent shared memory at time of run
+  // Authenticated owner of this run — threaded through so specialists that
+  // write directly to memory (e.g. the trading audit trail) stay isolated
+  // per user instead of falling back to the unauthenticated admin path.
+  userId?: string;
+  accessToken?: string;
 }
 
 export interface AgentResult {

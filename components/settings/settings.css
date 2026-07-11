@@ -134,6 +134,33 @@
   margin: 8px 0 4px;
 }
 
+.lx-auth-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.lx-set-save {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: var(--os-r-sm);
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-2);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color var(--os-dur) var(--os-ease), border-color var(--os-dur) var(--os-ease);
+}
+.lx-set-save:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--line-2);
+}
+.lx-set-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Setting row */
 .lx-row {
   display: flex;

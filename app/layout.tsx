@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SettingsProvider } from "@/components/settings/SettingsProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 // Applied before hydration so the persisted theme/appearance is on <html> at
 // first paint (no flash). Mirrors applyAppearance() in SettingsProvider.
 const NO_FLASH = `(function(){try{
-var d=document.documentElement,s=JSON.parse(localStorage.getItem("northstar.settings.v2")||"{}").appearance||{};
+var d=document.documentElement,u=localStorage.getItem("northstar.settings.active-user"),k=u?"northstar.settings.v2."+u:null,s=JSON.parse((k&&localStorage.getItem(k))||"{}").appearance||{};
 var R={sharp:["8px","6px","4px"],default:["16px","12px","9px"],round:["22px","16px","12px"]};
 var F={small:"0.92",default:"1",large:"1.1"};
 var A={blue:["#6e8bff","#8aa6ff"],violet:["#a78bfa","#c0a9ff"],cyan:["#38bdf8","#7dd3fc"],emerald:["#5bd6a8","#7fe6c0"],amber:["#e2b17c","#f0c79a"],rose:["#ff7a8a","#ff9aa6"]};
@@ -39,7 +40,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
-        <SettingsProvider>{children}</SettingsProvider>
+        <AuthProvider>
+          <SettingsProvider>{children}</SettingsProvider>
+        </AuthProvider>
       </body>
     </html>
   );

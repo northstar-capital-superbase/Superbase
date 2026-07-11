@@ -6,25 +6,30 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?logo=tailwindcss&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/License-MIT-green)
 
-A **local-first, experimental multi-agent AI lab**. Hand the orchestrator a
-task; it plans, delegates to three specialist agents that collaborate through a
-shared memory, and synthesizes their work into one answer — all in a dark,
-modern dashboard.
+A **multi-user, multi-agent AI lab** with real accounts. Sign in, hand the
+orchestrator a task; it plans, delegates to three specialist agents that
+collaborate through memory scoped to you alone, and synthesizes their work
+into one answer — all in a dark, modern dashboard.
 
-> Requires an LLM key: set **`ANTHROPIC_API_KEY`** (preferred) or
+> Requires **Supabase Auth**: set `NEXT_PUBLIC_SUPABASE_URL` +
+> `NEXT_PUBLIC_SUPABASE_ANON_KEY` and apply `supabase/schema.sql`. Also
+> requires an LLM key: set **`ANTHROPIC_API_KEY`** (preferred) or
 > **`OPENAI_API_KEY`** before running the crew.
 
 ## Quick start
 
 ```bash
 npm install
-cp .env.example .env.local   # set ANTHROPIC_API_KEY (or OPENAI_API_KEY)
+cp .env.example .env.local   # set the Supabase Auth + ANTHROPIC_API_KEY vars
 npm run dev                  # http://localhost:3000
 ```
 
-Open **`/`** for the landing page; **`/labs`** is the multi-agent app.
+Open **`/`** for the landing page. **`/labs`** is the multi-agent app — sign
+in or create an account at **`/login`** first; every private route redirects
+there automatically if you're not authenticated.
 
-That's it. Type a task in the Lab Console and watch the crew collaborate.
+That's it. Create an account, type a task in the Lab Console, and watch the
+crew collaborate — your chats, memory, profile, and settings are yours alone.
 
 ## The agents
 
@@ -61,28 +66,37 @@ Grouped by feature so each folder maps to one concern. See
 
 ```
 app/                       # Next.js App Router
-  page.tsx                 # renders the dashboard
+  page.tsx                 # marketing showcase
+  login/page.tsx           # sign in / create account / forgot password
+  auth/callback/route.ts   # email confirmation + password-reset redirect
   api/
-    chat/route.ts          # POST → run the crew (non-streaming)
-    chat/stream/route.ts   # POST → run the crew, streamed as SSE
+    chat/route.ts          # POST → run the crew (non-streaming), auth required
+    chat/stream/route.ts   # POST → run the crew, streamed as SSE, auth required
     agents/route.ts        # GET  → agent roster + runtime info
-    memory/route.ts        # GET/DELETE → shared memory (filterable)
+    memory/route.ts        # GET/DELETE → per-user shared memory (filterable)
     health/route.ts        # GET  → readiness + ?ping / ?memory self-tests
+middleware.ts               # protects /labs, /settings, /connections; redirects
+                             # authenticated visitors away from /login
 
 components/                # dark dashboard UI, grouped by feature
+  auth/                    # LoginForm, SignOutButton
   dashboard/               # Dashboard shell, Sidebar, Integrations, AgentRoster
   chat/                    # Chat console + agent trace + run metrics
   memory/                  # MemoryExplorer (search + filters over shared memory)
-  session/                 # SessionSwitcher + useSessions (multi-lab)
   shared.ts                # shared client types, pricing/cost helper
 
+providers/AuthProvider.tsx  # session/profile state, sign in/up/out, root-mounted
+hooks/useAuth.ts            # useAuth() — consumes AuthProvider
+
 lib/                       # framework-agnostic core
+  auth/                    # getAuthedUser() (server identity), greeting helpers
+  supabase/                # browser/server/middleware Supabase clients
   agents/                  # agent profiles, base agent, registry
   llm/                     # provider abstraction: Anthropic | OpenAI
-  memory/                  # shared memory: Supabase | in-process
+  memory/                  # shared memory: Supabase (RLS, per-user) | in-process
   orchestration/crew.ts    # the multi-agent workflow (streaming generator)
 
-supabase/schema.sql        # shared-memory table
+supabase/schema.sql        # profiles + lab_memory tables, RLS policies
 agents-py/                 # optional CrewAI-native mirror of the agents
 Dockerfile · vercel.json   # deploy targets
 .github/workflows/ci.yml   # typecheck + build on push/PR
@@ -90,6 +104,10 @@ Dockerfile · vercel.json   # deploy targets
 
 ### Features
 
+- **Real accounts** — Supabase Auth (email + password): sign in, create
+  account, forgot password, session restore, secure sign out. Every user has
+  their own profile, chats, memory, and settings — enforced by Postgres Row
+  Level Security, not just application code.
 - **Streaming runs** — agents light up live via SSE as each one works
 - **Sessions** — multiple named labs, each with isolated, persisted memory
 - **Memory Explorer** — search/filter the shared memory by kind, author, text
@@ -105,14 +123,27 @@ single entry) and provider-agnostic (swap Claude/OpenAI via env).
 
 See `.env.example`. The lab auto-detects:
 
-- **LLM provider (required):** `ANTHROPIC_API_KEY` → Claude, else
+- **Authentication (required):** `NEXT_PUBLIC_SUPABASE_URL` +
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY`, with `supabase/schema.sql` applied to that
+  project. Every private route (`/labs`, `/settings`, `/connections`) redirects
+  to `/login` without a valid session.
+- **Password reset:** hidden by default. Enable
+  `NEXT_PUBLIC_PASSWORD_RESET_ENABLED=true` only after SMTP delivery and the
+  recovery/update-password flow are configured.
+- **LLM provider (required to answer):** `ANTHROPIC_API_KEY` → Claude, else
   `OPENAI_API_KEY` → OpenAI. Force with `LLM_PROVIDER`. Without a key the crew
   endpoints return a clear "not configured" error.
-- **Shared memory:** Supabase if `SUPABASE_URL` + a key
-  (`SUPABASE_SERVICE_ROLE_KEY`, preferred) are set — apply `supabase/schema.sql`
-  first — otherwise in-process memory. Verify with `/api/health?memory=1`.
+- **Shared memory:** uses the same Supabase project as Auth — per-user reads/
+  writes authenticate as the signed-in user, so Row Level Security enforces
+  isolation directly. `SUPABASE_SERVICE_ROLE_KEY` is optional and only used by
+  the admin `/api/health?memory=1` diagnostic probe. Without Supabase Auth
+  configured, memory falls back to in-process (still isolated per user within
+  that process).
 - **Robinhood Agentic Trading:** set `ROBINHOOD_MCP_TOKEN` (OAuth bearer from the
-  Robinhood MCP connect flow). The **Trader** joins every crew run automatically.
+  Robinhood MCP connect flow) and explicitly allow owner emails with
+  `TRADING_ALLOWED_USER_EMAILS`. The global connection is denied to every other
+  account; production OAuth remains disabled until encrypted per-user token
+  storage exists. The **Trader** joins only authorized crew runs.
   Verify with `GET /api/trading?probe=1`. Full setup: [`docs/TRADING.md`](docs/TRADING.md).
 
 ## Robinhood Agentic — go live

@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { runCrew } from "@/lib/orchestration/crew";
 import { clientKey, rateLimit, validateTask } from "@/lib/guardrails";
+import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 
 // POST /api/chat — runs the full multi-agent workflow for one user message.
+// Identity is resolved server-side from the session cookie; every memory
+// read/write for this run is bound to that user, never to a client-sent id.
 export async function POST(req: Request) {
   try {
+    const user = await getAuthedUser();
+    if (!user) {
+      return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    }
+
     const limit = rateLimit(clientKey(req));
     if (!limit.allowed) {
       return NextResponse.json(
@@ -25,7 +34,14 @@ export async function POST(req: Request) {
       ? body.specialists
       : undefined;
 
-    const run = await runCrew({ sessionId, task: valid.task, specialists });
+    const run = await runCrew({
+      sessionId,
+      task: valid.task,
+      specialists,
+      userId: user.id,
+      accessToken: user.accessToken,
+      tradingAllowed: tradingAllowedFor(user.email),
+    });
     return NextResponse.json(run);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Unknown error";

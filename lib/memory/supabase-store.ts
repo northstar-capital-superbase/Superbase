@@ -3,12 +3,22 @@ import type { MemoryEntry, MemoryQuery, MemoryStore } from "./types";
 
 // Supabase-backed shared memory for persistence across processes/sessions.
 // Table schema lives in `supabase/schema.sql`.
+//
+// When constructed with an `accessToken` (the caller's own Supabase session
+// JWT), every request is sent as that authenticated user — so Postgres Row
+// Level Security enforces the per-user boundary, not just this class's own
+// filtering. That is the preferred path for all user-owned memory. Without a
+// token, the store falls back to whatever key it was given (service role or
+// anon) for admin/diagnostic use (e.g. the health check probe).
 export class SupabaseStore implements MemoryStore {
   private client: SupabaseClient;
   private table = "lab_memory";
 
-  constructor(url: string, key: string) {
-    this.client = createClient(url, key, { auth: { persistSession: false } });
+  constructor(url: string, key: string, accessToken?: string) {
+    this.client = createClient(url, key, {
+      auth: { persistSession: false },
+      global: accessToken ? { headers: { Authorization: `Bearer ${accessToken}` } } : undefined,
+    });
   }
 
   async append(
@@ -16,6 +26,7 @@ export class SupabaseStore implements MemoryStore {
   ): Promise<MemoryEntry> {
     const row = {
       session_id: entry.sessionId,
+      user_id: entry.userId ?? null,
       kind: entry.kind,
       author: entry.author,
       content: entry.content,
@@ -37,6 +48,7 @@ export class SupabaseStore implements MemoryStore {
       .eq("session_id", query.sessionId)
       .order("created_at", { ascending: false })
       .limit(query.limit ?? 50);
+    if (query.userId !== undefined) q = q.eq("user_id", query.userId);
     if (query.kinds?.length) q = q.in("kind", query.kinds);
 
     const { data, error } = await q;
@@ -44,11 +56,10 @@ export class SupabaseStore implements MemoryStore {
     return (data ?? []).map(rowToEntry).reverse();
   }
 
-  async clear(sessionId: string): Promise<void> {
-    const { error } = await this.client
-      .from(this.table)
-      .delete()
-      .eq("session_id", sessionId);
+  async clear(sessionId: string, userId?: string | null): Promise<void> {
+    let q = this.client.from(this.table).delete().eq("session_id", sessionId);
+    if (userId !== undefined) q = q.eq("user_id", userId);
+    const { error } = await q;
     if (error) throw new Error(`Supabase clear failed: ${error.message}`);
   }
 }
@@ -57,6 +68,7 @@ function rowToEntry(row: any): MemoryEntry {
   return {
     id: row.id,
     sessionId: row.session_id,
+    userId: row.user_id ?? undefined,
     kind: row.kind,
     author: row.author,
     content: row.content,

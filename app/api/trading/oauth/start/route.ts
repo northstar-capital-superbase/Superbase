@@ -5,6 +5,8 @@ import {
   generatePkce,
   registerOAuthClient,
 } from "@/lib/mcp/oauth";
+import { getAuthedUser } from "@/lib/auth/getUser";
+import { tradingAllowedFor } from "@/lib/mcp/access";
 
 export const runtime = "nodejs";
 
@@ -18,6 +20,26 @@ function callbackUrl(req: Request): string {
 
 // GET /api/trading/oauth/start — begin Robinhood MCP OAuth (PKCE + DCR).
 export async function GET(req: Request) {
+  const user = await getAuthedUser();
+  if (!user) {
+    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  }
+  if (!tradingAllowedFor(user.email)) {
+    return NextResponse.json(
+      { error: "This account is not authorized to connect Robinhood." },
+      { status: 403 },
+    );
+  }
+  if (process.env.NODE_ENV === "production" && process.env.VERCEL) {
+    return NextResponse.json(
+      {
+        error:
+          "Robinhood OAuth is disabled in production until encrypted per-user token storage is configured.",
+      },
+      { status: 503 },
+    );
+  }
+
   try {
     const redirectUri = callbackUrl(req);
     const pkce = generatePkce();

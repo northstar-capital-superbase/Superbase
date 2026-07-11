@@ -1,0 +1,129 @@
+/* ──────────────────────────────────────────────────────────────────────────
+   Northstar OS — authentication surface. Same --os-* tokens, radii, and
+   motion vocabulary as the rest of the OS (Settings, Dashboard, Sidebar) —
+   deliberately not a separate design language.
+   ────────────────────────────────────────────────────────────────────────── */
+
+.auth-screen {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+}
+
+.auth-brand {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--os-text-2);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  z-index: 2;
+}
+
+.auth-panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 420px;
+  border: 1px solid var(--os-line);
+  border-radius: var(--os-r-lg);
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--os-surface), var(--os-bg));
+  box-shadow: var(--os-shadow-2), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.auth-body {
+  padding: 32px 30px 30px;
+}
+
+.auth-title {
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  margin: 0;
+  color: var(--os-text);
+}
+
+.auth-sub {
+  color: var(--os-text-2);
+  font-size: 14px;
+  margin: 8px 0 22px;
+}
+
+.auth-alert {
+  margin-bottom: 16px;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.auth-field {
+  display: block;
+}
+
+.auth-field span {
+  display: block;
+  font-family: var(--os-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: var(--os-text-3);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+}
+
+.auth-field input {
+  width: 100%;
+}
+
+.auth-submit {
+  width: 100%;
+  margin-top: 4px;
+}
+
+.auth-link {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  background: transparent;
+  border: none;
+  color: var(--os-text-3);
+  font-size: 12.5px;
+  padding: 4px 0;
+  text-align: center;
+  cursor: pointer;
+  transition: color var(--os-dur) var(--os-ease);
+}
+.auth-link:hover:not(:disabled) {
+  color: var(--os-text);
+}
+.auth-link:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.auth-link--inline {
+  display: inline;
+  width: auto;
+  margin: 0;
+  padding: 0;
+  color: var(--os-accent-bright);
+  font-weight: 600;
+}
+
+.auth-switch {
+  margin: 14px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--os-text-3);
+}

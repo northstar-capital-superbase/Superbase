@@ -20,6 +20,38 @@ describe("InMemoryStore", () => {
     expect((await store.recent({ sessionId: "b" }))[0].content).toBe("beta");
   });
 
+  it("isolates users even when they choose the same session id", async () => {
+    const store = new InMemoryStore();
+    await store.append({
+      userId: "user-a",
+      sessionId: "shared-id",
+      kind: "message",
+      author: "user",
+      content: "private-a",
+    });
+    await store.append({
+      userId: "user-b",
+      sessionId: "shared-id",
+      kind: "message",
+      author: "user",
+      content: "private-b",
+    });
+
+    expect(
+      (await store.recent({ userId: "user-a", sessionId: "shared-id" })).map(
+        (entry) => entry.content,
+      ),
+    ).toEqual(["private-a"]);
+
+    await store.clear("shared-id", "user-a");
+    expect(
+      await store.recent({ userId: "user-a", sessionId: "shared-id" }),
+    ).toHaveLength(0);
+    expect(
+      await store.recent({ userId: "user-b", sessionId: "shared-id" }),
+    ).toHaveLength(1);
+  });
+
   it("filters by kind", async () => {
     const store = new InMemoryStore();
     await store.append({ sessionId: "s", kind: "message", author: "user", content: "m" });

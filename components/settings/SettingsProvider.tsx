@@ -6,20 +6,21 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
 import {
   DEFAULT_SETTINGS,
+  ACTIVE_SETTINGS_USER_KEY,
   FONT_SCALE,
   RADIUS_VALUES,
-  SETTINGS_KEY,
+  settingsKeyForUser,
   THEME_BG,
   accentColor,
   type AppearanceSettings,
   type NorthstarSettings,
 } from "./types";
+import { useAuth } from "@/hooks/useAuth";
 
 // Deep-ish merge that tolerates partial / legacy persisted shapes.
 function hydrate(raw: string | null): NorthstarSettings {
@@ -82,20 +83,39 @@ interface SettingsContextValue {
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
 export function SettingsProvider({ children }: { children: ReactNode }) {
+  const { ready: authReady, user } = useAuth();
+  const userId = user?.id ?? null;
   const [settings, setSettings] = useState<NorthstarSettings>(DEFAULT_SETTINGS);
   const [ready, setReady] = useState(false);
-  const persist = useRef((s: NorthstarSettings) => {
-    try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
-    } catch {
-      /* storage may be unavailable */
-    }
-  });
+  const storageKey = userId ? settingsKeyForUser(userId) : null;
+
+  const persist = useCallback(
+    (next: NorthstarSettings) => {
+      if (!storageKey) return;
+      try {
+        localStorage.setItem(storageKey, JSON.stringify(next));
+        localStorage.setItem(ACTIVE_SETTINGS_USER_KEY, userId!);
+      } catch {
+        /* storage may be unavailable */
+      }
+    },
+    [storageKey, userId],
+  );
 
   useEffect(() => {
-    setSettings(hydrate(localStorage.getItem(SETTINGS_KEY)));
+    if (!authReady) return;
+    setReady(false);
+    try {
+      setSettings(
+        storageKey ? hydrate(localStorage.getItem(storageKey)) : DEFAULT_SETTINGS,
+      );
+      if (userId) localStorage.setItem(ACTIVE_SETTINGS_USER_KEY, userId);
+      else localStorage.removeItem(ACTIVE_SETTINGS_USER_KEY);
+    } catch {
+      setSettings(DEFAULT_SETTINGS);
+    }
     setReady(true);
-  }, []);
+  }, [authReady, storageKey, userId]);
 
   const update = useCallback(
     <S extends keyof NorthstarSettings>(
@@ -104,25 +124,25 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     ) => {
       setSettings((prev) => {
         const next = { ...prev, [section]: { ...prev[section], ...patch } };
-        persist.current(next);
+        persist(next);
         return next;
       });
     },
-    [],
+    [persist],
   );
 
   const replaceAppearance = useCallback((a: AppearanceSettings) => {
     setSettings((prev) => {
       const next = { ...prev, appearance: a };
-      persist.current(next);
+      persist(next);
       return next;
     });
-  }, []);
+  }, [persist]);
 
   const reset = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
-    persist.current(DEFAULT_SETTINGS);
-  }, []);
+    persist(DEFAULT_SETTINGS);
+  }, [persist]);
 
   // Reflect appearance to the document on every change (and after hydration).
   useEffect(() => {
