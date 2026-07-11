@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SettingsProvider } from "@/components/settings/SettingsProvider";
+import { AuthProvider } from "@/providers/AuthProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,7 +40,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
-        <SettingsProvider>{children}</SettingsProvider>
+        <AuthProvider>
+          <SettingsProvider>{children}</SettingsProvider>
+        </AuthProvider>
       </body>
     </html>
   );
