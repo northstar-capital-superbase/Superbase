@@ -6,7 +6,9 @@ Guidance for AI agents working in this repository.
 
 ### Product
 
-Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The multi-agent lab dashboard is at **`http://localhost:3000/labs`** (marketing showcase at `/`). No Docker, Supabase, or API keys are required for local development — mock LLM and in-memory shared memory are the defaults.
+Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The multi-agent lab dashboard is at **`http://localhost:3000/labs`** (marketing showcase at `/`). No Docker is required for local development.
+
+**Authentication is required.** `/labs`, `/settings`, `/connections` (and every future private route) are gated behind real Supabase Auth (email + password) via `middleware.ts` — unauthenticated visitors are redirected to `/login`. Set `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` and apply `supabase/schema.sql` before those routes will work. LLM provider and shared-memory persistence remain optional (mock/in-process by default).
 
 ### Standard commands
 
@@ -24,9 +26,10 @@ CI runs: `npm ci` → typecheck → lint → test → build (`.github/workflows/
 
 ### Environment
 
-- Copy `.env.example` → `.env.local` if missing. All vars are optional.
-- Without keys: `LLM_PROVIDER=mock`, memory backend is in-process.
-- Optional: `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` for live models; `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` after applying `supabase/schema.sql`.
+- Copy `.env.example` → `.env.local` if missing.
+- **Required:** `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Supabase Auth — accounts, profiles, per-user memory isolation). Apply `supabase/schema.sql` to that project first (SQL editor or `supabase db push`).
+- Without an LLM key: crew runs return a clear "not configured" error; memory backend falls back to in-process if Supabase isn't set.
+- Optional: `ANTHROPIC_API_KEY` / `OPENAI_API_KEY` for live models; `SUPABASE_SERVICE_ROLE_KEY` only matters for the admin `/api/health?memory=1` diagnostic probe — per-user chat memory authenticates as the signed-in user instead.
 - **Robinhood Agentic:** connect via `/labs` → **Connect Robinhood** (`GET /api/trading/oauth/start`) or set `ROBINHOOD_MCP_TOKEN` — see `docs/TRADING.md`. Local OAuth writes `.robinhood-mcp-token`. Trader auto-joins crew runs when a token is present.
 
 Verify runtime: `curl http://localhost:3000/api/health` → `{"ok":true,"provider":"mock",...}`.
@@ -38,13 +41,16 @@ Start with `npm run dev` from the repo root (Node 22+). Use a tmux session for l
 
 ### Hello-world / E2E smoke test
 
-Minimum path (no browser):
+`/api/chat` requires an authenticated session cookie, so a bare `curl` without one now gets `401 {"error":"Sign in required."}` — that response itself confirms route protection is working. To exercise the full crew:
 
-```bash
-curl -s -X POST http://localhost:3000/api/chat \
-  -H 'Content-Type: application/json' \
-  -d '{"task":"Say hello in one sentence.","sessionId":"smoke"}'
-```
+1. Open `http://localhost:3000/login`, create an account (or sign in).
+2. You land on `/labs` (Command Center). Open **Lab Console** and send a task, or from a shell with the browser's session cookie:
+   ```bash
+   curl -s -X POST http://localhost:3000/api/chat \
+     -b 'sb-<project-ref>-auth-token=<cookie value from devtools>' \
+     -H 'Content-Type: application/json' \
+     -d '{"task":"Say hello in one sentence.","sessionId":"smoke"}'
+   ```
 
 Expect JSON with `specialistResults` (research, strategist, behavioral) and `synthesis`.
 
