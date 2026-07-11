@@ -35,12 +35,22 @@ function LoginScreen() {
   const searchParams = useSearchParams();
   const { ready, user } = useAuth();
   const redirectTo = safeRedirectPath(searchParams.get("redirect"));
+  const callbackFailed = searchParams.has("auth_error");
 
   useEffect(() => {
     if (ready && user) router.replace(redirectTo);
   }, [ready, user, router, redirectTo]);
 
-  return <LoginForm redirectTo={redirectTo} />;
+  return (
+    <LoginForm
+      redirectTo={redirectTo}
+      initialError={
+        callbackFailed
+          ? "The authentication link is invalid or expired. Please sign in again."
+          : null
+      }
+    />
+  );
 }
 
 function NorthstarMark() {

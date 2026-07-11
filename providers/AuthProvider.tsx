@@ -200,8 +200,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const trimmed = displayName.trim();
       const { error } = await client
         .from("profiles")
-        .update({ display_name: trimmed })
-        .eq("user_id", userId);
+        .upsert(
+          { user_id: userId, display_name: trimmed },
+          { onConflict: "user_id" },
+        );
       if (!error) setProfile({ displayName: trimmed });
       return { error: error?.message ?? null };
     },

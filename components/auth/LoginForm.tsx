@@ -15,7 +15,13 @@ type Mode = "sign-in" | "sign-up" | "forgot";
 // The single entry point for Northstar OS authentication: Sign In, Create
 // Account, and Forgot Password, all backed by real Supabase Auth (email +
 // password) — no simulated/placeholder login path.
-export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
+export function LoginForm({
+  redirectTo = "/labs",
+  initialError = null,
+}: {
+  redirectTo?: string;
+  initialError?: string | null;
+}) {
   const router = useRouter();
   const safeRedirectTo = safeRedirectPath(redirectTo);
   const {
@@ -30,7 +36,7 @@ export function LoginForm({ redirectTo = "/labs" }: { redirectTo?: string }) {
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(initialError);
   const [notice, setNotice] = useState<string | null>(null);
 
   const resetMessages = () => {
