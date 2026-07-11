@@ -20,6 +20,10 @@ import { AppearancePanel } from "./AppearancePanel";
 import { IntegrationsSettings, MemorySettings } from "./live";
 import { useSettings } from "./useSettings";
 import { useRuntimeStatus } from "@/components/useRuntimeStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { greetingName } from "@/lib/auth/greeting";
+import { SignOutButton } from "@/components/auth/SignOutButton";
+import { Input } from "@/components/ui/Input";
 import type { AgentProfile } from "@/components/shared";
 import "@/components/dashboard/labs.css";
 import "./settings.css";
@@ -385,19 +389,84 @@ function ExperimentalSettings() {
 
 // ── Authentication ───────────────────────────────────────────────────────────
 function AuthSettings() {
+  const { configured, user, profile, updateDisplayName } = useAuth();
+  const [name, setName] = useState(profile?.displayName ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setName(profile?.displayName ?? "");
+  }, [profile?.displayName]);
+
+  if (!configured) {
+    return (
+      <SettingsSection id="auth" title="Authentication" description="Account and access for this Northstar instance." icon={G.auth}>
+        <OwnerNote>
+          Authentication is not configured. Set <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+          <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, then apply <code>supabase/schema.sql</code> to
+          your Supabase project to enable real accounts.
+        </OwnerNote>
+        <KeyValue
+          items={[
+            { label: "Provider", value: <StatusBadge state="off" label="Not configured" /> },
+          ]}
+        />
+      </SettingsSection>
+    );
+  }
+
+  if (!user) {
+    return (
+      <SettingsSection id="auth" title="Authentication" description="Account and access for this Northstar instance." icon={G.auth}>
+        <KeyValue items={[{ label: "Session", value: <StatusBadge state="off" label="Signed out" /> }]} />
+      </SettingsSection>
+    );
+  }
+
+  const onSave = async () => {
+    setSaving(true);
+    setError(null);
+    setSaved(false);
+    const { error: err } = await updateDisplayName(name);
+    setSaving(false);
+    if (err) setError(err);
+    else {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    }
+  };
+
   return (
-    <SettingsSection id="auth" title="Authentication" description="Account and access for this Northstar instance." icon={G.auth}>
-      <OwnerNote>
-        Northstar runs local-first with no sign-in required. Connect an auth provider in your
-        deployment to enable accounts and per-user memory.
-      </OwnerNote>
+    <SettingsSection id="auth" title="Authentication" description="Your account — isolated from every other Northstar user." icon={G.auth}>
       <KeyValue
         items={[
-          { label: "Mode", value: "Local-first (no account)" },
-          { label: "Provider", value: <StatusBadge state="off" label="Not configured" /> },
-          { label: "Session", value: "This device" },
+          { label: "Email", value: user.email ?? "—" },
+          { label: "Provider", value: <StatusBadge state="ok" label="Supabase Auth" /> },
+          { label: "Session", value: "Restored automatically on this device" },
         ]}
       />
+      <Row title="Display name" description="Shown in your greeting and the sidebar. Leave blank for a generic greeting." stack>
+        <div className="lx-auth-name-row">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={greetingName(null, user.email) ?? "Your name"}
+            maxLength={80}
+          />
+          <button type="button" className="lx-set-save" onClick={onSave} disabled={saving}>
+            {saving ? "Saving…" : saved ? "Saved" : "Save"}
+          </button>
+        </div>
+        {error && (
+          <Alert tone="danger" role="alert" className="lx-set-alert">
+            {error}
+          </Alert>
+        )}
+      </Row>
+      <Row title="Sign out" description="Destroys your session on this device and returns to Sign In.">
+        <SignOutButton variant="danger" size="sm" />
+      </Row>
     </SettingsSection>
   );
 }

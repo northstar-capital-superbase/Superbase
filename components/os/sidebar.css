@@ -535,6 +535,62 @@
   background: color-mix(in srgb, var(--os-accent) 16%, transparent);
 }
 
+/* ── Signed-in user footer ──────────────────────────────────────────────── */
+
+.sb-user {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding-top: 12px;
+  padding-bottom: 2px;
+}
+
+.sb-user-avatar {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--os-accent) 30%, transparent), rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--sb-border);
+  color: var(--sb-text);
+}
+
+.sb-user-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sb-user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--sb-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-user-email {
+  font-size: 10.5px;
+  color: var(--sb-text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sb-user-signout {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+}
+
 /* ── Collapse toggle ────────────────────────────────────────────────────── */
 
 .sb-collapse-btn {

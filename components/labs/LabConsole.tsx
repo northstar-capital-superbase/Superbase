@@ -8,6 +8,7 @@ import { MemoryExplorer } from "@/components/memory/MemoryExplorer";
 import { AgentsPanel } from "./AgentsPanel";
 import { ChatHistorySheet } from "./ChatHistorySheet";
 import { useLabConsole } from "./useLabConsole";
+import { useAuth } from "@/hooks/useAuth";
 import "@/components/dashboard/labs.css";
 import "./lab-console.css";
 
@@ -15,7 +16,8 @@ import "./lab-console.css";
 // fresh chat; past chats are reachable only via the History sheet. The crew
 // (Agents panel) and Shared Memory (Memory Explorer) live directly here.
 export function LabConsole() {
-  const lab = useLabConsole();
+  const { user } = useAuth();
+  const lab = useLabConsole(user?.id);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [memoryOpen, setMemoryOpen] = useState(false);
 

@@ -6,6 +6,8 @@ import { AgentRoster } from "./AgentRoster";
 import { Connections } from "./Connections";
 import { Skeleton } from "@/components/ui";
 import { useSettings } from "@/components/settings/useSettings";
+import { useAuth } from "@/hooks/useAuth";
+import { greetingText } from "@/lib/auth/greeting";
 import "./labs.css";
 
 const HINT_KEY = "northstar.hint.commandcenter.dismissed";
@@ -19,6 +21,7 @@ import {
 // connections, and the agent roster overview. The AI chat and shared memory
 // live in the nested Lab Console (/labs/console), not here.
 export function Dashboard() {
+  const { user, profile } = useAuth();
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [trading, setTrading] = useState<TradingInfo | null>(null);
@@ -48,6 +51,7 @@ export function Dashboard() {
       <main className="lx-main">
         <div className="lx-head">
           <div>
+            <p className="lx-greeting">{greetingText(profile?.displayName, user?.email)}</p>
             <h1 className="lx-title">Agent Operating System</h1>
             <p className="lx-sub">Command Center · multi-agent overview</p>
           </div>

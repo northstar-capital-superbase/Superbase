@@ -7,6 +7,9 @@ import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import clsx from "clsx";
 import { useSettingsContext } from "@/components/settings/SettingsProvider";
 import { useRuntimeStatus, type RuntimeStatus } from "@/components/useRuntimeStatus";
+import { useAuth } from "@/hooks/useAuth";
+import { greetingName } from "@/lib/auth/greeting";
+import { SignOutButton } from "@/components/auth/SignOutButton";
 import {
   LayoutDashboard,
   BarChart3,
@@ -335,6 +338,10 @@ function SidebarContent({
               <div className="sb-divider sb-divider--footer" />
 
               <TradingSummary runtime={runtime} onNavigate={mobile ? onMobileClose : undefined} />
+
+              <div className="sb-divider sb-divider--footer" />
+
+              <UserFooter />
             </motion.div>
           )}
         </AnimatePresence>
@@ -432,7 +439,7 @@ function TradingSummary({
 }) {
   return (
     <div className="sb-portfolio">
-      <div className="sb-portfolio-label">Trading</div>
+      <div className="sb-portfolio-label">Portfolio</div>
       {runtime.tradingEnabled ? (
         <>
           <div className="sb-portfolio-value">Robinhood MCP live</div>
@@ -442,9 +449,9 @@ function TradingSummary({
         </>
       ) : (
         <>
-          <div className="sb-portfolio-value">Not connected</div>
+          <div className="sb-portfolio-value">Portfolio unavailable</div>
           <div className="sb-portfolio-note">
-            Trader sits out of crew runs until Robinhood is linked.
+            Connect Robinhood to begin. Northstar never shows placeholder balances.
           </div>
           <Link href="/connections" className="sb-portfolio-link" onClick={onNavigate}>
             Connect Robinhood →
@@ -452,6 +459,41 @@ function TradingSummary({
         </>
       )}
     </div>
+  );
+}
+
+// Real signed-in identity — email + display name resolved from Supabase
+// Auth/profiles, never hardcoded. Sign out here destroys the session and
+// clears local per-user UI state, then returns to /login.
+function UserFooter() {
+  const { user, profile } = useAuth();
+  if (!user) return null;
+  const name = greetingName(profile?.displayName, user.email);
+  const initial = (name ?? "?").charAt(0).toUpperCase();
+
+  return (
+    <div className="sb-user">
+      <span className="sb-user-avatar" aria-hidden="true">
+        {initial}
+      </span>
+      <span className="sb-user-main">
+        <span className="sb-user-name">{name ?? "Signed in"}</span>
+        <span className="sb-user-email">{user.email}</span>
+      </span>
+      <SignOutButton variant="default" size="sm" className="sb-user-signout" aria-label="Sign out">
+        <SignOutGlyph />
+      </SignOutButton>
+    </div>
+  );
+}
+
+function SignOutGlyph() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+      <path d="M16 17l5-5-5-5" />
+      <path d="M21 12H9" />
+    </svg>
   );
 }
 

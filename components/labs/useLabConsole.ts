@@ -43,7 +43,9 @@ const newId = () =>
 // Center dashboard, this ALWAYS starts on a fresh chat and never auto-loads the
 // last conversation — previous chats are reachable only via history. All calls
 // hit the existing endpoints; no backend/API changes.
-export function useLabConsole() {
+// `userId` namespaces local chat history/transcripts so switching accounts on
+// the same browser never surfaces another user's chats.
+export function useLabConsole(userId?: string | null) {
   const [agents, setAgents] = useState<AgentProfile[]>([]);
   const [runtime, setRuntime] = useState<RuntimeInfo | null>(null);
   const [trading, setTrading] = useState<TradingInfo | null>(null);
@@ -54,7 +56,7 @@ export function useLabConsole() {
   // Fresh chat by default: a brand-new session id, empty transcript.
   const [activeChatId, setActiveChatId] = useState<string>(() => newId());
 
-  const { history, addChat, removeChat } = useChatHistory();
+  const { history, addChat, removeChat } = useChatHistory(userId);
   // Whether the current chat has been recorded in history yet (on first send).
   const registered = useRef(false);
   // Timer that clears agent status badges after a run; cleared on unmount so a
@@ -91,8 +93,8 @@ export function useLabConsole() {
   // Persist the active chat's transcript locally so it can be reopened from
   // history even though the default in-memory backend doesn't retain it.
   useEffect(() => {
-    if (registered.current && turns.length > 0) saveTranscript(activeChatId, turns);
-  }, [turns, activeChatId]);
+    if (registered.current && turns.length > 0) saveTranscript(userId, activeChatId, turns);
+  }, [turns, activeChatId, userId]);
 
   // Start a brand-new chat: new session, cleared transcript/memory/statuses.
   const newChat = useCallback(() => {
@@ -105,30 +107,33 @@ export function useLabConsole() {
 
   // Explicitly reopen a previous chat from history. Prefer the locally saved
   // transcript; fall back to reconstructing from server memory if present.
-  const openChat = useCallback(async (id: string) => {
-    setActiveChatId(id);
-    setStatuses({});
-    registered.current = true;
-    const local = loadTranscript(id);
-    let entries: MemoryEntry[] = [];
-    try {
-      const res = await fetch(`/api/memory?sessionId=${id}&limit=300`);
-      entries = res.ok ? ((await res.json()).entries ?? []) : [];
-    } catch {
-      entries = [];
-    }
-    setMemory(entries.slice(-50));
-    setTurns(local.length > 0 ? local : reconstructTurns(entries));
-  }, []);
+  const openChat = useCallback(
+    async (id: string) => {
+      setActiveChatId(id);
+      setStatuses({});
+      registered.current = true;
+      const local = loadTranscript(userId, id);
+      let entries: MemoryEntry[] = [];
+      try {
+        const res = await fetch(`/api/memory?sessionId=${id}&limit=300`);
+        entries = res.ok ? ((await res.json()).entries ?? []) : [];
+      } catch {
+        entries = [];
+      }
+      setMemory(entries.slice(-50));
+      setTurns(local.length > 0 ? local : reconstructTurns(entries));
+    },
+    [userId],
+  );
 
   const deleteChat = useCallback(
     (id: string) => {
       fetch(`/api/memory?sessionId=${id}`, { method: "DELETE" }).catch(() => {});
-      deleteTranscript(id);
+      deleteTranscript(userId, id);
       removeChat(id);
       if (id === activeChatId) newChat();
     },
-    [removeChat, activeChatId, newChat],
+    [removeChat, activeChatId, newChat, userId],
   );
 
   const pushAssistant = useCallback(
