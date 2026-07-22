@@ -15,7 +15,7 @@ tags: [canon, org]
 > When assigning an `owner` field in frontmatter (see [[Conventions]]) and you're unsure who that should resolve to. When onboarding someone new, to understand reporting lines and team boundaries.
 
 > [!note] How it connects to the rest of the vault
-> Every `owner` field across the vault should resolve to a person or role listed here. Future 1:1 hub pages (once that section exists — see [[Vault Guide#How the vault grows]]) will link back to a person's entry here.
+> Every `owner` field across the vault (ADRs, specs, systems, runbooks) should resolve to a person or role listed here. [[1-1s Index|1:1 hub pages]] link back to the person's entry here.
 
 ---
 
@@ -31,9 +31,9 @@ tags: [canon, org]
 ## Team structure
 
 > [!todo] Placeholder
-> Once there's more than one team, describe how teams are divided (by product surface, by layer, by squad) and link each team to the systems or product areas it owns, once those sections exist. Owner: Founder/CEO.
+> Once there's more than one team, describe how teams are divided (by product surface, by layer, by squad) and link each team to the [[Systems Index|systems]] or [[Product Index|product areas]] it owns. Owner: Founder/CEO.
 
 ## Decision rights
 
 > [!todo] Placeholder
-> Who can accept an ADR ([[ADR Index]])? This can start as "the founder decides everything" and should be revisited explicitly as the org grows — log that change in [[Vault Changelog]] if it affects vault process, or [[History & Milestones]] if it's a company milestone.
+> Who can accept an ADR ([[ADR Index]])? Who approves a spec ([[Specs Index]])? This can start as "the founder decides everything" and should be revisited explicitly as the org grows — log that change in [[Vault Changelog]] if it affects vault process, or [[History & Milestones]] if it's a company milestone.

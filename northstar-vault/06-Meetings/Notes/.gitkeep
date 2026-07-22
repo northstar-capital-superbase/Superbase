@@ -1,0 +1,3 @@
+This folder holds dated meeting notes (team meetings and 1:1s), named "YYYY-MM-DD Title.md".
+See ../Meetings Index.md for the convention and the Dataview query that surfaces them.
+This file exists only so Git tracks the empty folder before the first note is added.

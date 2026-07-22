@@ -15,7 +15,7 @@ tags: [canon, glossary]
 > Add a term the first time you notice yourself explaining it verbally more than once. Link to a specific entry (`[[Glossary#Term Name]]`) the first time you use a non-obvious term in any other note, rather than re-explaining it inline.
 
 > [!note] How it connects to the rest of the vault
-> [[Brand & Voice]] governs *how* we write; this governs *what words mean*. Future system and feature documentation should link here for any internal-only terminology rather than assuming it's obvious.
+> [[Brand & Voice]] governs *how* we write; this governs *what words mean*. [[Systems Index|System docs]] and [[Features Index|feature docs]] should link here for any internal-only terminology rather than assuming it's obvious.
 
 ---
 
@@ -27,4 +27,4 @@ tags: [canon, glossary]
 ### Example Term
 
 > [!todo] Placeholder
-> Definition, plus (optionally) a link to where this term is actually used elsewhere in the vault.
+> Definition. See [[Engineering Index]] for where this is used.

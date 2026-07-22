@@ -12,10 +12,10 @@ tags: [canon, brand]
 > Every writer — founder, engineer, future marketing hire — should sound like the same company. This page is the reference that makes that possible without a style guide meeting for every blog post.
 
 > [!tip] When to use this page
-> Before writing anything customer-facing: landing pages, docs, changelogs, support replies, job posts. Not needed for internal notes like ADRs — those should sound like the person writing them.
+> Before writing anything customer-facing: landing pages, docs, changelogs (see [[Roadmap#Shipped]]), support replies, job posts. Not needed for internal notes (meetings, ADRs) — those should sound like the person writing them.
 
 > [!note] How it connects to the rest of the vault
-> [[Glossary]] defines *what words mean*; this page defines *how we use language stylistically*. Any future product-facing documentation should follow this voice when it becomes public.
+> [[Glossary]] defines *what words mean*; this page defines *how we use language stylistically*. Product-facing writing in [[Features Index|Features]] should follow this voice when it becomes public documentation.
 
 ---
 

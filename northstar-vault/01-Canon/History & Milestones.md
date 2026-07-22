@@ -12,10 +12,10 @@ tags: [canon, history]
 > Institutional memory is the first thing lost as a company grows past its founding team. This page is a deliberately short, append-only timeline of the moments worth remembering — not a diary, a highlight reel.
 
 > [!tip] When to use this page
-> Add an entry when something happens that a future hire would need to know to understand "why we do it this way" (founding, first customer, a pivot, a major outage, a funding event). Don't log routine shipped work here — once a Roadmap section exists (see [[Vault Guide#How the vault grows]]), that's where shipped work belongs.
+> Add an entry when something happens that a future hire would need to know to understand "why we do it this way" (founding, first customer, a pivot, a major outage, a funding event). Don't log routine shipped work here — that belongs in [[Roadmap#Shipped]].
 
 > [!note] How it connects to the rest of the vault
-> This is the company's timeline; [[Vault Changelog]] is the *vault's* timeline (structure changes only) — keep those separate. A milestone here may reference the [[ADR Index|ADR]] that caused it.
+> This is the company's timeline; [[Vault Changelog]] is the *vault's* timeline (structure changes only) — keep those separate. A milestone here may reference the [[ADR Index|ADR]] or [[Specs Index|spec]] that caused it.
 
 ---
 
