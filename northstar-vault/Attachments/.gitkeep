@@ -1,0 +1,7 @@
+Default attachment folder for non-Excalidraw binary assets (images, PDFs) pasted or dragged
+into notes. Set as Obsidian's default attachment location in Settings > Files & Links.
+
+Excalidraw diagrams do NOT belong here — see ../Excalidraw/Excalidraw Index.md.
+
+If this folder grows large with binary assets over time, consider Git LFS for it specifically
+(see ../00-Meta/Git Integration.md).
