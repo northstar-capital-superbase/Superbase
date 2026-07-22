@@ -26,12 +26,12 @@ Every note (except quick throwaway scratch notes, which shouldn't be committed a
 
 ```yaml
 ---
-type: adr                # required — see the type table in [[Vault Guide]]
-status: proposed          # required for anything with a lifecycle (see below)
+type: spec              # required — see the type table in [[Vault Guide]]
+status: draft            # required for anything with a lifecycle (see below)
 owner: "Placeholder — Person Name"   # required — who is accountable for this note
 created: 2026-07-22       # required — ISO date, set once
 updated: 2026-07-22       # optional — bump on substantive edits
-tags: [example]          # optional — see tagging rules below
+tags: [billing, api]     # optional — see tagging rules below
 ---
 ```
 
@@ -39,15 +39,18 @@ Fields that don't apply to a note type (e.g. `status` on a Canon page that never
 
 ## Status vocabulary
 
-Reuse this exact vocabulary — Dataview filters in the dashboards match on these literal strings. This is the vocabulary in active use **today**; each new section added per [[Vault Guide#How the vault grows]] extends this table in the same change that introduces it (e.g. specs will need `draft` and `shipped`) rather than pre-defining statuses nothing uses yet.
+Reuse this exact vocabulary — Dataview filters in the dashboards match on these literal strings.
 
 | Status | Meaning | Used by |
 |---|---|---|
+| `draft` | Being written, not yet reviewed | specs, research, ADRs |
 | `proposed` | Written and ready for a decision | ADRs |
 | `accepted` | Decision made, in effect | ADRs |
-| `deprecated` | No longer recommended, not yet replaced | ADRs |
+| `deprecated` | No longer recommended, not yet replaced | ADRs, standards |
 | `superseded` | Replaced by a specific newer note (link it) | ADRs |
-| `active` | Currently true / in use | meta and index pages |
+| `active` | Currently true / in use | systems, standards, recurring meetings |
+| `shipped` | Built and released | specs, features |
+| `exploring` | Early, pre-spec | research, experiments |
 | `archived` | Historical only, kept for context | any type |
 
 ## Naming rules
@@ -60,7 +63,7 @@ Reuse this exact vocabulary — Dataview filters in the dashboards match on thes
 ## Linking rules
 
 - Prefer `[[Wikilinks]]` over Markdown links for anything inside the vault — they survive renames and power Obsidian's graph/backlinks.
-- Link to the *index* of a section from outside that section, and only deep-link to a specific leaf note when you mean that exact note (e.g. link [[ADR Index]] from a note that merely references the decisions log in general, but link a specific `ADR-0007-...` from a note that depends on that exact decision).
+- Link to the *index* of a section from outside that section, and only deep-link to a specific leaf note when you mean that exact note (e.g. link [[Engineering Index]] from a roadmap item, but link a specific `ADR-0007-...` from a spec that depends on that exact decision).
 - Every leaf note should have at least one inbound link from an index or a related note. An unlinked note is undiscoverable — if you can't find a natural place to link it from, that's a signal it's in the wrong folder.
 
 ## Tagging rules

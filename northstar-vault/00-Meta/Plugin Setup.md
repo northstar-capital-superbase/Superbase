@@ -38,11 +38,22 @@ In **Settings → Templater**:
 
 - **Template folder location:** `Templates`
 - **Trigger Templater on new file creation:** on
-- **Folder templates** — map each content folder to its template so `Ctrl/Cmd+N` in that folder pre-fills the right structure. This table covers today's folders; add a row here in the same change that adds a new section per [[Vault Guide#How the vault grows]]:
+- **Folder templates** — map each content folder to its template so `Ctrl/Cmd+N` in that folder pre-fills the right structure:
 
 | Folder | Template |
 |---|---|
 | `02-Decisions` | `Templates/ADR Template.md` |
+| `03-Product/Personas` | `Templates/Persona Template.md` |
+| `03-Product/Specs` | `Templates/Spec (PRD) Template.md` |
+| `03-Product/Features` | `Templates/Feature Doc Template.md` |
+| `03-Product/Feedback` | `Templates/Feedback Note Template.md` |
+| `04-Engineering/Systems` | `Templates/System Doc Template.md` |
+| `04-Engineering/Runbooks` | `Templates/Runbook Template.md` |
+| `05-Research/*` (all four subfolders) | `Templates/Research Note Template.md` |
+| `06-Meetings/Notes` | `Templates/Meeting Note Template.md` |
+| `06-Meetings/1-1s` | `Templates/1-1 Template.md` |
+| `06-Meetings/Recurring` | `Templates/Recurring Meeting Template.md` |
+| `07-Roadmap/Quarters` | `Templates/Quarterly Plan Template.md` |
 | `01-Canon` | `Templates/Canon Page Template.md` |
 
 ## Dataview configuration

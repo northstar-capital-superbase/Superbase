@@ -16,7 +16,7 @@ tags: [excalidraw]
 > Check here for naming/folder conventions before creating a new diagram. Use it to browse existing diagrams before drawing a near-duplicate.
 
 > [!note] How it connects to the rest of the vault
-> Diagrams are drawn here but almost never viewed here directly — they're embedded into whichever prose page needs them (`![[diagram-name]]`), most often future architecture and system documentation (see [[Vault Guide#How the vault grows]]).
+> Diagrams are drawn here but almost never viewed here directly — they're embedded into the prose page that needs them (`![[diagram-name]]`), most often [[Architecture Index]] and pages under [[Systems Index]].
 
 ---
 
@@ -26,8 +26,8 @@ Diagrams are grouped by the domain they document, mirroring the vault's own top-
 
 | Subfolder | For diagrams about |
 |---|---|
-| `Excalidraw/Architecture/` | System/service topology — for future architecture and system documentation |
-| `Excalidraw/Product/` | User flows, journey maps — for future product specs and feature docs |
+| `Excalidraw/Architecture/` | System/service topology — embedded in [[Architecture Index]] and [[Systems Index]] pages |
+| `Excalidraw/Product/` | User flows, journey maps — embedded in [[Specs Index]] and [[Features Index]] pages |
 | `Excalidraw/Whiteboards/` | Freeform brainstorm/session captures — often ephemeral; promote anything durable into a named diagram in the folders above |
 
 ## Naming and embedding convention
@@ -46,4 +46,4 @@ SORT file.folder ASC, file.name ASC
 ```
 
 > [!todo] Placeholder
-> Add the first architecture diagram (e.g. a system map) once there's a real system to draw, and link it from that system's documentation once an engineering section exists.
+> Add the first architecture diagram (e.g. a system map) once there's a real system to draw — link it from [[Architecture Index]].

@@ -16,7 +16,7 @@ tags: [adr]
 > Land here to browse or search decisions before re-opening a debate — check whether it's already been decided (and why) before re-deciding it. Create a new ADR (from [[ADR Template]]) whenever a decision is: hard to reverse, affects multiple people/systems, or was genuinely debated between real alternatives. Don't write an ADR for something with one obvious answer.
 
 > [!note] How it connects to the rest of the vault
-> ADRs sit between [[Canon]] (identity) and execution — see [[Vault Guide]]. Once product/engineering sections exist (see [[Vault Guide#How the vault grows]]), any spec or system doc that depends on a decision should link the specific `ADR-####` rather than restating it.
+> ADRs sit between [[Canon]] (identity) and execution ([[Product Index]], [[Engineering Index]]) — see [[Vault Guide]]. A spec or system doc that depends on a decision should link the specific `ADR-####` rather than restating it.
 
 ---
 

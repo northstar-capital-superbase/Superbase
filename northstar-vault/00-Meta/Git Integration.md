@@ -47,19 +47,22 @@ Use a `docs(<area>): <summary>` prefix so documentation history is greppable and
 ```
 docs(canon): update mission statement
 docs(adr): add ADR-0012 on event bus choice
-docs(meta): tighten the frontmatter schema
+docs(meeting): add 2026-07-22 weekly eng sync
+docs(roadmap): move Q3 items into Now
 ```
 
-`<area>` should match a top-level folder name (`canon`, `adr`, `meta`, plus whichever new area a future section introduces per [[Vault Guide#How the vault grows]]).
+`<area>` should match a top-level folder name (`canon`, `adr`, `product`, `engineering`, `research`, `meetings`, `roadmap`, `meta`).
 
 ## Review policy by area
 
-Not every note carries the same blast radius if it's wrong. Match review rigor to consequence — this table covers today's two sections; add a row here in the same change that introduces a new section per [[Vault Guide#How the vault grows]], since each area's review policy should be decided deliberately rather than defaulted:
+Not every note carries the same blast radius if it's wrong. Match review rigor to consequence:
 
 | Area | Review needed | Why |
 |---|---|---|
 | [[Canon]] | Required (PR + explicit approval) | Identity-defining; changes here should be rare and deliberate |
 | [[ADR Index]] (status `accepted`) | Required (PR) | An accepted ADR is a binding decision; changing it retroactively is itself a decision |
+| [[Product Index]] specs, [[Engineering Index]] standards | Recommended (PR, lightweight) | High-traffic reference material |
+| [[Research Index]], [[Meetings Index]] notes | Not required — direct commit | High-frequency, low-risk; review would create friction without benefit |
 
 As the team grows past a solo founder, formalize the "required" row with a `CODEOWNERS` entry (e.g. `northstar-vault/01-Canon/* @founders`, `northstar-vault/02-Decisions/* @eng-leads`) so GitHub/GitLab enforces it automatically.
 
@@ -72,7 +75,7 @@ As the team grows past a solo founder, formalize the "required" row with a `CODE
 
 Obsidian has no structural merge tool, so conflicts are resolved as plain text. Two habits keep this rare:
 
-- **One concern per file.** An ADR, a Canon page — never combine unrelated edits in one note, so two people rarely touch the same file for different reasons.
+- **One concern per file.** A spec, an ADR, a meeting note — never combine unrelated edits in one note, so two people rarely touch the same file for different reasons.
 - **Dashboards are generated, not edited.** [[Home]] and every `Index` page are Dataview queries with almost no hand-written prose — there's nothing there for two people to conflict over.
 
 ## Large binary assets

@@ -18,7 +18,7 @@ tags: []
 > Read it before proposing a change that would contradict this decision. Update its `status` as the decision moves through its lifecycle (`proposed` → `accepted` → optionally `deprecated`/`superseded`) — never rewrite the `Decision` section after acceptance; write a new ADR instead.
 
 > [!note] How it connects to the rest of the vault
-> Link this ADR from any other note that depends on it (a spec, a system doc, a standard) — see [[Conventions]] for linking rules.
+> Link this ADR from any [[Specs Index|spec]], [[Systems Index|system doc]], or [[Standards Index|standard]] that depends on it.
 
 ---
 

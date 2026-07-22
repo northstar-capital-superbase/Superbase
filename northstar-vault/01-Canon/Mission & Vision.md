@@ -15,7 +15,7 @@ tags: [canon, mission]
 > Reference it verbatim in external materials rather than re-paraphrasing from memory. Revisit it deliberately (not accidentally) when the company's direction materially changes — log that as an entry in [[History & Milestones]].
 
 > [!note] How it connects to the rest of the vault
-> Every future roadmap item should visibly serve this mission (once a Roadmap section exists — see [[Vault Guide#How the vault grows]]); if one doesn't, that's worth questioning. [[Values & Principles]] describes *how* we pursue this mission; this page only describes *what* and *why*.
+> [[Roadmap]] should visibly serve this mission; if a roadmap item doesn't, that's worth questioning. [[Values & Principles]] describes *how* we pursue this mission; this page only describes *what* and *why*.
 
 ---
 
@@ -32,4 +32,4 @@ tags: [canon, mission]
 ## What we are not
 
 > [!todo] Placeholder
-> Optional but useful: explicitly naming what's out of scope prevents scope creep in later product and roadmap decisions. Owner: Founder/CEO.
+> Optional but useful: explicitly naming what's out of scope prevents scope creep in [[Product Index|product]] and [[Roadmap]] decisions later. Owner: Founder/CEO.

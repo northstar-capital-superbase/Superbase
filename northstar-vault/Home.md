@@ -22,12 +22,15 @@ tags: [home, dashboard]
 
 ## The sections
 
-This vault ships as a minimal, complete core and grows one section at a time — see [[Vault Guide#How the vault grows]] for the reserved numbering and the principle behind it (a section is added when real work earns it, not in advance).
-
 | # | Section | What lives there |
 |---|---|---|
 | 01 | [[Canon\|Canon]] | Mission, values, brand, glossary, org — the slow-changing source of truth |
 | 02 | [[ADR Index\|Decisions]] | Architecture Decision Records — why we built things the way we did |
+| 03 | [[Product Index\|Product]] | Personas, specs, shipped feature docs, customer feedback |
+| 04 | [[Engineering Index\|Engineering]] | Architecture, standards, runbooks, onboarding, per-system docs |
+| 05 | [[Research Index\|Research]] | Market, competitive, user research, experiments |
+| 06 | [[Meetings Index\|Meetings]] | Recurring meeting hubs, 1:1s, dated meeting notes |
+| 07 | [[Roadmap\|Roadmap]] | Now / Next / Later, quarterly plans, shipped changelog |
 | — | [[Templates Index\|Templates]] | Templater templates for every note type in this vault |
 | — | [[Excalidraw Index\|Excalidraw]] | Diagram organization and embedding conventions |
 
@@ -52,3 +55,16 @@ FROM "02-Decisions"
 WHERE type = "adr" AND status = "proposed"
 SORT created ASC
 ```
+
+## Specs currently in flight
+
+```dataview
+TABLE status as "Status", owner as "Owner", updated as "Updated"
+FROM "03-Product/Specs"
+WHERE type = "spec" AND status != "shipped" AND status != "archived"
+SORT updated DESC
+```
+
+## This quarter, at a glance
+
+See [[Roadmap]] for the full Now / Next / Later board and [[Quarters Index|quarterly plans]].
