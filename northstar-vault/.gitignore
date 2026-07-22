@@ -1,0 +1,23 @@
+# Obsidian workspace/UI state is per-device and churns constantly — never worth
+# committing, and it produces noisy diffs and merge conflicts for no benefit.
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/workspace.json.bak
+.obsidian/cache
+.obsidian/plugins/*/data.json
+.obsidian/.DS_Store
+
+# Local search index / graph cache
+.obsidian/app.json.bak
+
+# Obsidian's "deleted files" holding area — never sync trash between machines.
+.trash/
+
+# OS + editor cruft
+.DS_Store
+Thumbs.db
+
+# See ../00-Meta/Git Integration.md for the full rationale, including which
+# .obsidian/*.json files SHOULD be committed (community-plugins.json,
+# core-plugins.json, templater / dataview settings) so the team shares one
+# configuration.
