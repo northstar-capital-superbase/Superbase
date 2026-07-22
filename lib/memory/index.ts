@@ -1,17 +1,20 @@
 import { InMemoryStore } from "./in-memory-store";
 import { SupabaseStore } from "./supabase-store";
 import type { MemoryStore } from "./types";
+import { isAuthBypassEnabled } from "@/lib/auth/devBypass";
 
 export * from "./types";
 
 // Cache the store on globalThis rather than a module-local. Next.js bundles each
-// route handler separately, so a plain module-level singleton is instantiated
+// route handler separately, so a plain module-local singleton is instantiated
 // once *per route* — meaning writes from /api/chat land in a different
 // InMemoryStore than the one /api/memory reads from, and shared memory always
 // looks empty. A globalThis cache is shared across every route bundle in the
 // same Node process, so the in-memory backend actually persists across requests.
 const globalForMemory = globalThis as unknown as {
   __northstarMemory?: MemoryStore;
+  // Deliberately separate from __northstarMemory above — see getMemory().
+  __northstarDevBypassMemory?: MemoryStore;
 };
 
 // Resolve Supabase config from server-runtime env. We deliberately prefer the
@@ -38,6 +41,21 @@ function supabaseConfig(): { url?: string; anonKey?: string; adminKey?: string }
 // request); the unauthenticated path keeps the process-wide singleton used
 // by diagnostics (e.g. /api/health?memory=1).
 export function getMemory(opts?: { accessToken?: string }): MemoryStore {
+  // Development auth bypass: force the ephemeral in-process store, full stop
+  // — regardless of whatever Supabase config (including a service-role key)
+  // this environment happens to have for other purposes. Dev-bypass requests
+  // never carry a real accessToken (see lib/auth/getUser.ts), so without this
+  // guard they would otherwise fall through to the shared admin-key-backed
+  // singleton below and could land un-RLS'd rows in a real Supabase table
+  // under an unauthenticated identity. That must never happen; this check
+  // makes it structurally impossible rather than relying on caller discipline.
+  if (isAuthBypassEnabled()) {
+    if (!globalForMemory.__northstarDevBypassMemory) {
+      globalForMemory.__northstarDevBypassMemory = new InMemoryStore();
+    }
+    return globalForMemory.__northstarDevBypassMemory;
+  }
+
   const { url, anonKey, adminKey } = supabaseConfig();
 
   if (opts?.accessToken && url && anonKey) {
@@ -51,6 +69,7 @@ export function getMemory(opts?: { accessToken?: string }): MemoryStore {
 }
 
 export function memoryBackend(): "supabase" | "in-memory" {
+  if (isAuthBypassEnabled()) return "in-memory";
   const { url, adminKey } = supabaseConfig();
   return url && adminKey ? "supabase" : "in-memory";
 }

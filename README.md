@@ -119,6 +119,20 @@ Dockerfile · vercel.json   # deploy targets
 **Design principles:** modular (agents are declarative profiles; adding one is a
 single entry) and provider-agnostic (swap Claude/OpenAI via env).
 
+## Development authentication bypass (temporary)
+
+Login is still unfinished (no SMTP/password recovery yet), so local dev and
+Preview deployments can optionally skip sign-in with one explicit env var:
+
+```bash
+NORTHSTAR_DEV_NO_AUTH=1   # .env.local only — never set on Production
+```
+
+This never weakens Supabase Auth, middleware protection, or RLS, refuses to
+activate on a real Vercel Production deployment, and forces ephemeral
+in-process memory while active. Full details:
+[`docs/DEV-AUTH-BYPASS.md`](docs/DEV-AUTH-BYPASS.md).
+
 ## Configuration
 
 See `.env.example`. The lab auto-detects:

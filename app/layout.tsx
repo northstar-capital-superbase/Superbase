@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SettingsProvider } from "@/components/settings/SettingsProvider";
 import { AuthProvider } from "@/providers/AuthProvider";
+import { DevBypassBanner } from "@/components/auth/DevBypassBanner";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <script dangerouslySetInnerHTML={{ __html: NO_FLASH }} />
+        <DevBypassBanner />
         <AuthProvider>
           <SettingsProvider>{children}</SettingsProvider>
         </AuthProvider>
