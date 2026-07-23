@@ -657,6 +657,33 @@
   color: var(--text-3);
   margin: 8px 0 0;
 }
+/* Honest per-agent status detail (Command Center crew expansion). Always
+   truthful — "No recent activity" / "No active task" rather than an
+   invented timestamp, until a live run actually populates these. */
+.lx-agent-meta {
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.lx-agent-meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.lx-agent-meta-row dt {
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: var(--text-4);
+}
+.lx-agent-meta-row dd {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--text-3);
+}
 .lx-agent-pill {
   display: inline-flex;
   align-items: center;
@@ -1154,4 +1181,532 @@
 [data-agent-colors="off"] .ap-color,
 [data-agent-colors="off"] .lx-agent-dot {
   filter: grayscale(1) opacity(0.7);
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   Command Center 2.0 — the AI operating system home. Mobile-first; all colors,
+   radii and motion come from the shared --os-* tokens (via the .lx aliases).
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* Respect device safe areas without ever shrinking below the base rhythm. */
+.cc {
+  padding-left: max(24px, env(safe-area-inset-left));
+  padding-right: max(24px, env(safe-area-inset-right));
+  padding-bottom: max(64px, env(safe-area-inset-bottom));
+}
+
+/* Header — greeting leads, a quiet date eyebrow sits above it. */
+.cc-head {
+  padding: 6px 0 0;
+}
+.cc-date {
+  margin: 0 0 8px;
+}
+.cc-greeting {
+  margin: 0;
+  font-size: clamp(24px, 4.2vw, 34px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.12;
+  color: var(--text);
+}
+
+/* Section shell (CcSection) */
+.cc-section {
+  overflow: hidden;
+}
+.cc-section .lx-eyebrow {
+  margin: 0;
+}
+.cc-body {
+  padding: 16px 20px;
+}
+.cc-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* Lists that manage their own row padding sit closer to the header. */
+.cc-body--flush {
+  padding: 6px 10px 10px;
+}
+
+/* Empty states inside Command Center sections use the same compact,
+   icon-left row language as the "all set" state — calm and intentional
+   instead of two tall hollow blocks stacked mid-page. */
+.cc-section .ui-empty {
+  height: auto;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+  text-align: left;
+  gap: 12px;
+  padding: 4px 0;
+}
+.cc-section .ui-empty-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+}
+.cc-section .ui-empty-mark svg {
+  width: 16px;
+  height: 16px;
+}
+.cc-section .ui-empty h3 {
+  font-size: 13.5px;
+}
+.cc-section .ui-empty p {
+  margin: 3px 0 0;
+  max-width: 60ch;
+  line-height: 1.5;
+}
+
+/* Vertical rhythm + gentle staggered reveal for the stacked sections. */
+.cc-reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.cc-reveal > * {
+  animation: lx-fadeup 0.4s var(--os-ease-spring, var(--os-ease)) both;
+}
+.cc-reveal > *:nth-child(2) {
+  animation-delay: 0.05s;
+}
+.cc-reveal > *:nth-child(3) {
+  animation-delay: 0.1s;
+}
+.cc-reveal > *:nth-child(4) {
+  animation-delay: 0.15s;
+}
+.cc-reveal > *:nth-child(5) {
+  animation-delay: 0.2s;
+}
+
+/* Daily briefing — the one prominent, calm summary. */
+.cc-briefing {
+  padding: 18px 20px;
+  border-color: color-mix(in srgb, var(--os-accent) 22%, var(--line));
+  background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--os-accent) 7%, transparent),
+      transparent 60%
+    ),
+    var(--surface);
+}
+.cc-briefing .lx-eyebrow {
+  display: block;
+  margin: 0 0 10px;
+}
+.cc-briefing-text {
+  margin: 0;
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.55;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  /* Cap the measure — a briefing that spans the full 1240px shell reads
+     like a status bar, not a briefing. */
+  max-width: 68ch;
+}
+
+/* Two-up row — portfolio + pending on wide screens, stacked on mobile. */
+.cc-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Recent activity timeline */
+.cc-timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-event {
+  display: flex;
+  gap: 12px;
+  padding: 11px 10px;
+}
+.cc-event + .cc-event {
+  border-top: 1px solid var(--line);
+}
+.cc-event-dot {
+  margin-top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--blue);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--blue) 55%, transparent);
+  flex: none;
+}
+.cc-event-main {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+  /* Static padding + negative margin so the hover wash never shifts layout. */
+  padding: 4px 8px;
+  margin: -4px -8px;
+  border-radius: 8px;
+  transition: background-color var(--os-dur) var(--os-ease);
+}
+.cc-event-main:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+.cc-event-title {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cc-event-meta {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+.cc-event-main:hover .cc-event-title {
+  color: var(--blue-bright);
+}
+
+/* Portfolio snapshot */
+.cc-snapshot-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-snapshot-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+/* Shared quiet-action button (Portfolio connect + Pending/Recommendation
+   rows) — one declaration so the two lists stay in lockstep. The trailing
+   arrow nudges right on hover and the button settles on press, so actions
+   feel tactile without any flash. */
+.cc-inline-action,
+.cc-pending-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--os-accent) 40%, transparent);
+  background: color-mix(in srgb, var(--os-accent) 10%, transparent);
+  color: var(--blue-bright);
+  font-size: 12.5px;
+  font-weight: 600;
+  transition: background-color var(--os-dur) var(--os-ease), transform var(--os-dur) var(--os-ease);
+}
+.cc-inline-action:hover,
+.cc-pending-action:hover {
+  background: color-mix(in srgb, var(--os-accent) 18%, transparent);
+  transform: translateY(-1px);
+}
+.cc-inline-action:active,
+.cc-pending-action:active {
+  background: color-mix(in srgb, var(--os-accent) 22%, transparent);
+  transform: translateY(0);
+}
+.cc-inline-action > span[aria-hidden],
+.cc-pending-action > span[aria-hidden] {
+  transition: transform var(--os-dur) var(--os-ease);
+}
+.cc-inline-action:hover > span[aria-hidden],
+.cc-pending-action:hover > span[aria-hidden] {
+  transform: translateX(2px);
+}
+.cc-inline-action {
+  margin-top: 12px;
+}
+
+/* Recommendations — up to three, each with title / description / confidence /
+   review action. Mirrors the Pending items row rhythm (same list pattern) so
+   the two centerpiece lists feel like one visual language. */
+.cc-recs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-rec {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 10px;
+  flex-wrap: wrap;
+}
+.cc-rec + .cc-rec {
+  border-top: 1px solid var(--line);
+}
+.cc-rec-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.cc-rec-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-rec-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.cc-rec-confidence {
+  display: inline-flex;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+.cc-rec-confidence--high {
+  color: var(--green);
+  background: color-mix(in srgb, var(--green) 14%, transparent);
+}
+.cc-rec-confidence--medium {
+  color: var(--gold);
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+}
+.cc-rec-confidence--low {
+  color: var(--text-3);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Recent activity — per-kind dot tint (forward-compatible with future event
+   kinds beyond lab_session; only the color mapping changes when they land). */
+.cc-event-dot--agent_run,
+.cc-event-dot--workflow {
+  background: var(--green);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--green) 55%, transparent);
+}
+.cc-event-dot--memory_update,
+.cc-event-dot--research {
+  background: var(--gold);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--gold) 55%, transparent);
+}
+.cc-event-dot--portfolio_analysis,
+.cc-event-dot--auth {
+  background: var(--text-3);
+  box-shadow: none;
+}
+
+/* Pending items */
+.cc-pending {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.cc-pending-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 10px;
+  flex-wrap: wrap;
+}
+.cc-pending-item + .cc-pending-item {
+  border-top: 1px solid var(--line);
+}
+.cc-pending-main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1;
+}
+.cc-pending-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-pending-desc {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.cc-pending-action {
+  flex: none;
+}
+.cc-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--os-accent) 16%, transparent);
+  color: var(--blue-bright);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* All-set (empty pending) */
+.cc-allset {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cc-allset-check {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 10px;
+  color: var(--green);
+  border: 1px solid color-mix(in srgb, var(--green) 30%, transparent);
+  background: color-mix(in srgb, var(--green) 10%, transparent);
+}
+.cc-allset-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+.cc-allset-note {
+  margin: 3px 0 0;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+/* Crew status — collapsed disclosure */
+.cc-crew {
+  overflow: hidden;
+}
+.cc-crew-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 56px;
+  padding: 14px 20px;
+  background: none;
+  border: none;
+  text-align: left;
+  color: var(--text);
+  transition: background-color var(--os-dur) var(--os-ease);
+}
+.cc-crew-head:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+.cc-crew-head:not(:disabled):active {
+  background: rgba(255, 255, 255, 0.035);
+}
+/* Full-bleed button inside a clipped card — keep the focus ring visible. */
+.cc-crew-head:focus-visible {
+  outline-offset: -2px;
+  border-radius: var(--r);
+}
+.cc-crew-head:disabled {
+  cursor: default;
+}
+.cc-crew-head-left {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.cc-crew-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.cc-crew-retry {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-bright);
+}
+/* Smooth height expand/collapse via the grid-rows trick — no JS measuring,
+   no layout thrash outside the card. Content fades slightly behind the
+   height so the motion reads as one gesture. */
+.cc-crew-collapse {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--os-dur-sheet, 320ms)
+    var(--os-ease-spring, var(--os-ease));
+}
+.cc-crew-collapse[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.cc-crew-collapse-inner {
+  overflow: hidden;
+  min-height: 0;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity var(--os-dur-slow) var(--os-ease),
+    visibility 0s var(--os-dur-sheet, 320ms);
+}
+.cc-crew-collapse[data-open="true"] .cc-crew-collapse-inner {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity var(--os-dur-slow) var(--os-ease) 80ms, visibility 0s;
+}
+.cc-crew-body {
+  padding: 4px 20px 20px;
+  border-top: 1px solid var(--line);
+}
+
+/* Continue working — a large, comfortable CTA on the home. It joins the
+   tail of the staggered reveal so the eye's journey ends where the next
+   action begins; the arrow answers hover, and press settles the card. */
+.cc-continue {
+  min-height: 68px;
+  padding: 18px 20px;
+  animation: lx-fadeup 0.4s var(--os-ease-spring, var(--os-ease)) 0.25s both;
+}
+.cc-continue:active {
+  transform: translateY(0);
+}
+.cc-continue .lx-console-cta-arrow {
+  transition: transform var(--os-dur) var(--os-ease);
+}
+.cc-continue:hover .lx-console-cta-arrow {
+  transform: translateX(3px);
+}
+
+/* Responsive — collapse the two-up row and make actions full-width on phones. */
+@media (max-width: 720px) {
+  .cc-grid {
+    grid-template-columns: 1fr;
+  }
+  .cc-pending-item,
+  .cc-rec {
+    align-items: stretch;
+  }
+  .cc-pending-action,
+  .cc-inline-action,
+  .cc-rec .cc-pending-action {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Honor OS-level reduced motion for the home's staggered reveal (the in-app
+   [data-motion="reduced"] toggle is already handled by the shared rules above). */
+@media (prefers-reduced-motion: reduce) {
+  .cc-reveal > *,
+  .cc-continue {
+    animation: none;
+  }
 }
