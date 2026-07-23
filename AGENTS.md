@@ -8,7 +8,9 @@ Guidance for AI agents working in this repository.
 
 Northstar Labs is a single Next.js 14 app (TypeScript, App Router). The multi-agent lab dashboard is at **`http://localhost:3000/labs`** (marketing showcase at `/`). No Docker is required for local development.
 
-**Authentication is required.** `/labs`, `/settings`, `/connections` (and every future private route) are gated behind real Supabase Auth (email + password) via `middleware.ts` — unauthenticated visitors are redirected to `/login`. Set `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` and apply `supabase/schema.sql` before those routes will work. LLM provider and shared-memory persistence remain optional (mock/in-process by default).
+**Authentication is required by default.** `/labs`, `/settings`, `/connections` (and every future private route) are gated behind real Supabase Auth (email + password) via `middleware.ts` — unauthenticated visitors are redirected to `/login`. Set `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` and apply `supabase/schema.sql` before those routes will work. LLM provider and shared-memory persistence remain optional (mock/in-process by default).
+
+**Cloud Agent shortcut:** while login/signup is still unfinished, set `NORTHSTAR_DEV_NO_AUTH=1` in `.env.local` to skip sign-in entirely for local development — every protected route opens directly and API routes resolve a fixed development operator, with no Supabase session needed. This is the fastest way to test `/labs`, `/settings`, `/connections`, and the crew API in this environment. It never weakens real Auth/RLS and refuses to run in a real Vercel Production deployment. See `docs/DEV-AUTH-BYPASS.md`.
 
 ### Standard commands
 
@@ -42,16 +44,23 @@ Start with `npm run dev` from the repo root (Node 22+). Use a tmux session for l
 
 ### Hello-world / E2E smoke test
 
-`/api/chat` requires an authenticated session cookie, so a bare `curl` without one now gets `401 {"error":"Sign in required."}` — that response itself confirms route protection is working. To exercise the full crew:
+`/api/chat` requires an authenticated session cookie, so a bare `curl` without one now gets `401 {"error":"Sign in required."}` — that response itself confirms route protection is working. To exercise the full crew, either:
 
-1. Open `http://localhost:3000/login`, create an account (or sign in).
-2. You land on `/labs` (Command Center). Open **Lab Console** and send a task, or from a shell with the browser's session cookie:
-   ```bash
-   curl -s -X POST http://localhost:3000/api/chat \
-     -b 'sb-<project-ref>-auth-token=<cookie value from devtools>' \
-     -H 'Content-Type: application/json' \
-     -d '{"task":"Say hello in one sentence.","sessionId":"smoke"}'
-   ```
+- **With the dev bypass** (`NORTHSTAR_DEV_NO_AUTH=1`, restart the dev server): no cookie needed at all —
+  ```bash
+  curl -s -X POST http://localhost:3000/api/chat \
+    -H 'Content-Type: application/json' \
+    -d '{"task":"Say hello in one sentence.","sessionId":"smoke"}'
+  ```
+- **With real auth:**
+  1. Open `http://localhost:3000/login`, create an account (or sign in).
+  2. You land on `/labs` (Command Center). Open **Lab Console** and send a task, or from a shell with the browser's session cookie:
+     ```bash
+     curl -s -X POST http://localhost:3000/api/chat \
+       -b 'sb-<project-ref>-auth-token=<cookie value from devtools>' \
+       -H 'Content-Type: application/json' \
+       -d '{"task":"Say hello in one sentence.","sessionId":"smoke"}'
+     ```
 
 Expect JSON with `specialistResults` (research, strategist, behavioral) and `synthesis`.
 

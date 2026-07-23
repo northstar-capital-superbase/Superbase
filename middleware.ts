@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 import { safeRedirectPath } from "@/lib/auth/redirect";
+import { isAuthBypassEnabled } from "@/lib/auth/devBypass";
 
 // Route protection for every private OS surface. Unauthenticated visitors to
 // a protected page are sent to /login (with a `redirect` back-link);
@@ -26,6 +27,16 @@ function redirectWithSessionCookies(
 }
 
 export async function middleware(request: NextRequest) {
+  // Development auth bypass: explicit opt-in only (NORTHSTAR_DEV_NO_AUTH=1),
+  // and it refuses to activate in a real Vercel Production deployment — see
+  // lib/auth/devBypass.ts for the full safety contract. When active, every
+  // route (including /login) is let through untouched; the real session
+  // refresh + redirect logic below is completely skipped, not weakened, and
+  // resumes normal operation the instant the flag is removed.
+  if (isAuthBypassEnabled()) {
+    return NextResponse.next();
+  }
+
   const { response, user } = await updateSession(request);
   const { pathname } = request.nextUrl;
 
